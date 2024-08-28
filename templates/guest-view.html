@@ -69,8 +69,7 @@
               <label for="fetUsername" class="form-label">Fet/Fetlife Username</label>
               <div class="input-group">
                 <span class="input-group-text" id="fetUsernamePrepend">@</span>
-                <input type="text" class="form-control" name="fetUsername" id="fetUsername"
-                  aria-describedby="fetUsernamePrepend">
+                <input type="text" class="form-control" name="fetUsername" id="fetUsername">
               </div>
             </div>
 
@@ -92,32 +91,17 @@
               <label for="phoneNumber" class="form-label">Phone #</label>
               <input type="tel" class="form-control" name="phoneNumber" id="phoneNumber" placeholder="301-000-0000">
             </div>
-            <!-- <div class="col-md-6">
-              <label for="validationDefault03" class="form-label">City</label>
-              <input type="text" class="form-control" id="validationDefault03" required>
-            </div> -->
-            <!-- <div class="col-md-3">
-              <label for="validationDefault04" class="form-label">State</label>
-              <select class="form-select" id="validationDefault04" required>
-                <option selected disabled value="">Choose...</option>
-                <option>...</option>
-              </select>
-            </div> -->
-            <!-- <div class="col-md-3">
-              <label for="validationDefault05" class="form-label">Zip</label>
-              <input type="text" class="form-control" id="validationDefault05" required>
-            </div> -->
             <div class="col-12">
               <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="" name="termsCheck" id="termsCheck" required>
+                <input class="form-check-input" type="checkbox" value="false" name="termsCheck" id="termsCheck" >
                 <label class="form-check-label" for="termsCheck">
-                  Agree to terms and conditions
+                  Agree to Terms and Conditions <button class="btn btn-outline-primary" data-bs-target="#tosModal" data-bs-toggle="modal" data-bs-dismiss="modal">Current Terms and Conditions</button>
                 </label>
               </div>
             </div>
             <div class="col-12">
               <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="" name="idCheck" id="idCheck" required>
+                <input class="form-check-input" type="checkbox" value="false" name="idCheck" id="idCheck" >
                 <label class="form-check-label" for="idCheck">
                   Agree to ID Photocopy
                 </label>
@@ -128,6 +112,23 @@
             </div>
           </form>
 
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal fade" id="tosModal" aria-hidden="true" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalToggleLabel2">Terms and Conditions</h5>
+        </div>
+        <div class="modal-body">
+          Hide this modal and show the first with the button below.
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" data-bs-target="#registerModal" data-bs-toggle="modal" data-bs-dismiss="modal">Return</button>
         </div>
       </div>
     </div>
