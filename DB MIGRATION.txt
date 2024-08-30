@@ -15,3 +15,11 @@ To sync the database in another system just refresh the migrations folder from s
 To see all the commands that are available run this command:
 
 $ flask db --help
+
+
+
+
+
+flask db migrate
+
+flask db upgrade

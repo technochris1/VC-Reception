@@ -56,8 +56,9 @@
             </div>
             <div class="col py-3">
 
-
                 {{events}}
+
+            
 
 
                 <div id="ec"></div>
@@ -76,7 +77,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <form class="row g-3 needs-validation"  method="post" novalidate>
+                    <form class="row g-3 needs-validation" method="post" novalidate>
                         <div class="col-md-6">
                             <label for="eventStart" class="form-label">Event Start</label>
                             <input type="text" class="form-control" name="eventStart" id="eventStart" value="" required>
@@ -94,8 +95,8 @@
                         <div class="col-md-12">
                             <label for="eventLocation" class="form-label">Event Location</label>
 
-                            <input type="text" class="form-control" name="eventLocation"  id="eventLocation" value="VC" aria-describedby="inputGroupPrepend"
-                                required>
+                            <input type="text" class="form-control" name="eventLocation" id="eventLocation" value="VC"
+                                aria-describedby="inputGroupPrepend" required>
                             <div class="invalid-feedback">
                                 Please provide an event location.
                             </div>
@@ -104,8 +105,8 @@
                         <div class="col-md-12">
                             <label for="eventName" class="form-label">Event Name</label>
 
-                            <input type="text" class="form-control" name="eventName"  id="eventName" aria-describedby="inputGroupPrepend"
-                                required>
+                            <input type="text" class="form-control" name="eventName" id="eventName"
+                                aria-describedby="inputGroupPrepend" required>
                             <div class="invalid-feedback">
                                 Please provide an event title.
                             </div>
@@ -113,7 +114,8 @@
                         </div>
                         <div class="col-md-12">
                             <label for="eventDescription" class="form-label">Event Description</label>
-                            <textarea class="form-control" name="eventDescription" id="eventDescription" rows="3"></textarea>
+                            <textarea class="form-control" name="eventDescription" id="eventDescription"
+                                rows="3"></textarea>
                             <div class="invalid-feedback">
                                 Please provide a description.
                             </div>
@@ -163,6 +165,11 @@
 
 
     <script>
+
+        
+        
+        
+       
         const myModalel = document.getElementById('eventModal')
         const myModal = new bootstrap.Modal(myModalel, {
             keyboard: true
@@ -193,8 +200,14 @@
 
             },
             events: [
-                // your list of events
-            ]
+            
+
+                {
+                    title: 'event 1',
+                    start: '2024-08-28T10:00:00',
+                    end: '2024-08-29T12:00:00'
+                }
+             ]
         });
 
 

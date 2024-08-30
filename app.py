@@ -4,9 +4,9 @@ import json
 import datetime
 import re
 
+from dataclasses import dataclass
 
-
-from flask import Flask, render_template, request, abort
+from flask import Flask, render_template, request, abort, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_sqlalchemy.model import Model
@@ -48,13 +48,80 @@ moment = Moment(app)
 
 mail = Mail(app)
 
+
+@app.template_filter('utc_to_local')
+def utc_to_local(utc_dt):
+    return utc_dt.replace(tzinfo=datetime.timezone.utc).astimezone(tz=None)
+
+
 @app.route("/")
 def dashboard():
     return render_template('index.html')
 
-@app.route('/guests/')
+
+@app.route('/guest/')
+@app.route('/guest/<uuid>')
+def guest(uuid = None): 
+    print("UUID:",uuid)
+    result = Guest.query.filter_by(uuid = uuid).first()
+    print("Returning User:",result.uuid)
+    return jsonify(result)
+
+@app.route('/guests/', methods=['GET', 'POST'])
 def guests():
-    return render_template('guests.html', guests=VcGuest.query.all())
+    if request.method == 'POST':
+        termsCheckValue = False
+        idCheckValue = False
+
+
+        if request.form.get('termsCheck') is not None:
+            termsCheckValue = True
+        if request.form.get('idCheck') is not None:
+            idCheckValue = True
+        
+        rowID = request.values.get('dbID')
+        print(rowID)
+        
+        if (rowID):
+            print("Updating Row")
+            guest = Guest.query.filter_by(id=rowID).first()
+            guest.uuid=request.values.get('uuid')
+            guest.fetUsername=request.values.get('fetUsername')
+            guest.firstName=request.values.get('firstName')
+            guest.lastName=request.values.get('lastName')
+            guest.email=request.values.get('emailAddress')
+            guest.phone=request.values.get('phoneNumber')
+            guest.termsCheck=termsCheckValue
+            guest.idCheck=idCheckValue
+
+            db.session.commit()
+
+        else:
+            print("Adding Row")
+            newGuest = Guest(
+                uuid = request.values.get('uuid'),
+                fetUsername=request.values.get('fetUsername'),
+                firstName=request.values.get('firstName'),
+                lastName=request.values.get('lastName'),
+                email=request.values.get('emailAddress'),
+                phone=request.values.get('phoneNumber'),
+                termsCheck=termsCheckValue,
+                idCheck=idCheckValue                
+            )
+            db.session.add(newGuest)
+            db.session.commit()
+        
+    return render_template('guests.html', guests=Guest.query.all())
+
+
+
+
+@app.route('/logbook/')
+def logbook():
+    return render_template('logbook.html', guests=Guest.query.all(), log=Guestlog.query.all())
+    #return render_template('logbook.html')
+
+
 
 @app.route('/forms/')
 def forms():
@@ -68,14 +135,17 @@ def events():
         newEvent = Event(
             eventName=request.values.get('eventName'),
             eventDescription=request.values.get('eventDescription'),
-            eventStartDate= datetime.datetime.strptime(re.sub(r" \((.*?)\)", "", request.values.get('eventStart')), "%a %b %d %Y %H:%M:%S %Z%z"),
-            eventEndDate= datetime.datetime.strptime(re.sub(r" \((.*?)\)", "", request.values.get('eventEnd')), "%a %b %d %Y %H:%M:%S %Z%z"),
+            eventStartDate= int(datetime.datetime.timestamp(datetime.datetime.strptime(re.sub(r" \((.*?)\)", "", request.values.get('eventStart')), "%a %b %d %Y %H:%M:%S %Z%z"))),
+            eventEndDate= int(datetime.datetime.timestamp(datetime.datetime.strptime(re.sub(r" \((.*?)\)", "", request.values.get('eventEnd')), "%a %b %d %Y %H:%M:%S %Z%z"))),
             eventLocation=request.values.get('eventLocation')
         )
         db.session.add(newEvent)
         db.session.commit()
 
-    return render_template('events.html', events=Event.query.all())
+    allEvents = Event.query.all()
+    
+
+    return render_template('events.html', events=json.dumps(Event.query.all()))
 
 #https://flask-mail.readthedocs.io/en/latest/#
 @app.route('/sendEmail/')
@@ -92,7 +162,7 @@ def sendEmail():
 # Guest VIEWS
 
 @app.route('/guestView/', methods=['GET', 'POST'])
-def guest():
+def guestView():
     if request.method == 'POST':
         username = request.values.get('user') # Your form's
         password = request.values.get('pass') # input names
@@ -100,7 +170,7 @@ def guest():
 
         print(request.values.get('emailAddress'))
 
-        existingGuest = db.session.execute(db.select(VcGuest).filter_by(email=request.values.get('emailAddress'))).first()
+        existingGuest = db.session.execute(db.select(Guest).filter_by(email=request.values.get('emailAddress'))).first()
         print(existingGuest)
         print(request.form)
         if(existingGuest == None):
@@ -115,7 +185,7 @@ def guest():
 
 
 
-            newGuest = VcGuest(
+            newGuest = Guest(
             fetUsername=request.values.get('fetUsername'),
             firstName=request.values.get('firstName'),
             lastName=request.values.get('lastName'),
@@ -142,11 +212,26 @@ def guest():
         
         return render_template('guest-view.html')
 
+@app.route('/generateUUID/')
+def generateUUID():
+    return jsonify(generate_uuid())
+
 @app.route('/checkIn/<uuid>')
 def checkIn(uuid = None):
-    guest = VcGuest.query.filter_by(uuid = uuid).first()
+    guest = Guest.query.filter_by(uuid = uuid).first()
     if(guest):
-        guest.lastVisit = func.now()
+
+        #visitTime = datetime.datetime.now()
+        visitTime = func.now()
+        guest.lastVisit = visitTime
+
+        newCheckIn = Guestlog(
+            checked_in_at = visitTime,
+            userID = guest.id
+        )
+        db.session.add(newCheckIn)
+        db.session.commit()
+
 
 
         return json.dumps(guest.firstName)
@@ -159,69 +244,72 @@ def generate_uuid():
     return str(uuid.uuid4())
 
 
+@dataclass
+class Guest(db.Model):
+    id:int = db.Column(db.Integer, primary_key=True)
+    uuid:str  = db.Column(db.String, name="uuid", default=generate_uuid)
 
-class VcGuest(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    uuid = db.Column(db.String, name="uuid", default=generate_uuid)
+    fetUsername:str  = db.Column(db.String(100))
+    firstName:str  = db.Column(db.String(100))
+    lastName:str  = db.Column(db.String(100))
+    email:str  = db.Column(db.String(200), nullable=False)
+    phone:str  = db.Column(db.String(20))
 
-    fetUsername = db.Column(db.String(100))
-    firstName = db.Column(db.String(100))
-    lastName = db.Column(db.String(100))
-    email = db.Column(db.String(200), unique=True, nullable=False)
-    phone = db.Column(db.String(20))
-
-    termsCheck = db.Column(db.Boolean(), default=False)
+    termsCheck:bool = db.Column(db.Boolean(), default=False)
     termsDate = db.Column(db.DateTime(timezone=True), server_default=None)
-    termsVersion = db.Column(db.String(20))
+    termsVersion:str  = db.Column(db.String(20))
 
-    idCheck = db.Column(db.Boolean(), default=False)
+    idCheck:bool = db.Column(db.Boolean(), default=False)
     idDate = db.Column(db.DateTime(timezone=True), server_default=None)
+    logbook = db.relationship('Guestlog', backref='Guest')
 
     lastVisit = db.Column(db.DateTime(timezone=True), server_default=None)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
-    def __repr__(self):
-        return f'<Vc Guest - {self.firstName}>'
+@dataclass
+class Guestlog(db.Model):
+    id:int = db.Column(db.Integer, primary_key=True)
+    checked_in_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+
+    userID = db.Column(db.Integer, db.ForeignKey('guest.id'))
 
 
+@dataclass
 class Form(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    formName = db.Column(db.String(100))
-    formDescription = db.Column(db.String(200))
-    formVersion = db.Column(db.String(20))
-    formFile = db.Column(db.String(100))
+    id:int = db.Column(db.Integer, primary_key=True)
+    formName:str  = db.Column(db.String(100))
+    formDescription:str  = db.Column(db.String(200))
+    formVersion:str  = db.Column(db.String(20))
+    formFile:str  = db.Column(db.String(100))
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
-    def __repr__(self):
-        return f'<Form - {self.formName}>'
-    
+@dataclass
 class Event(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    eventName = db.Column(db.String(100))
-    eventDescription = db.Column(db.String(200))
-    eventStartDate = db.Column(db.DateTime(timezone=True))
-    eventEndDate = db.Column(db.DateTime(timezone=True))
-    eventLocation = db.Column(db.String(100))
-    created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    id:int = db.Column(db.Integer, primary_key=True)
+    eventName:str = db.Column(db.String(100))
+    eventDescription:str = db.Column(db.String(200))
+    eventStartDate:int = db.Column(db.Integer, default=int(datetime.datetime.timestamp(datetime.datetime.now())))
+    eventEndDate:int = db.Column(db.Integer, default=int(datetime.datetime.timestamp(datetime.datetime.now())))
+    eventLocation:str = db.Column(db.String(100))
+    #created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
-    def __repr__(self):
-        return f'<Event - {self.eventName}>'
-    
+
+@dataclass
 class Setting(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    settingName = db.Column(db.String(100))
-    settingValue = db.Column(db.String(200))
+    id:int = db.Column(db.Integer, primary_key=True)
+    settingName:str  = db.Column(db.String(100))
+    settingValue:str  = db.Column(db.String(200))
 
-    def __repr__(self):
-        return f'<Setting - {self.settingName}>'
-    
+   
+
+@dataclass
 class Tag(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    tagName = db.Column(db.String(100))
-    tagDescription = db.Column(db.String(200))
+    id:int = db.Column(db.Integer, primary_key=True)
+    tagName:str  = db.Column(db.String(100))
+    tagDescription:str  = db.Column(db.String(200))
 
-    def __repr__(self):
-        return f'<Tag - {self.tagName}>'
+
+
     
 
 

@@ -220,11 +220,11 @@
       if (allowQrCodeInput) {
         clearTimeout(qrCodeInputTimer);
         qrCodeInputTimer = setTimeout(SubmitQrCode, 1000);
-
-
         if (e.key != 'Enter') {
-          qrCodeInput += `${e.key}`; //String.fromCharCode(e.keyCode || e.which);
-          //console.log("Input Value", qrCodeInput)
+          qrCodeInput += `${e.key}`; //String.fromCharCode(e.keyCode || e.which);          
+        }else{
+          clearTimeout(qrCodeInputTimer);
+          SubmitQrCode();
         }
       }
     };
