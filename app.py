@@ -216,6 +216,7 @@ def guestView():
 def generateUUID():
     return jsonify(generate_uuid())
 
+@app.route('/checkIn/')
 @app.route('/checkIn/<uuid>')
 def checkIn(uuid = None):
     guest = Guest.query.filter_by(uuid = uuid).first()

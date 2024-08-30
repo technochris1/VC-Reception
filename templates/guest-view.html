@@ -41,6 +41,8 @@
 
 
 
+
+
   <div class="position-fixed bottom-0 start-50 translate-middle-x p-3" style="z-index: 11">
     <div id="infoToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="toast-header">
@@ -51,6 +53,10 @@
       </div>
     </div>
   </div>
+
+
+  <input type="text" id="code" style="height: 1px;"></input>
+
 
   <!-- Modal -->
   <div class="modal fade " id="registerModal" tabindex="-1" data-bs-backdrop="static"
@@ -93,15 +99,16 @@
             </div>
             <div class="col-12">
               <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="false" name="termsCheck" id="termsCheck" >
+                <input class="form-check-input" type="checkbox" value="false" name="termsCheck" id="termsCheck">
                 <label class="form-check-label" for="termsCheck">
-                  Agree to Terms and Conditions <button class="btn btn-outline-primary" data-bs-target="#tosModal" data-bs-toggle="modal" data-bs-dismiss="modal">Current Terms and Conditions</button>
+                  Agree to Terms and Conditions <button class="btn btn-outline-primary" data-bs-target="#tosModal"
+                    data-bs-toggle="modal" data-bs-dismiss="modal">Current Terms and Conditions</button>
                 </label>
               </div>
             </div>
             <div class="col-12">
               <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="false" name="idCheck" id="idCheck" >
+                <input class="form-check-input" type="checkbox" value="false" name="idCheck" id="idCheck">
                 <label class="form-check-label" for="idCheck">
                   Agree to ID Photocopy
                 </label>
@@ -128,7 +135,8 @@
           Hide this modal and show the first with the button below.
         </div>
         <div class="modal-footer">
-          <button class="btn btn-primary" data-bs-target="#registerModal" data-bs-toggle="modal" data-bs-dismiss="modal">Return</button>
+          <button class="btn btn-primary" data-bs-target="#registerModal" data-bs-toggle="modal"
+            data-bs-dismiss="modal">Return</button>
         </div>
       </div>
     </div>
@@ -169,6 +177,21 @@
 
   <script>
 
+    document.getElementById("code").focus();
+    //document.getElementById("code").
+
+    document.getElementById("code").onkeyup = function (e) {
+
+      if (allowQrCodeInput) {
+
+        if (e.key === 'Enter' || e.key === 'Tab' || e.keyCode === 13) {
+
+          SubmitQrCode();
+        }
+
+      }
+    };
+
     var qrCodeInput = "";
     var allowQrCodeInput = true;
 
@@ -178,16 +201,23 @@
 
 
     function SubmitQrCode() {
+      if (!qrCodeInput) {
+        qrCodeInput = document.getElementById('code').value
+      }
+
+
       if (qrCodeInput) {
         //qrCodeInput = qrCodeInput.replace(/[^a-zA-Z0-9]/g, '');
         //qrCodeInput = qrCodeInput.replace(/[^\w\s]/gi, '');
         //qrCodeInput = qrCodeInput.replace(/[^ -~]+/g, "");
- 
 
 
-        console.log("Fetching", 'http://127.0.0.1:5000/checkIn/' + encodeURI(qrCodeInput))
 
-        fetch('http://127.0.0.1:5000/checkIn/' + encodeURI(qrCodeInput))
+        url = '{{ url_for("checkIn" ) }}' + encodeURI(qrCodeInput)
+        //alert(url)
+
+
+        fetch(url)
           .then(response => {
             if (!response.ok) {
               throw new Error('Network response was not ok');
@@ -195,12 +225,15 @@
             return response.json();
           })
           .then(data => {
+            document.getElementById('code').value = ""
             console.log('Data received:', data);
             myToastElBody.innerText = 'Welcome ' + data
             myToast.show()
           })
           .catch(error => {
+            document.getElementById('code').value = ""
             console.error('There was a problem with the fetch operation:', error);
+
           });
 
 
@@ -218,11 +251,12 @@
 
     document.onkeyup = function (e) {
       if (allowQrCodeInput) {
+
         clearTimeout(qrCodeInputTimer);
         qrCodeInputTimer = setTimeout(SubmitQrCode, 1000);
-        if (e.key != 'Enter') {
-          qrCodeInput += `${e.key}`; //String.fromCharCode(e.keyCode || e.which);          
-        }else{
+        if (e.key === 'Enter') {
+          //   qrCodeInput += `${e.key}`; //String.fromCharCode(e.keyCode || e.which);          
+          // } else {
           clearTimeout(qrCodeInputTimer);
           SubmitQrCode();
         }
@@ -238,6 +272,8 @@
       allowQrCodeInput = true; // Allow QrCodeInput
       qrCodeInput = "";
     })
+
+
 
 
 
