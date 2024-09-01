@@ -49,12 +49,12 @@
                         <!-- <li>
                             <a href="/events" class="nav-link px-0 align-middle ">
                                 <i class="fs-4 bi-table "></i> <span class="ms-1 d-none d-sm-inline">Events</span></a>
-                        </li> -->
+                        </li> 
                         <li>
                             <a href="/forms" class="nav-link px-0 align-middle">
                                 <i class="fs-4 bi bi-info-square"></i> <span
                                     class="ms-1 d-none d-sm-inline">Forms</span></a>
-                        </li>
+                        </li> -->
                     </ul>
                     <hr>
 
@@ -162,9 +162,9 @@
                                 <input type="text" class="form-control" placeholder="UUID" name="uuid" id="uuid"
                                     aria-label="Example text with button addon" aria-describedby="button-addon1"
                                     readonly>
-                                <button class="btn btn-outline-secondary" type="button" id="showQrCode"
+                                <!-- <button class="btn btn-outline-secondary" type="button" id="showQrCode"
                                     data-bs-toggle="modal" data-bs-target="#qrModal"><i
-                                        class="bi bi-qr-code"></i></button>
+                                        class="bi bi-qr-code"></i></button> -->
 
                             </div>
                         </div>
@@ -331,7 +331,7 @@
                             console.log('Data received:', data);
                             document.getElementById('dbID').value = data.id
                             document.getElementById('uuid').value = data.uuid
-                            document.getElementById('showQrCode').dataset.bsQr = data.uuid
+                            //document.getElementById('showQrCode').dataset.bsQr = data.uuid
                             document.getElementById('fetUsername').value = data.fetUsername
                             document.getElementById('firstName').value = data.firstName
                             document.getElementById('lastName').value = data.lastName

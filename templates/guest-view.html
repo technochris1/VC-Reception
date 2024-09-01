@@ -1,12 +1,13 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bootstrap demo</title>
+  <title>VC - Guest Check-In</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 </head>
 
 <style>
@@ -16,15 +17,32 @@
     overflow-x: hidden;
     margin: 0px;
   }
+
+  *:focus {
+    outline: none;
+  }
+
+
+  input,
+  select,
+  textarea {
+    color: #00000000;
+  }
 </style>
 
 <body>
-
-
+  <div class="position-absolute top-0 end-0 m-4">
+    <div class="btn-group m-1" role="group" aria-label="Basic example">
+      <button type="button" class="btn btn-outline-dark btn-sm" id="themeSwitch"><i
+          class="bi bi-brightness-high-fill"></i></button>
+      <button type="button" class="btn btn-outline-dark btn-sm" id="fullScreenToggle"><i
+          class="bi bi-arrows-fullscreen text-light"></i></button>
+    </div>
+  </div>
 
   <div class="row h-100 p-2 align-items-center">
     <div class="col text-center align-middle">
-      <img src="../static/logo-placeholder.jpg" class="img-fluid" alt="...">
+      <img src="../static/VC_logo_dark.png" id="image" class="img-fluid" alt="..." style="width: 40vw;">
     </div>
     <!-- <div class="col-auto align-items-stretch m-2" >
      
@@ -33,7 +51,7 @@
     </div> -->
     <div class="col text-center align-middle">
       <h1>Please Scan your QR Code</h1>
-      <p>Or</p>
+      <h4>Or</h4>
       <button type="button" class="btn btn-danger btn-lg" data-bs-toggle="modal" data-bs-target="#registerModal">Sign
         Up</button>
     </div>
@@ -55,7 +73,11 @@
   </div>
 
 
-  <input type="text" id="code" style="height: 1px;"></input>
+  <div class="position-absolute top-100 start-50 translate-middle"><input style="background-color: transparent;
+    border: 0px solid;" type="text" inputmode="none" id="code"></input></div>
+
+
+
 
 
   <!-- Modal -->
@@ -177,10 +199,85 @@
 
   <script>
 
-    document.getElementById("code").focus();
+    var themeSwitch = document.getElementById('themeSwitch');
+    var fullScreenToggle = document.getElementById('fullScreenToggle');
+    var image = document.getElementById('image');
+    var code = document.getElementById('code');
+
+    focusOnCodeTimer = setTimeout(focusOnCode, 1000);
+
+    fullScreenToggle.addEventListener('click', toggleFullScreen);
+
+
+
+
+
+    if (document.documentElement.getAttribute('data-bs-theme') == 'dark') {
+      themeSwitch.innerHTML = '<i class="bi bi-brightness-high-fill text-warning"></i>'
+    }
+    else {
+      themeSwitch.innerHTML = '<i class="bi bi-moon-fill text-light-emphasis"></i>'
+    }
+
+
+    themeSwitch.addEventListener('click', () => {
+      if (document.documentElement.getAttribute('data-bs-theme') == 'dark') {
+        document.documentElement.setAttribute('data-bs-theme', 'light')
+        themeSwitch.classList.replace('btn-outline-dark', 'btn-outline-light')
+        fullScreenToggle.classList.replace('btn-outline-dark', 'btn-outline-light')
+        themeSwitch.innerHTML = '<i class="bi bi-moon-fill text-light-emphasis"></i>'
+        fullScreenToggle.innerHTML = '<i class="bi bi-arrows-fullscreen text-dark"></i>'
+        image.src = '../static/VC_logo_light.png'
+      }
+      else {
+        document.documentElement.setAttribute('data-bs-theme', 'dark')
+        themeSwitch.classList.replace('btn-outline-light', 'btn-outline-dark')
+        fullScreenToggle.classList.replace('btn-outline-light', 'btn-outline-dark')
+        themeSwitch.innerHTML = '<i class="bi bi-brightness-high-fill text-warning"></i>'
+        fullScreenToggle.innerHTML = '<i class="bi bi-arrows-fullscreen text-light"></i>'
+        image.src = '../static/VC_logo_dark.png'
+      }
+      focusOnCode();
+    })
+
+
+    function focusOnCode() {
+      //code.focus();
+      if (allowQrCodeInput) {
+        code.readOnly = true;
+        code.focus();
+        setTimeout(function () { code.readOnly = false; }, 50);
+      }
+    }
+
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement &&    // alternative standard method
+        !document.mozFullScreenElement && !document.webkitFullscreenElement) {  // current working methods
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen();
+        } else if (document.documentElement.mozRequestFullScreen) {
+          document.documentElement.mozRequestFullScreen();
+        } else if (document.documentElement.webkitRequestFullscreen) {
+          document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+        }
+      } else {
+        if (document.cancelFullScreen) {
+          document.cancelFullScreen();
+        } else if (document.mozCancelFullScreen) {
+          document.mozCancelFullScreen();
+        } else if (document.webkitCancelFullScreen) {
+          document.webkitCancelFullScreen();
+        }
+      }
+      focusOnCode();
+
+    }
+
+    //code.focus();
     //document.getElementById("code").
 
-    document.getElementById("code").onkeyup = function (e) {
+    code.onkeyup = function (e) {
 
       if (allowQrCodeInput) {
 
@@ -201,6 +298,9 @@
 
 
     function SubmitQrCode() {
+
+      console.log('Submitting QR Code:', qrCodeInput);
+
       if (!qrCodeInput) {
         qrCodeInput = document.getElementById('code').value
       }
@@ -247,6 +347,10 @@
 
     var qrCodeInputTimer = null;
 
+    document.ontouchend = function (e) {
+      //e.preventDefault();
+      focusOnCode();
+    };
 
 
     document.onkeyup = function (e) {
@@ -258,7 +362,7 @@
           //   qrCodeInput += `${e.key}`; //String.fromCharCode(e.keyCode || e.which);          
           // } else {
           clearTimeout(qrCodeInputTimer);
-          SubmitQrCode();
+          //SubmitQrCode();
         }
       }
     };

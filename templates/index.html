@@ -44,12 +44,12 @@
                         <!-- <li>
                             <a href="/events" class="nav-link px-0 align-middle ">
                                 <i class="fs-4 bi-table "></i> <span class="ms-1 d-none d-sm-inline">Events</span></a>
-                        </li> -->
+                        </li> 
                         <li>
                             <a href="/forms" class="nav-link px-0 align-middle">
                                 <i class="fs-4 bi bi-info-square"></i> <span
                                     class="ms-1 d-none d-sm-inline">Forms</span></a>
-                        </li>
+                        </li> -->
                     </ul>
                     <hr>
 
@@ -59,7 +59,35 @@
                 <!-- Content area -->
                 <div class="row row-cols-1 row-cols-md-2 g-4">
                     <div class="col">
-                        <div class="card text-bg-primary " >
+                        <div class="card text-bg-primary ">
+                            <div class="card-body">
+                                <h1 class="card-title text-center">{{guests_checked_in_count}}</h1>
+                                <p class="card-text text-center">Guests Currently Checked In</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- <div class="col">
+                        <div class="card text-bg-danger  ">
+                            <div class="card-body">
+                                <h1 class="card-title text-center">
+                                    {{guests_top_5}}
+
+                                    {% for guest, logs in guests_top_5 %}                                    
+                                        {% if guest.fetUsername  %}
+                                            @({{guest.fetUsername |e}}) {{guest.firstName |e}} {{guest.lastName |e}}    {{logs}}   
+                                        {% else %}
+                                            {{guest.firstName |e}} {{guest.lastName |e}}   {{logs}} 
+                                        {% endif %}                                                                     
+                                    {% endfor %}
+                                </h1>
+                                <p class="card-text text-center">Top 5 Guests</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <div class="card text-bg-success  ">
                             <div class="card-body">
                                 <h1 class="card-title text-center">10</h1>
                                 <p class="card-text text-center">Guests Currently Checked In</p>
@@ -67,34 +95,16 @@
                         </div>
                     </div>
 
-                    <div class="col">
-                        <div class="card text-bg-danger  " >
-                            <div class="card-body">
-                                <h1 class="card-title text-center">UserX123</h1>
-                                <p class="card-text text-center">Most Frequent Guest</p>
-                            </div>
-                        </div>
-                    </div>
 
                     <div class="col">
-                        <div class="card text-bg-success  " >
+                        <div class="card text-bg-warning  ">
                             <div class="card-body">
                                 <h1 class="card-title text-center">10</h1>
                                 <p class="card-text text-center">Guests Currently Checked In</p>
                             </div>
                         </div>
                     </div>
-
-
-                    <div class="col">
-                        <div class="card text-bg-warning  " >
-                            <div class="card-body">
-                                <h1 class="card-title text-center">10</h1>
-                                <p class="card-text text-center">Guests Currently Checked In</p>
-                            </div>
-                        </div>
-                    </div>
-
+ -->
 
                 </div>
 

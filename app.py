@@ -1,3 +1,4 @@
+from io import BytesIO
 import os
 import uuid
 import json
@@ -12,8 +13,8 @@ from flask_migrate import Migrate
 from flask_sqlalchemy.model import Model
 
 from flask_moment import Moment
-
 from flask_mail import Mail, Message
+import qrcode
 
 from sqlalchemy.sql import func
 from sqlalchemy.orm import DeclarativeBase
@@ -56,7 +57,18 @@ def utc_to_local(utc_dt):
 
 @app.route("/")
 def dashboard():
-    return render_template('index.html')
+
+    current_time = datetime.datetime.now(datetime.UTC)
+
+    last_24_hours = current_time - datetime.timedelta(hours=24)
+
+    return render_template('index.html', guests_checked_in_count=Guest.query.filter(Guest.lastVisit > last_24_hours ).count(),
+                           guests_total_count=Guest.query.count(),
+                           guests_checked_in=Guest.query.filter(Guest.lastVisit > last_24_hours ).all(),
+                           quests_top_5=db.session.query(Guest, func.count(Guestlog.id)).join(Guestlog).group_by(Guest.id).order_by(func.count(Guestlog.id).desc()).limit(5).all(),
+                           #guests_top_5=db.session.query(Guest, func.count(Guestlog)).outerjoin(Guestlog, Guest.id == Guestlog.userID).group_by(Guest.id).order_by(func.count(Guestlog.id).desc()).limit(5).all(),
+                           
+                           )
 
 
 @app.route('/guest/')
@@ -85,7 +97,9 @@ def guests():
         if (rowID):
             print("Updating Row")
             guest = Guest.query.filter_by(id=rowID).first()
-            guest.uuid=request.values.get('uuid')
+            if guest is None:
+                return abort(404)
+            
             guest.fetUsername=request.values.get('fetUsername')
             guest.firstName=request.values.get('firstName')
             guest.lastName=request.values.get('lastName')
@@ -94,7 +108,18 @@ def guests():
             guest.termsCheck=termsCheckValue
             guest.idCheck=idCheckValue
 
+            if(guest.uuid != request.values.get('uuid')):
+                guest.uuid=request.values.get('uuid')
+                #send email for new QR code
+                sendQRCodeEmail([guest.email], guest.uuid)
+
+
+            
+
             db.session.commit()
+
+
+
 
         else:
             print("Adding Row")
@@ -149,7 +174,7 @@ def events():
 
 #https://flask-mail.readthedocs.io/en/latest/#
 @app.route('/sendEmail/')
-def sendEmail():
+def sendEmailRoute():
     msg = Message(
         subject="Hello",
         sender="from@example.com",
@@ -157,6 +182,54 @@ def sendEmail():
     )
     mail.send(msg)
 
+
+
+def sendQRCodeEmail(recipients, uuid):
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(uuid)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="black", back_color="white")
+    
+    print("IMG",img)
+
+    temp = BytesIO()
+    temp.name = "QR.png"
+    img.save(temp)
+    temp.seek(0)
+
+    #qr_image = {'photo': temp.getvalue()}
+    #print("IMG",qr_image['photo'])
+    
+    return sendEmail(recipients, "VC Access - QR Code", "Please find your VC QR code attached", temp.getvalue())
+
+
+def sendEmail(recipients, subject, message, attachment=None):
+    mail = Mail(app)
+
+    print("Attachment",attachment)
+
+    try:
+        msg = Message(subject,
+                    sender=("VC Front Desk", "VC-Desk@whoknows.com"),
+                    recipients=recipients)
+        if attachment:
+            try:
+                
+                    msg.attach("registration-qr-code.png", "image/png", attachment)
+                    #msg.body = render_template('email.html', message=message, image="cid:qr_image")
+                    msg.body = message
+            except Exception as e:
+                print("send_mail.attachment exception: {}".format(e))
+        mail.send(msg)
+    except:
+        print("send_mail exception:\n{}".format(traceback.format_exc()))
+    return
 
 
 # Guest VIEWS
@@ -198,6 +271,8 @@ def guestView():
 
             db.session.add(newGuest)
             db.session.commit()
+
+            sendQRCodeEmail([newGuest.email], newGuest.uuid)
 
 
         
