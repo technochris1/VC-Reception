@@ -1,5 +1,7 @@
 from io import BytesIO
 import os
+from os import environ as env
+from dotenv import load_dotenv
 import uuid
 import json
 import datetime
@@ -32,17 +34,17 @@ app = Flask(__name__)
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'database.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USE_SSL'] = False
-app.config['MAIL_USERNAME'] = 'technochris1@gmail.com'
-app.config['MAIL_PASSWORD'] = 'jams vumd ylam chfn'
-app.config['MAIL_DEFAULT_SENDER'] = 'technochris1@gmail.com'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'database.db') # env['SQLALCHEMY_DATABASE_URI']
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = env['SQLALCHEMY_TRACK_MODIFICATIONS']
+app.config['MAIL_SERVER'] = env['MAIL_SERVER']
+app.config['MAIL_PORT'] = env['MAIL_PORT']
+app.config['MAIL_USE_TLS'] = env['MAIL_USE_TLS']
+app.config['MAIL_USE_SSL'] = env['MAIL_USE_SSL']
+app.config['MAIL_USERNAME'] = env['MAIL_USERNAME']
+app.config['MAIL_PASSWORD'] = env['MAIL_PASSWORD']
+app.config['MAIL_DEFAULT_SENDER'] = env['MAIL_DEFAULT_SENDER']
 
 #db.init_app(app)
 db = SQLAlchemy(app)
@@ -397,5 +399,5 @@ with app.app_context():
 
 
 if __name__ == "__main__":
-    #updater = Updater(__doc__.strip())
+    load_dotenv()
     app.run(debug=True, host='0.0.0.0' )
