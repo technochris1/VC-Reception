@@ -1,4 +1,5 @@
 import os
+import sys
 import requests
 import logging
 from diff_parser import Diff
@@ -6,8 +7,19 @@ from os import environ as env
 from dotenv import load_dotenv
 
 
-#logging.basicConfig(filename="./updater.log", level=logging.INFO)
+def reset_logging():
+    loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
+    loggers.append(logging.getLogger())
+    for logger in loggers:
+        handlers = logger.handlers[:]
+        for handler in handlers:
+            logger.removeHandler(handler)
+            handler.close()
+        logger.setLevel(logging.NOTSET)
+        logger.propagate = True
 
+reset_logging()
+#logging.basicConfig()
 
 class Updater:
     def __init__(self) -> None:
@@ -15,18 +27,15 @@ class Updater:
         load_dotenv()
 
 
-        #logging.info("Checking for Updates.")
+        logging.info("Checking for Updates.")
         repo = env['SERVER_REPO']
         version = env['APP_VERSION']
 
         GITHUB_REPO_URL=f"https://github.com/{repo.strip()}" 
         VERSION=version.strip()
-
         print(f"Checking for updates in {repo}, Current version {VERSION}")
 
         LATEST_RELEASES_URL=f"{GITHUB_REPO_URL}/releases/latest"
-
-
         LATEST_VERSION = None
 
         try:
@@ -43,7 +52,7 @@ class Updater:
 
             if UPTODATE:
                 print("No updates found.")
-                return
+                pass
             else:
                 print(f"Updating from {VERSION} to {LATEST_VERSION}")
                 
@@ -55,7 +64,7 @@ class Updater:
 
             if(resp.content == b''):
                 print("No differences found.")
-                return
+                pass
             else:
 
                 diff = Diff(resp.content.decode())

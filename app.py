@@ -1,11 +1,13 @@
 from io import BytesIO
 import os
+import sys
 from os import environ as env
 from dotenv import load_dotenv
 import uuid
 import json
 import datetime
 import re
+import logging
 
 from dataclasses import dataclass
 
@@ -53,6 +55,20 @@ moment = Moment(app)
 
 mail = Mail(app)
 
+
+def reset_logging():
+    loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
+    loggers.append(logging.getLogger())
+    for logger in loggers:
+        handlers = logger.handlers[:]
+        for handler in handlers:
+            logger.removeHandler(handler)
+            handler.close()
+        logger.setLevel(logging.NOTSET)
+        logger.propagate = True
+
+reset_logging()
+#logging.basicConfig()
 
 @app.template_filter('utc_to_local')
 def utc_to_local(utc_dt):
