@@ -397,5 +397,5 @@ with app.app_context():
 
 
 if __name__ == "__main__":
-    updater = Updater(__doc__.strip())
+    #updater = Updater(__doc__.strip())
     app.run(debug=True, host='0.0.0.0' )
