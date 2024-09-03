@@ -1,6 +1,6 @@
 """
 technochris1/VC-Reception
-1.0.0
+V1.1
 """
 
 from auto_update import Updater
