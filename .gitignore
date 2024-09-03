@@ -1,3 +1,4 @@
 
 *.db
 updater.log
+.env
