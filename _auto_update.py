@@ -1,4 +1,4 @@
 """
 technochris1/VC-Reception
-{release}
+1.0.0
 """
