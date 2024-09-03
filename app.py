@@ -27,6 +27,8 @@ from auto_update import Updater
 class Base(DeclarativeBase):
   pass
 
+load_dotenv()
+
 db = SQLAlchemy(model_class=Base)
 
 # create the app
@@ -397,5 +399,5 @@ with app.app_context():
 
 
 if __name__ == "__main__":
-    load_dotenv()
+    
     app.run(debug=True, host='0.0.0.0' )

@@ -88,7 +88,7 @@ class Updater:
 
         
         print("START APP")
-        #os.system('python app.py')
+        os.system('python app.py')
 
 
 
