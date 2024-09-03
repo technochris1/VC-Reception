@@ -19,6 +19,8 @@ import qrcode
 from sqlalchemy.sql import func
 from sqlalchemy.orm import DeclarativeBase
 
+from auto_update import Updater
+
 
 class Base(DeclarativeBase):
   pass
@@ -395,4 +397,5 @@ with app.app_context():
 
 
 if __name__ == "__main__":
+    updater = Updater(__doc__.strip())
     app.run(debug=True, host='0.0.0.0' )
