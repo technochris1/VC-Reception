@@ -34,7 +34,15 @@ app = Flask(__name__)
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'database.db') # env['SQLALCHEMY_DATABASE_URI']
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = env['SQLALCHEMY_TRACK_MODIFICATIONS']
+app.config['MAIL_SERVER'] = env['MAIL_SERVER']
+app.config['MAIL_PORT'] = env['MAIL_PORT']
+app.config['MAIL_USE_TLS'] = env['MAIL_USE_TLS']
+app.config['MAIL_USE_SSL'] = env['MAIL_USE_SSL']
+app.config['MAIL_USERNAME'] = env['MAIL_USERNAME']
+app.config['MAIL_PASSWORD'] = env['MAIL_PASSWORD']
+app.config['MAIL_DEFAULT_SENDER'] = env['MAIL_DEFAULT_SENDER']
 
 #db.init_app(app)
 db = SQLAlchemy(app)
