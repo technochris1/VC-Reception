@@ -73,8 +73,11 @@
   </div>
 
 
-  <div class="position-absolute top-100 start-50 translate-middle"><input style="background-color: transparent;
-    border: 0px solid;" type="text" inputmode="none" id="code"></input></div>
+  <div class="position-absolute bottom-0 start-50 translate-middle-x">
+    <div class="form-group">
+      <input type="text" class="form-control" inputmode="none" id="code" placeholder="QR CODE ENTRY"></input>
+    </div>    
+  </div>
 
 
 
@@ -351,6 +354,11 @@
       //e.preventDefault();
       focusOnCode();
     };
+    document.onclick = function (e) {
+      //e.preventDefault();
+      focusOnCode();
+    };
+
 
 
     document.onkeyup = function (e) {
@@ -375,6 +383,8 @@
     myModalEl.addEventListener('hidden.bs.modal', function (event) {
       allowQrCodeInput = true; // Allow QrCodeInput
       qrCodeInput = "";
+      setTimeout(focusOnCode, 1000);
+      //focusOnCode();
     })
 
 
