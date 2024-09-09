@@ -1,264 +1,280 @@
-<!doctype html>
-<html lang="en">
+{% extends 'layout.html' %}
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bootstrap demo</title>
+{% block navbar %}
+<div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
+    <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+        <span class="fs-5 d-none d-sm-inline">Menu</span>
+    </a>
+    <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
+        <li class="nav-item">
+            <a href="/" class="nav-link align-middle px-0">
+                <i class="fs-4 bi-speedometer2"></i> <span class="ms-1 d-none d-sm-inline">Dashboard</span>
+            </a>
+        </li>
+        <li>
+            <a href="/guests" class="nav-link px-0 align-middle text-danger">
+                <i class="fs-4 bi-people"></i> <span class="ms-1 d-none d-sm-inline">Guests</span>
+            </a>
+        </li>
+        <li>
+            <a href="/logbook" class="nav-link px-0 align-middle ">
+                <i class="fs-4 bi-table "></i> <span class="ms-1 d-none d-sm-inline">Logbook</span></a>
+        </li>
+    </ul>
+    <hr>
+</div>
+{% endblock navbar %}
 
-    {{ moment.include_moment() }}
+{% block content %}
+<div>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registerModal"
+        data-bs-mode="new">
+        Add Guest Manually
+    </button>
+</div>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<table data-toggle="table">
+    <thead>
+        <tr>
+            <th data-sortable="true" scope="col">Handle</th>
+            <th data-sortable="true" scope="col">Name</th>
+            <th data-sortable="true" scope="col">Roles</th>
+            <th data-sortable="true" scope="col">Last Visit</th>
+            <th data-align="right" scope="col"></th>
+
+        </tr>
+    </thead>
+    <tbody>
+        <!-- <tr>
+            <th scope="row">LoyalSub</th>
+            <td>Mark</td>
+            <td>Otto</td>
+            <td>x days ago</td>
+            <td><button type="button" class="btn btn-sm btn-danger">Edit</button> <button type="button"
+                    class="btn btn-sm btn-danger">Delete</button></td>
+        </tr>
+        <tr>
+            <th scope="row">Kari</th>
+            <td>Jacob</td>
+            <td>Thornton</td>
+            <td>x days ago</td>
+            <td><button type="button" class="btn btn-sm btn-danger">Edit</button> <button type="button"
+                    class="btn btn-sm btn-danger">Delete</button></td>
+        </tr>
+        <tr>
+            <th scope="row">Tia</th>
+            <td>Larry the Bird</td>
+            <td>@twitter</td>
+            <td>x days ago</td>
+            <td><button type="button" class="btn btn-sm btn-danger">Edit</button> <button type="button"
+                    class="btn btn-sm btn-danger">Delete</button></td>
+        </tr> -->
+
+        {% for guest in guests %}
+        <tr>
+            <th scope="row">{{guest.fetUsername}}</th>
+            <th>{{guest.name}}</th>
+            {% if guest.roles %}
+            <td>{{guest.roles}}</td>
+            {% else %}
+            <td>None Assigned</td>
+            {% endif %}
+            
+            
+            {% if guest.lastVisit %}
+            <td>{{ moment(guest.lastVisit).fromNow() }}</td>
+            {% else %}
+            <td>Never</td>
+            {% endif %}
+            <td>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                    data-bs-target="#registerModal" data-bs-mode="edit" data-bs-uuid="{{guest.id}}"><i
+                        class="bi bi-pencil-square"></i></button>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                    data-bs-target="#qrModal" data-bs-qr="{{guest.uuid}}"><i class="bi bi-qr-code"></i></button>
+                <!-- <button type="button" class="btn btn-sm btn-danger">Edit</button>
+                <button type="button" class="btn btn-sm btn-danger">Delete</button> -->
+            </td>
+        </tr>
+        {% endfor %}
+
+    </tbody>
+</table>
 
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-table@1.23.2/dist/bootstrap-table.min.css">
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.js"></script>
-</head>
-
-<body>
-    <div class="container-fluid">
 
 
-        <div class="row flex-nowrap">
-            <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
-                <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
-                    <a href="/"
-                        class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-                        <span class="fs-5 d-none d-sm-inline">Menu</span>
-                    </a>
-                    <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start"
-                        id="menu">
-                        <li class="nav-item">
-                            <a href="/" class="nav-link align-middle px-0">
-                                <i class="fs-4 bi-speedometer2"></i> <span
-                                    class="ms-1 d-none d-sm-inline">Dashboard</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/guests" class="nav-link px-0 align-middle text-danger">
-                                <i class="fs-4 bi-people"></i> <span class="ms-1 d-none d-sm-inline">Guests</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/logbook" class="nav-link px-0 align-middle ">
-                                <i class="fs-4 bi-table "></i> <span class="ms-1 d-none d-sm-inline">Logbook</span></a>
-                        </li>
-                        <!-- <li>
-                            <a href="/events" class="nav-link px-0 align-middle ">
-                                <i class="fs-4 bi-table "></i> <span class="ms-1 d-none d-sm-inline">Events</span></a>
-                        </li> 
-                        <li>
-                            <a href="/forms" class="nav-link px-0 align-middle">
-                                <i class="fs-4 bi bi-info-square"></i> <span
-                                    class="ms-1 d-none d-sm-inline">Forms</span></a>
-                        </li> -->
-                    </ul>
-                    <hr>
-
-                </div>
+<!-- Modals -->
+<div class="modal fade " id="registerModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="registerModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">New Guest Registration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="col py-3">
-                <!-- Content area -->
-                <div>
-                    <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                        data-bs-target="#registerModal" data-bs-mode="new">
-                        Add Guest Manually
-                    </button>
-                </div>
+            <div class="modal-body">
 
-                <table data-toggle="table">
-                    <thead>
-                        <tr>
-                            <th data-sortable="true" scope="col">Handle</th>
-                            <th data-sortable="true" scope="col">First Name</th>
-                            <th data-sortable="true" scope="col">Last Name</th>
-                            <th data-sortable="true" scope="col">Last Visit</th>
-                            <th data-align="right" scope="col"></th>
-
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- <tr>
-                            <th scope="row">LoyalSub</th>
-                            <td>Mark</td>
-                            <td>Otto</td>
-                            <td>x days ago</td>
-                            <td><button type="button" class="btn btn-sm btn-danger">Edit</button> <button type="button"
-                                    class="btn btn-sm btn-danger">Delete</button></td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Kari</th>
-                            <td>Jacob</td>
-                            <td>Thornton</td>
-                            <td>x days ago</td>
-                            <td><button type="button" class="btn btn-sm btn-danger">Edit</button> <button type="button"
-                                    class="btn btn-sm btn-danger">Delete</button></td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Tia</th>
-                            <td>Larry the Bird</td>
-                            <td>@twitter</td>
-                            <td>x days ago</td>
-                            <td><button type="button" class="btn btn-sm btn-danger">Edit</button> <button type="button"
-                                    class="btn btn-sm btn-danger">Delete</button></td>
-                        </tr> -->
-
-                        {% for guest in guests %}
-                        <tr>
-                            <th scope="row">{{guest.fetUsername}}</th>
-                            <th>{{guest.firstName}}</th>
-                            <td>{{guest.lastName}}</td>
-                            <td>{{ moment(guest.lastVisit).fromNow() }}</td>
-                            <td>
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
-                                    data-bs-target="#registerModal" data-bs-mode="edit" data-bs-uuid="{{guest.uuid}}"><i
-                                        class="bi bi-pencil-square"></i></button>
-                                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
-                                    data-bs-target="#qrModal" data-bs-qr="{{guest.uuid}}"><i
-                                        class="bi bi-qr-code"></i></button>
-                                <!-- <button type="button" class="btn btn-sm btn-danger">Edit</button>
-                                <button type="button" class="btn btn-sm btn-danger">Delete</button> -->
-                            </td>
-                        </tr>
-                        {% endfor %}
-
-                    </tbody>
-                </table>
+                <form class="row g-3" method="post">
 
 
+                    <div class="col-md-6">
+                        <label for="dbID" class="form-label">Database ID</label>
+                        <input type="text" class="form-control" name="dbID" id="dbID" readonly>
+                    </div>
 
-            </div>
-        </div>
-    </div>
-
-
-    <!-- Modals -->
-    <div class="modal fade " id="registerModal" tabindex="-1" data-bs-backdrop="static"
-        aria-labelledby="registerModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">New Guest Registration</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-
-                    <form class="row g-3" method="post">
-
-
-                        <div class="col-md-6">
-                            <label for="dbID" class="form-label">Database ID</label>
-                            <input type="text" class="form-control" name="dbID" id="dbID" readonly>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="uuid" class="form-label">Unique QR Code</label>
-                            <div class="input-group mb-3">
-                                <button class="btn btn-outline-secondary" type="button" id="refreshQrCode"><i
-                                        class="bi bi-arrow-clockwise"></i></button>
-                                <input type="text" class="form-control" placeholder="UUID" name="uuid" id="uuid"
-                                    aria-label="Example text with button addon" aria-describedby="button-addon1"
-                                    readonly>
-                                <!-- <button class="btn btn-outline-secondary" type="button" id="showQrCode"
+                    <div class="col-md-6">
+                        <label for="uuid" class="form-label">Unique QR Code</label>
+                        <div class="input-group mb-3">
+                            <button class="btn btn-outline-secondary" type="button" id="refreshQrCode"><i
+                                    class="bi bi-arrow-clockwise"></i></button>
+                            <input type="text" class="form-control" placeholder="UUID" name="uuid" id="uuid"
+                                aria-label="Example text with button addon" aria-describedby="button-addon1" readonly>
+                            <!-- <button class="btn btn-outline-secondary" type="button" id="showQrCode"
                                     data-bs-toggle="modal" data-bs-target="#qrModal"><i
                                         class="bi bi-qr-code"></i></button> -->
 
-                            </div>
                         </div>
-
-
-                        <div class="col-md-6">
-                            <label for="fetUsername" class="form-label">Fet/Fetlife Username</label>
-                            <div class="input-group">
-                                <span class="input-group-text" id="fetUsernamePrepend">@</span>
-                                <input type="text" class="form-control" name="fetUsername" id="fetUsername">
-                            </div>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="firstName" class="form-label">First name</label>
-                            <input type="text" class="form-control" name="firstName" id="firstName" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="lastName" class="form-label">Last name</label>
-                            <input type="text" class="form-control" name="lastName" id="lastName" required>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="emailAddress" class="form-label">Email address</label>
-                            <input type="email" class="form-control" name="emailAddress" id="emailAddress"
-                                placeholder="name@example.com" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="phoneNumber" class="form-label">Phone #</label>
-                            <input type="tel" class="form-control" name="phoneNumber" id="phoneNumber"
-                                placeholder="301-000-0000">
-                        </div>
-                        <div class="col-12">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="False" name="termsCheck"
-                                    id="termsCheck">
-                                <label class="form-check-label" for="termsCheck">
-                                    Agree to Terms and Conditions
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="False" name="idCheck"
-                                    id="idCheck">
-                                <label class="form-check-label" for="idCheck">
-                                    Agree to ID Photocopy
-                                </label>
-                            </div>
-                        </div>
-                        <div class="col-12">
-                            <button class="btn btn-primary" type="submit">Submit form</button>
-                        </div>
-                    </form>
-
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-    <div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="exampleModalLabel">QR Code</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body ">
-                    <div class="vstack gap-3 ">
-                        <div class="d-flex justify-content-center">
-                            <div id="qrcode" class=" text-center justify-content-center"></div>
-                        </div>
-                        <p id="qrcodeRaw" class="text-center"></p>
                     </div>
 
-                </div>
+
+                    <div class="col-md-6">
+                        <label for="fetUsername" class="form-label">Fet/Fetlife Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text" id="fetUsernamePrepend">@</span>
+                            <input type="text" class="form-control" name="fetUsername" id="fetUsername">
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" name="name" id="name" required>
+                    </div>
+                    
+
+                    <div class="col-md-6">
+                        <label for="emailAddress" class="form-label">Email address</label>
+                        <input type="email" class="form-control" name="emailAddress" id="emailAddress"
+                            placeholder="name@example.com" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="phoneNumber" class="form-label">Phone #</label>
+                        <input type="tel" class="form-control" name="phoneNumber" id="phoneNumber"
+                            placeholder="301-000-0000">
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="False" name="termsCheck"
+                                id="termsCheck" >
+                            <label class="form-check-label" for="termsCheck">
+                                Agree to Terms and Conditions
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <button class="btn btn-primary" type="submit">Submit form</button>
+                    </div>
+                </form>
+
             </div>
         </div>
     </div>
+</div>
+
+
+<div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">QR Code</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body ">
+                <div class="vstack gap-3 ">
+                    <div class="d-flex justify-content-center">
+                        <div id="qrcode" class=" text-center justify-content-center"></div>
+                    </div>
+                    <p id="qrcodeRaw" class="text-center"></p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
 
 
 
-    <script>
+<script>
 
 
-        const generateUuidURL = '{{ url_for("generateUUID") }}'
+    const generateUuidURL = '{{ url_for("generateUUID") }}'
 
 
-        var registerModal = document.getElementById('registerModal')
-        var qrCodeModal = document.getElementById('qrModal')
+    var registerModal = document.getElementById('registerModal')
+    var qrCodeModal = document.getElementById('qrModal')
 
-        function generateUUID() {
-            fetch(generateUuidURL)
+    function generateUUID() {
+        fetch(generateUuidURL)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Data received:', data);
+                document.getElementById('uuid').value = data
+                document.getElementById('showQrCode').dataset.bsQr = data
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+    }
+
+
+    var qrcode = new QRCode(document.getElementById("qrcode"), {
+        text: "http://jindo.dev.naver.com/collie",
+        width: 256,
+        height: 256,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+
+    qrCodeModal.addEventListener('show.bs.modal', function (event) {
+        // Button that triggered the modal
+        var button = event.relatedTarget
+        // Extract info from data-bs-* attributes
+        var data = button.getAttribute('data-bs-qr')
+
+        if (data != null) {
+            document.getElementById("qrcodeRaw").innerHTML = data;
+            qrcode.clear(); // clear the code.
+            qrcode.makeCode(data); // make another code.
+        }
+    })
+
+
+    registerModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget
+        // Extract info from data-bs-* attributes
+        var data = button.getAttribute('data-bs-uuid')
+        var mode = button.getAttribute('data-bs-mode')
+        console.log('Mode:', mode);
+        if (data == null) {
+            generateUUID()
+            document.getElementById('fetUsername').value = ""
+            document.getElementById('firstName').value = ""
+            document.getElementById('lastName').value = ""
+            document.getElementById('emailAddress').value = ""
+            document.getElementById('phoneNumber').value = ""
+            document.getElementById('termsCheck').checked = false
+            document.getElementById('idCheck').checked = false
+        } else {
+            console.log('Data:', data);
+            const url = '{{ url_for("guest")}}' + data
+            console.log('URL:', url);
+            fetch(url)
                 .then(response => {
                     if (!response.ok) {
                         throw new Error('Network response was not ok');
@@ -266,9 +282,22 @@
                     return response.json();
                 })
                 .then(data => {
-                    console.log('Data received:', data);
-                    document.getElementById('uuid').value = data
-                    document.getElementById('showQrCode').dataset.bsQr = data
+
+                    if (data != null) {
+                        console.log('Data received:', data);
+                        document.getElementById('dbID').value = data.id
+                        document.getElementById('uuid').value = data.uuid
+                        //document.getElementById('showQrCode').dataset.bsQr = data.uuid
+                        document.getElementById('fetUsername').value = data.fetUsername
+                        document.getElementById('firstName').value = data.firstName
+                        document.getElementById('lastName').value = data.lastName
+                        document.getElementById('emailAddress').value = data.email
+                        document.getElementById('phoneNumber').value = data.phone
+                        document.getElementById('termsCheck').checked = data.termsCheck
+                        document.getElementById('idCheck').checked = data.idCheck
+                    }
+
+
                 })
                 .catch(error => {
                     console.error('There was a problem with the fetch operation:', error);
@@ -276,98 +305,15 @@
         }
 
 
-        var qrcode = new QRCode(document.getElementById("qrcode"), {
-            text: "http://jindo.dev.naver.com/collie",
-            width: 256,
-            height: 256,
-            colorDark: "#000000",
-            colorLight: "#ffffff",
-            correctLevel: QRCode.CorrectLevel.H
-        });
-
-        qrCodeModal.addEventListener('show.bs.modal', function (event) {
-            // Button that triggered the modal
-            var button = event.relatedTarget
-            // Extract info from data-bs-* attributes
-            var data = button.getAttribute('data-bs-qr')
-
-            if (data != null) {
-                document.getElementById("qrcodeRaw").innerHTML = data;
-                qrcode.clear(); // clear the code.
-                qrcode.makeCode(data); // make another code.
-            }
-        })
 
 
-        registerModal.addEventListener('show.bs.modal', function (event) {
-            var button = event.relatedTarget
-            // Extract info from data-bs-* attributes
-            var data = button.getAttribute('data-bs-uuid')
-            var mode = button.getAttribute('data-bs-mode')
-            console.log('Mode:', mode);
-            if (data == null) {
-                generateUUID()
-                document.getElementById('fetUsername').value = ""
-                document.getElementById('firstName').value = ""
-                document.getElementById('lastName').value = ""
-                document.getElementById('emailAddress').value = ""
-                document.getElementById('phoneNumber').value = ""
-                document.getElementById('termsCheck').checked = false
-                document.getElementById('idCheck').checked = false
-            } else {
-                console.log('Data:', data);
-                const url = '{{ url_for("guest")}}' + data
-                console.log('URL:', url);
-                fetch(url)
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Network response was not ok');
-                        }
-                        return response.json();
-                    })
-                    .then(data => {
+    })
 
-                        if (data != null) {
-                            console.log('Data received:', data);
-                            document.getElementById('dbID').value = data.id
-                            document.getElementById('uuid').value = data.uuid
-                            //document.getElementById('showQrCode').dataset.bsQr = data.uuid
-                            document.getElementById('fetUsername').value = data.fetUsername
-                            document.getElementById('firstName').value = data.firstName
-                            document.getElementById('lastName').value = data.lastName
-                            document.getElementById('emailAddress').value = data.email
-                            document.getElementById('phoneNumber').value = data.phone
-                            document.getElementById('termsCheck').checked = data.termsCheck
-                            document.getElementById('idCheck').checked = data.idCheck
-                        }
+    var refreshQrCode = document.getElementById('refreshQrCode')
+    refreshQrCode.addEventListener('click', function (event) {
+        generateUUID()
+    })
+</script>
 
 
-                    })
-                    .catch(error => {
-                        console.error('There was a problem with the fetch operation:', error);
-                    });
-            }
-
-
-
-
-        })
-
-        var refreshQrCode = document.getElementById('refreshQrCode')
-        refreshQrCode.addEventListener('click', function (event) {
-            generateUUID()
-        })
-    </script>
-
-
-
-
-
-    <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.23.2/dist/bootstrap-table.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
-
-</body>
-
-</html>
+{% endblock content %}

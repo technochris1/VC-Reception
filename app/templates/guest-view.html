@@ -40,6 +40,18 @@
     </div>
   </div>
 
+  <div class="col py-3">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">
+      {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+  </div>
+
   <div class="row h-100 p-2 align-items-center">
     <div class="col text-center align-middle">
       <img src="../static/VC_logo_dark.png" id="image" class="img-fluid" alt="..." style="width: 40vw;">
@@ -52,8 +64,15 @@
     <div class="col text-center align-middle">
       <h1>Please Scan your QR Code</h1>
       <h4>Or</h4>
-      <button type="button" class="btn btn-danger btn-lg" data-bs-toggle="modal" data-bs-target="#registerModal">Sign
-        Up</button>
+
+
+      <a href="/registerGuest">
+        <button type="button" class="btn btn-danger btn-lg">Sign Up</button>
+      </a>
+
+
+
+
     </div>
   </div>
 
@@ -76,118 +95,14 @@
   <div class="position-absolute bottom-0 start-50 translate-middle-x">
     <div class="form-group">
       <input type="text" class="form-control" inputmode="none" id="code" placeholder="QR CODE ENTRY"></input>
-    </div>    
-  </div>
-
-
-
-
-
-  <!-- Modal -->
-  <div class="modal fade " id="registerModal" tabindex="-1" data-bs-backdrop="static"
-    aria-labelledby="registerModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalLabel">New Guest Registration</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-
-          <form class="row g-3" method="post">
-
-            <div class="col-md-6">
-              <label for="fetUsername" class="form-label">Fet/Fetlife Username</label>
-              <div class="input-group">
-                <span class="input-group-text" id="fetUsernamePrepend">@</span>
-                <input type="text" class="form-control" name="fetUsername" id="fetUsername">
-              </div>
-            </div>
-
-            <div class="col-md-6">
-              <label for="firstName" class="form-label">First name</label>
-              <input type="text" class="form-control" name="firstName" id="firstName" required>
-            </div>
-            <div class="col-md-6">
-              <label for="lastName" class="form-label">Last name</label>
-              <input type="text" class="form-control" name="lastName" id="lastName" required>
-            </div>
-
-            <div class="col-md-6">
-              <label for="emailAddress" class="form-label">Email address</label>
-              <input type="email" class="form-control" name="emailAddress" id="emailAddress"
-                placeholder="name@example.com" required>
-            </div>
-            <div class="col-md-6">
-              <label for="phoneNumber" class="form-label">Phone #</label>
-              <input type="tel" class="form-control" name="phoneNumber" id="phoneNumber" placeholder="301-000-0000">
-            </div>
-            <div class="col-12">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="false" name="termsCheck" id="termsCheck">
-                <label class="form-check-label" for="termsCheck">
-                  Agree to Terms and Conditions <button class="btn btn-outline-primary" data-bs-target="#tosModal"
-                    data-bs-toggle="modal" data-bs-dismiss="modal">Current Terms and Conditions</button>
-                </label>
-              </div>
-            </div>
-            <div class="col-12">
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="false" name="idCheck" id="idCheck">
-                <label class="form-check-label" for="idCheck">
-                  Agree to ID Photocopy
-                </label>
-              </div>
-            </div>
-            <div class="col-12">
-              <button class="btn btn-primary" type="submit">Submit form</button>
-            </div>
-          </form>
-
-        </div>
-      </div>
     </div>
   </div>
 
 
-  <div class="modal fade" id="tosModal" aria-hidden="true" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalToggleLabel2">Terms and Conditions</h5>
-        </div>
-        <div class="modal-body">
-          Hide this modal and show the first with the button below.
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-primary" data-bs-target="#registerModal" data-bs-toggle="modal"
-            data-bs-dismiss="modal">Return</button>
-        </div>
-      </div>
-    </div>
-  </div>
 
 
-  <!-- 
-  <div">
 
-    <div class="d-flex flex-row justify-content-center align-items-stretch">
-      <div class="bd-highlight align-self-center flex-fill text-center">
-        
-      </div>
-      <div class="bd-highlight">
-        
-      </div>
-      <div class="bd-highlight align-self-center flex-fill text-center">
-        {% if guid %}
-        Hello {{ guid }}!
-        {% else %}
-        Hello, World!
-        {% endif %}
-      </div>
-    </div>
 
-  </div> -->
 
 
 
@@ -202,6 +117,20 @@
 
   <script>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     var themeSwitch = document.getElementById('themeSwitch');
     var fullScreenToggle = document.getElementById('fullScreenToggle');
     var image = document.getElementById('image');
@@ -210,6 +139,8 @@
     focusOnCodeTimer = setTimeout(focusOnCode, 1000);
 
     fullScreenToggle.addEventListener('click', toggleFullScreen);
+
+
 
 
 
@@ -374,21 +305,6 @@
         }
       }
     };
-
-
-    var myModalEl = document.getElementById('registerModal')
-    myModalEl.addEventListener('show.bs.modal', function (event) {
-      allowQrCodeInput = false; // Disable QrCodeInput
-    })
-    myModalEl.addEventListener('hidden.bs.modal', function (event) {
-      allowQrCodeInput = true; // Allow QrCodeInput
-      qrCodeInput = "";
-      setTimeout(focusOnCode, 1000);
-      //focusOnCode();
-    })
-
-
-
 
 
   </script>

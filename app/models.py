@@ -1,38 +1,67 @@
 
 from dataclasses import dataclass
 import datetime
-from tools import generate_uuid
+
 from sqlalchemy.sql import func
-#from app import db
+from app import app, db, login_manager
+from flask_login import UserMixin
 
-from . import db
 
-def init_app(app):
-    db.init_app(app)
 
+guest_role = db.Table('guest_roles',
+                    db.Column('guest_id', db.Integer, db.ForeignKey('guest.id')),
+                    db.Column('role_id', db.Integer, db.ForeignKey('role.id'))
+                    )
 
 
 @dataclass
-class Guest(db.Model):
+class Role(db.Model):
     id:int = db.Column(db.Integer, primary_key=True)
-    uuid:str  = db.Column(db.String, name="uuid", default=generate_uuid)
+    name:str  = db.Column(db.String(100))
+    description:str  = db.Column(db.String(200))
+    permissions:str  = db.Column(db.String(200))
+    guests = db.relationship('Guest', backref=db.backref('role', lazy='dynamic'), secondary=guest_role)
+
+    def __str__(self):
+        return f'{self.name}'
+
+    def __repr__(self):
+        return f'Role(\'{self.name}\')'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return Guest.query.get(int(user_id))
+
+@dataclass
+class Guest(db.Model, UserMixin):
+    id:int = db.Column(db.Integer, primary_key=True)
+    uuid:str  = db.Column(db.String, name="uuid")
 
     fetUsername:str  = db.Column(db.String(100))
-    firstName:str  = db.Column(db.String(100))
-    lastName:str  = db.Column(db.String(100))
+    name:str  = db.Column(db.String(100), nullable=False)
     email:str  = db.Column(db.String(200), nullable=False)
     phone:str  = db.Column(db.String(20))
 
+    password:str  = db.Column(db.String(255))
+    roles = db.relationship('Role', backref=db.backref('guest', lazy='dynamic'), secondary=guest_role)
+
     termsCheck:bool = db.Column(db.Boolean(), default=False)
     termsDate = db.Column(db.DateTime(timezone=True), server_default=None)
-    termsVersion:str  = db.Column(db.String(20))
-
-    idCheck:bool = db.Column(db.Boolean(), default=False)
-    idDate = db.Column(db.DateTime(timezone=True), server_default=None)
+    
     logbook = db.relationship('Guestlog', backref='Guest')
 
     lastVisit = db.Column(db.DateTime(timezone=True), server_default=None)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+
+
+
+
+
+    def __str__(self):
+        return f'{self.name}'
+
+    def __repr__(self):
+        return f'Guest(\'{self.name}\')'
 
 @dataclass
 class Guestlog(db.Model):
@@ -42,8 +71,6 @@ class Guestlog(db.Model):
     userID = db.Column(db.Integer, db.ForeignKey('guest.id'))
 
 
-@dataclass
-class Form(db.Model):
     id:int = db.Column(db.Integer, primary_key=True)
     formName:str  = db.Column(db.String(100))
     formDescription:str  = db.Column(db.String(200))
@@ -61,14 +88,11 @@ class Event(db.Model):
     eventLocation:str = db.Column(db.String(100))
     #created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
-
 @dataclass
 class Setting(db.Model):
     id:int = db.Column(db.Integer, primary_key=True)
-    settingName:str  = db.Column(db.String(100))
-    settingValue:str  = db.Column(db.String(200))
-
-   
+    tos:str  = db.Column(db.String())
+    tos_updated:str = db.Column(db.String(100))
 
 @dataclass
 class Tag(db.Model):
