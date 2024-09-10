@@ -25,17 +25,55 @@
     <div class="container-fluid">
         <div class="row flex-nowrap">
             <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
-                {% block navbar %}{% endblock %}                
-            </div>            
+                <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
+                    <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start"
+                        id="menu">
+                        <li class="nav-item"></li>
+                            <a href="/logout" class="nav-link align-middle px-0">
+                                <i class="fs-4 bi-box-arrow-left"></i> <span class="ms-1 d-none d-sm-inline">Logout</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/dashboard"
+                                class="nav-link align-middle px-0 {% if request.endpoint == 'dashboard' %}text-danger{% endif %}">
+                                <i class="fs-4 bi-speedometer2"></i> <span class="ms-1 d-none d-sm-inline">Dashboard</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/guests"
+                                class="nav-link px-0 align-middle {% if request.endpoint == 'guests' %}text-danger{% endif %}">
+                                <i class="fs-4 bi-people"></i> <span class="ms-1 d-none d-sm-inline">Guests</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/logbook"
+                                class="nav-link px-0 align-middle {% if request.endpoint == 'logbook' %}text-danger{% endif %}">
+                                <i class="fs-4 bi-table "></i> <span class="ms-1 d-none d-sm-inline">Logbook</span></a>
+                        </li>
+                        <li class="nav-item"></li>
+                            <a href="/credits"
+                                class="nav-link px-0 align-middle {% if request.endpoint == 'credits' %}text-danger{% endif %}">
+                                <i class="fs-4 bi-cash-coin "></i> <span class="ms-1 d-none d-sm-inline">Credit System</span></a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/settings"
+                                class="nav-link px-0 align-middle {% if request.endpoint == 'settings' %}text-danger{% endif %}">
+                                <i class="fs-4 bi-sliders "></i> <span class="ms-1 d-none d-sm-inline">Settings</span></a>
+                        </li>
+                    </ul>
+                    <hr>
+                </div>
+
+            </div>
             <div class="col py-3 bg-dark text-light">
                 {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="alert alert-{{ category }}">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
+                {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+                {% endif %}
                 {% endwith %}
                 {% block content %}{% endblock %}
             </div>
@@ -48,4 +86,5 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
 
 </body>
+
 </html>

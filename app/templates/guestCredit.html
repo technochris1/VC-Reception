@@ -1,0 +1,54 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h1>Guest Credit for : {{guest.name}}</h1>
+
+{% if guest.credit %}
+<h2>Current Credits: {{ guestCredit.generalAmount }}</h2>
+<a href="/guestCredit/{{ guest.id }}/addCredits" class="btn btn-primary">Add Credit(s)</a>
+<hr>
+
+<h3>Guest Credit History:</h3>
+<table class="table-dark rounded-3 overflow-hidden " data-toggle="table" >
+    <thead>
+        <tr>
+            <th data-sortable="true" scope="col">Timestamp</th>
+            <th data-sortable="true" scope="col">Source</th>
+            <th data-sortable="true" scope="col">Auth By</th>
+            <th data-sortable="true" scope="col">General</th>            
+            <th data-sortable="true" scope="col">Special Event</th>
+            <th data-sortable="true" scope="col">Private Session</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for logItem in guestCreditLog %}
+        <tr>
+            <td scope="row">{{ logItem.timestamp }}</td>
+            <td scope="row">{{ logItem.authorizedSource }}</td>
+            <td scope="row">{{ logItem.authorizedBy }}</td>
+            <td scope="row">{{ logItem.generalAmountChange }}</td>
+            <td scope="row">{{ logItem.specialEventAmountChange }}</td>            
+            <td scope="row">{{ logItem.privateSessionAmountChange }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<h2>Guest has no credit account established</h2>
+
+{% endif %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% endblock content %}

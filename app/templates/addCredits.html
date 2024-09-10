@@ -1,0 +1,129 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h1>Guest Credit for : {{guest.name}}</h1>
+{% if guest.credit %}
+
+{% endif %}
+
+<form method="POST" action="">
+    {{ form.hidden_tag() }}
+
+    <fieldset class="form-group">
+
+        <div class="form-group p-3">
+            <div class="form-floating m-1 text-dark">
+                {% if form.authorizedSource.errors %}
+                {{ form.authorizedSource(class="form-control is-invalid", placeholder="Cash, Card, Venmo, CashApp,
+                Paypal, ETC...") }}
+                <div class="invalid-feedback">
+                    {% for error in form.authorizedSource.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.authorizedSource(class="form-control", placeholder="example@gmail.com") }}
+                {% endif %}
+                {{ form.authorizedSource.label() }}
+            </div>
+        </div>
+
+        <div class="form-group p-3">
+            <div class="form-floating m-1 text-dark">
+                {% if form.description.errors %}
+                {{ form.description(class="form-control is-invalid", placeholder="Cash, Card, Venmo, CashApp, Paypal,
+                ETC...") }}
+                <div class="invalid-feedback">
+                    {% for error in form.description.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.description(class="form-control", placeholder="example@gmail.com") }}
+                {% endif %}
+                {{ form.description.label() }}
+            </div>
+        </div>
+
+        <div class="form-group p-3">
+            <div class="form-floating m-1 text-dark">
+                {% if form.generalAmountChange.errors %}
+                {{ form.generalAmountChange(class="form-control is-invalid", placeholder="Cash, Card, Venmo, CashApp,
+                Paypal,
+                ETC...") }}
+                <div class="invalid-feedback">
+                    {% for error in form.generalAmountChange.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.generalAmountChange(class="form-control", placeholder="example@gmail.com") }}
+                {% endif %}
+                {{ form.generalAmountChange.label() }}
+            </div>
+        </div>
+
+        <div class="form-group p-3">
+            <div class="form-floating m-1 text-dark">
+                {% if form.specialEventAmountChange.errors %}
+                {{ form.specialEventAmountChange(class="form-control is-invalid", placeholder="Cash, Card, Venmo,
+                CashApp,
+                Paypal,
+                ETC...") }}
+                <div class="invalid-feedback">
+                    {% for error in form.specialEventAmountChange.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.specialEventAmountChange(class="form-control", placeholder="example@gmail.com") }}
+                {% endif %}
+                {{ form.specialEventAmountChange.label() }}
+            </div>
+        </div>
+
+        <div class="form-group p-3">
+            <div class="form-floating m-1 text-dark">
+                {% if form.privateSessionAmountChange.errors %}
+                {{ form.privateSessionAmountChange(class="form-control is-invalid", placeholder="Cash, Card, Venmo,
+                CashApp,
+                Paypal,
+                ETC...") }}
+                <div class="invalid-feedback">
+                    {% for error in form.privateSessionAmountChange.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.privateSessionAmountChange(class="form-control", placeholder="example@gmail.com") }}
+                {% endif %}
+                {{ form.privateSessionAmountChange.label() }}
+            </div>
+        </div>
+
+
+
+
+
+    </fieldset>
+    <div class="form-group p-3">
+        <div class="d-flex justify-content-between">
+            <a href="/guestCredit/{{guest.id}}">
+                <button type="button" class="btn btn-primary btn-lg">Go Back</button>
+            </a>
+            {{ form.submit(class="btn btn-lg btn-outline-info") }}
+        </div>
+    </div>
+</form>
+
+
+
+
+
+
+
+
+
+
+
+
+{% endblock content %}

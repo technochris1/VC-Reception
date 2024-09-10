@@ -1,7 +1,7 @@
 from flask import render_template, jsonify, abort, url_for, redirect, request, flash, render_template_string
-from app import app, db, bcrypt, mail
-from app.models import Guest, Guestlog, Event, Setting, func
-from app.forms import AdminRegistrationForm, AdminLoginForm, GuestRegistrationForm
+from app import app, db, bcrypt, mail, login_manager
+from app.models import Guest, Guestlog, Event, Setting, func, GuestCredit, CreditTransactionLog   
+from app.forms import AdminRegistrationForm, AdminLoginForm, GuestRegistrationForm, AddCreditForm
 from flask_mail import  Message
 from flask_login import login_user, current_user, logout_user, login_required
 
@@ -11,72 +11,26 @@ import datetime
 import uuid
 import json
 
-@app.route("/")
-def dashboard():
 
-    current_time = datetime.datetime.now(datetime.UTC)
+# @login_manager.unauthorized_handler
+# def unauthorized_callback():
+#     return redirect('/home?next=' + request.path)
 
-    last_24_hours = current_time - datetime.timedelta(hours=24)
 
-    return render_template('index.html', guests_checked_in_count=Guest.query.filter(Guest.lastVisit > last_24_hours ).count(),
-                           guests_total_count=Guest.query.count(),
-                           guests_checked_in=Guest.query.filter(Guest.lastVisit > last_24_hours ).all(),
-                           quests_top_5=db.session.query(Guest, func.count(Guestlog.id)).join(Guestlog).group_by(Guest.id).order_by(func.count(Guestlog.id).desc()).limit(5).all(),
-                           #guests_top_5=db.session.query(Guest, func.count(Guestlog)).outerjoin(Guestlog, Guest.id == Guestlog.userID).group_by(Guest.id).order_by(func.count(Guestlog.id).desc()).limit(5).all(),
-                           
-                           )
 
-@app.route('/login/', methods=['GET', 'POST'])
-def login():
+
+@app.route('/', methods=['GET', 'POST'])
+def home():
     form = AdminLoginForm()
     if form.validate_on_submit():
        guest = Guest.query.filter_by(email=form.email.data).first()
-       if guest and bcrypt.check_password_hash(guest.password, form.password.data):
-           login_user(guest)           
-           return redirect(url_for('dashboard'))
+       if guest and guest.password and bcrypt.check_password_hash(guest.password, form.password.data):
+           login_user(guest)          
+           next_page = request.args.get('next') 
+           return redirect(next_page) if next_page else redirect(url_for('dashboard'))
        else:
            flash('Login unsuccessful. Please check email and password', 'danger')
-    return render_template('admin_login.html', title='Login Admin', form=form)
-
-@app.route('/registerAdmin/', methods=['GET', 'POST'])
-def registerAdmin():
-    form = AdminRegistrationForm()
-    if form.validate_on_submit():
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        newAdminGuest = Guest(
-            fetUsername=form.fetUsername.data,
-            name=form.name.data,
-            email=form.email.data,
-            phone=form.phone.data,
-            password=hashed_password
-        )
-        db.session.add(newAdminGuest)
-        db.session.commit()
-
-        flash('Admin added successfully', 'success')
-        return redirect(url_for('guests'))
-    return render_template('admin_registration.html', title='Register Admin', form=form)
-
-@app.route('/registerGuest/', methods=['GET', 'POST'])
-def registerGuest():
-    form = GuestRegistrationForm()
-    if form.validate_on_submit():        
-
-        newGuest = Guest(
-            uuid = request.values.get('uuid'),
-            fetUsername=form.fetUsername.data,
-            name=form.name.data,
-            email=form.email.data,
-            phone=form.phone.data,
-            termsCheck=form.termsCheck.data
-        )
-        db.session.add(newGuest)
-        db.session.commit()
-
-        flash('New Guest Added', 'success')
-        return redirect(url_for('guestView', setting=Setting.query.first()))        
-    return render_template('guest_registration.html', setting=Setting.query.first(), form = form)
-
+    return render_template('home.html', form=form)
 
 @app.route('/guestView/', methods=['GET', 'POST'])
 def guestView():
@@ -102,46 +56,131 @@ def guestView():
    
     return render_template('guest-view.html', setting=Setting.query.first(), form= form)
 
-@app.route('/generateUUID/')
-def generateUUID():
-    return jsonify(generate_uuid())
+@app.route('/registerGuest/', methods=['GET', 'POST'])
+def registerGuest():
+    form = GuestRegistrationForm()
+    if form.validate_on_submit():        
+
+        newGuest = Guest(
+            uuid = request.values.get('uuid'),
+            fetUsername=form.fetUsername.data,
+            name=form.name.data,
+            email=form.email.data,
+            phone=form.phone.data,
+            termsCheck=form.termsCheck.data
+        )
+        db.session.add(newGuest)
+        db.session.commit()
+
+        flash('New Guest Added', 'success')
+        return redirect(url_for('guestView', setting=Setting.query.first()))        
+    return render_template('guest_registration.html', setting=Setting.query.first(), form = form)
+
+
 
 @app.route('/checkIn/')
 @app.route('/checkIn/<uuid>')
 def checkIn(uuid = None):
+    settings = Setting.query.first()
     guest = Guest.query.filter_by(uuid = uuid).first()
     if(guest):
+        visitTime = datetime.datetime.now(datetime.timezone.utc)
+        response = {
+                'guest': guest.name,
+                'checked_in': True,
+                'checked_in_at_timestamp': visitTime.timestamp()
+            }
 
-        #visitTime = datetime.datetime.now()
-        visitTime = func.now()
+
+        if(guest.lastVisit):
+            lastVisit = guest.lastVisit
+            lastVisit = lastVisit.replace(tzinfo=datetime.timezone.utc)         
+
+            checkInCooldownSeconds = settings.checkInCooldownSeconds
+            if(checkInCooldownSeconds is None):
+                
+                checkInCooldownSeconds = 60
+                
+            if (visitTime - lastVisit).total_seconds() < checkInCooldownSeconds:
+                response['checked_in'] = False
+                print('Already Checked In')
+                return json.dumps(response)
+        
         guest.lastVisit = visitTime
-
         newCheckIn = Guestlog(
             checked_in_at = visitTime,
             userID = guest.id
         )
-        db.session.add(newCheckIn)
+        #db.session.add(newCheckIn)
         db.session.commit()
 
-
-
-        return json.dumps(guest.name)
+        
+        return json.dumps(response)
     else:
         return abort(404)
 
+@app.route('/generateUUID/')
+def generateUUID():
+    return jsonify(generate_uuid())
 
 
 
-@app.route('/guest/')
-@app.route('/guest/<uuid>')
-def guest(uuid = None): 
-    print("UUID:",uuid)
-    result = Guest.query.filter_by(uuid = uuid).first()
-    print("Returning User:",result.uuid)
-    return jsonify(result)
+@app.route('/logout/')
+def logout():
+    logout_user()
+    return redirect(url_for('home'))
 
+
+
+
+
+
+
+@app.route("/dashboard/")
+@login_required
+def dashboard():
+
+    current_time = datetime.datetime.now(datetime.UTC)
+
+    last_24_hours = current_time - datetime.timedelta(hours=24)
+
+    return render_template('dashboard.html', guests_checked_in_count=Guest.query.filter(Guest.lastVisit > last_24_hours ).count(),
+                           guests_total_count=Guest.query.count(),
+                           guests_checked_in=Guest.query.filter(Guest.lastVisit > last_24_hours ).all(),
+                           quests_top_5=db.session.query(Guest, func.count(Guestlog.id)).join(Guestlog).group_by(Guest.id).order_by(func.count(Guestlog.id).desc()).limit(5).all(),
+                           #guests_top_5=db.session.query(Guest, func.count(Guestlog)).outerjoin(Guestlog, Guest.id == Guestlog.userID).group_by(Guest.id).order_by(func.count(Guestlog.id).desc()).limit(5).all(),
+                           
+                           )
+
+
+
+@app.route('/registerAdmin/', methods=['GET', 'POST'])
+@login_required
+def registerAdmin():
+    form = AdminRegistrationForm()
+    if form.validate_on_submit():
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        newAdminGuest = Guest(
+            fetUsername=form.fetUsername.data,
+            name=form.name.data,
+            email=form.email.data,
+            phone=form.phone.data,
+            password=hashed_password
+        )
+        db.session.add(newAdminGuest)
+        db.session.commit()
+
+        flash('Admin added successfully', 'success')
+        return redirect(url_for('guests'))
+    return render_template('admin_registration.html', title='Register Admin', form=form)
+
+
+@app.route('/getGuest/')
+@app.route('/getGuest/<uuid>')
+def getGuest(uuid = None): return jsonify(Guest.query.filter_by(uuid = uuid).first())
 
 @app.route('/guests/', methods=['GET', 'POST'])
+@login_required
 def guests():
     if request.method == 'POST':
         termsCheckValue = False
@@ -201,36 +240,81 @@ def guests():
         
     return render_template('guests.html', guests=Guest.query.all())
 
+@app.route('/guestCredit/<id>', methods=['GET', 'POST'])
+@login_required
+def guestCredit(id):
+    if(id is None):
+        return redirect(url_for('guests', guests=Guest.query.all()))
+    _guest = Guest.query.filter_by(id=id).first()
+    guestCredit = GuestCredit.query.filter_by(guest_id=_guest.id).first()
+    print(_guest, guestCredit)
+    if(guestCredit is None):
+        newCredit = GuestCredit(
+                guest=_guest,
+                generalAmount=0,
+                specialEventAmount=0,
+                privateSessionAmount=0,
+                lastUpdate = datetime.datetime.now(datetime.timezone.utc)                
+            )
+        print("newCredits",newCredit)
+        db.session.add(newCredit)
+        db.session.commit()
+    
+    return render_template('guestCredit.html', guest=_guest, guestCredit=GuestCredit.query.filter_by(guest=_guest).first(), guestCreditLog=CreditTransactionLog.query.filter_by(guest=_guest.id).all())
+
+@app.route('/guestCredit/<id>/addCredits', methods=['GET', 'POST'])
+@login_required
+def addCredits(id):
+    form = AddCreditForm()
+    _guest = Guest.query.filter_by(id=id).first()
+
+    if form.validate_on_submit():
+        newCreditLogEntry = CreditTransactionLog(
+            guest=_guest.id,
+            authorizedBy=current_user.id,
+            authorizedSource=form.authorizedSource.data,
+            description=form.description.data,
+            generalAmountChange=form.generalAmountChange.data,
+            specialEventAmountChange=form.specialEventAmountChange.data,
+            privateSessionAmountChange=form.privateSessionAmountChange.data,
+        )
+
+        if(newCreditLogEntry.generalAmountChange > 0 or newCreditLogEntry.specialEventAmountChange > 0 or newCreditLogEntry.privateSessionAmountChange > 0):
+            guestCredit = GuestCredit.query.filter_by(guest_id=_guest.id).first()
+            if(guestCredit):
+                guestCredit.generalAmount += newCreditLogEntry.generalAmountChange
+                guestCredit.specialEventAmount += newCreditLogEntry.specialEventAmountChange
+                guestCredit.privateSessionAmount += newCreditLogEntry.privateSessionAmountChange
+                guestCredit.lastUpdate = datetime.datetime.now(datetime.timezone.utc)
+                
+            db.session.add(newCreditLogEntry)
+            db.session.commit()
+
+        
+
+
+        #flash('Admin added successfully', 'success')
+        return redirect(url_for('guestCredit',form = form, guest=_guest, id=id))
+    #return render_template('admin_registration.html', title='Register Admin', form=form)
+    return render_template('addCredits.html', form = form, guest=_guest)
+
 
 @app.route('/logbook/')
+@login_required
 def logbook():
     return render_template('logbook.html', guests=Guest.query.all(), log=Guestlog.query.all())
     #return render_template('logbook.html')
 
 
-@app.route('/forms/')
-def forms():
-    return render_template('forms.html')
 
-@app.route('/events/', methods=['GET', 'POST'])
-def events():
+@app.route('/credits/', methods=['GET', 'POST'])
+@login_required
+def credits():
+    return render_template('credits.html', guests=Guest.query.all(), guestCreds=GuestCredit.query.all(), guestCreditLog=CreditTransactionLog.query.all())
+    #return render_template('logbook.html')
 
-    if request.method == 'POST':
 
-        newEvent = Event(
-            eventName=request.values.get('eventName'),
-            eventDescription=request.values.get('eventDescription'),
-            eventStartDate= int(datetime.datetime.timestamp(datetime.datetime.strptime(re.sub(r" \((.*?)\)", "", request.values.get('eventStart')), "%a %b %d %Y %H:%M:%S %Z%z"))),
-            eventEndDate= int(datetime.datetime.timestamp(datetime.datetime.strptime(re.sub(r" \((.*?)\)", "", request.values.get('eventEnd')), "%a %b %d %Y %H:%M:%S %Z%z"))),
-            eventLocation=request.values.get('eventLocation')
-        )
-        db.session.add(newEvent)
-        db.session.commit()
 
-    allEvents = Event.query.all()
-    
-
-    return render_template('events.html', events=json.dumps(Event.query.all()))
 
 #https://flask-mail.readthedocs.io/en/latest/#
 @app.route('/sendEmail/')
@@ -245,6 +329,7 @@ def sendEmailRoute():
 
 
 @app.route('/settings/', methods=['GET', 'POST'])
+@login_required
 def settings():
     if request.method == 'POST':
         tos = request.values.get('tos')
@@ -268,8 +353,6 @@ def settings():
         flash('Settings Updated successfully', 'success')
         return redirect(url_for('settings'))
     return render_template('settings.html', setting=Setting.query.first())
-
-
 
 
 def generate_uuid():

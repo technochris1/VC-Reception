@@ -1,0 +1,49 @@
+{% extends 'layout.html' %}
+
+
+{% block content %}
+
+
+
+
+
+
+<div>
+    {% for creds in guestCreds %}
+    <div class="card bg-dark text-light">
+        <div class="card-body">
+            <h5 class="card-title">{{ creds.guest }}</h5>    
+            <p class="card-text">Credit: {{ creds.generalAmount }}</p>
+        </div>
+    </div>
+    {% endfor %}
+
+
+
+
+
+    <table class="table-dark rounded-3 overflow-hidden "
+        data-toggle="table" data-search="true">
+        <thead>
+            <tr>
+                <th data-sortable="true" scope="col">Timestamp</th>
+                <th data-sortable="true" scope="col">Guest</th>
+                <th data-sortable="true" scope="col">Source</th>
+                <th data-sortable="true" scope="col">Auth By</th>
+                <th data-sortable="true" scope="col">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for logItem in guestCreditLog %}
+            <tr>
+                <td scope="row">{{ logItem.timestamp }}</td>
+                <td scope="row">{{ logItem.guest }}</td>
+                <td scope="row">{{ logItem.authorizedSource }}</td>
+                <td scope="row">{{ logItem.authorizedBy }}</td>                
+                <td scope="row">{{ logItem.amountChange }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock content %}

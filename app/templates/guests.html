@@ -1,29 +1,5 @@
 {% extends 'layout.html' %}
 
-{% block navbar %}
-<div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
-    <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-        <span class="fs-5 d-none d-sm-inline">Menu</span>
-    </a>
-    <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
-        <li class="nav-item">
-            <a href="/" class="nav-link align-middle px-0">
-                <i class="fs-4 bi-speedometer2"></i> <span class="ms-1 d-none d-sm-inline">Dashboard</span>
-            </a>
-        </li>
-        <li>
-            <a href="/guests" class="nav-link px-0 align-middle text-danger">
-                <i class="fs-4 bi-people"></i> <span class="ms-1 d-none d-sm-inline">Guests</span>
-            </a>
-        </li>
-        <li>
-            <a href="/logbook" class="nav-link px-0 align-middle ">
-                <i class="fs-4 bi-table "></i> <span class="ms-1 d-none d-sm-inline">Logbook</span></a>
-        </li>
-    </ul>
-    <hr>
-</div>
-{% endblock navbar %}
 
 {% block content %}
 <div>
@@ -33,7 +9,7 @@
     </button>
 </div>
 
-<table data-toggle="table">
+<table class="table-dark rounded-3 overflow-hidden"  data-toggle="table">
     <thead>
         <tr>
             <th data-sortable="true" scope="col">Handle</th>
@@ -87,6 +63,7 @@
             <td>Never</td>
             {% endif %}
             <td>
+                <a href="/guestCredit/{{guest.id}}"><button type="button" class="btn btn-sm btn-outline-danger" ><i class="bi bi-cash-coin"></i></button></a>
                 <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
                     data-bs-target="#registerModal" data-bs-mode="edit" data-bs-uuid="{{guest.id}}"><i
                         class="bi bi-pencil-square"></i></button>
@@ -107,21 +84,17 @@
 <!-- Modals -->
 <div class="modal fade " id="registerModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="registerModalLabel"
     aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable ">
+        <div class="modal-content ">
+            <div class="modal-header bg-dark text-light">
                 <h5 class="modal-title" id="exampleModalLabel">New Guest Registration</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body bg-dark text-light">
 
                 <form class="row g-3" method="post">
 
 
-                    <div class="col-md-6">
-                        <label for="dbID" class="form-label">Database ID</label>
-                        <input type="text" class="form-control" name="dbID" id="dbID" readonly>
-                    </div>
 
                     <div class="col-md-6">
                         <label for="uuid" class="form-label">Unique QR Code</label>
@@ -205,15 +178,12 @@
 
 
 <script>
-
-
     const generateUuidURL = '{{ url_for("generateUUID") }}'
-
-
     var registerModal = document.getElementById('registerModal')
     var qrCodeModal = document.getElementById('qrModal')
+    var refreshQrCode = document.getElementById('refreshQrCode')
 
-    function generateUUID() {
+    function fetchUUID() {
         fetch(generateUuidURL)
             .then(response => {
                 if (!response.ok) {
@@ -230,7 +200,6 @@
                 console.error('There was a problem with the fetch operation:', error);
             });
     }
-
 
     var qrcode = new QRCode(document.getElementById("qrcode"), {
         text: "http://jindo.dev.naver.com/collie",
@@ -254,25 +223,25 @@
         }
     })
 
-
     registerModal.addEventListener('show.bs.modal', function (event) {
         var button = event.relatedTarget
         // Extract info from data-bs-* attributes
-        var data = button.getAttribute('data-bs-uuid')
+        var uuidData = button.getAttribute('data-bs-uuid')
         var mode = button.getAttribute('data-bs-mode')
         console.log('Mode:', mode);
-        if (data == null) {
-            generateUUID()
+
+
+
+        if (uuidData == null) {
+            fetchUUID()
             document.getElementById('fetUsername').value = ""
-            document.getElementById('firstName').value = ""
-            document.getElementById('lastName').value = ""
+            document.getElementById('name').value = ""
             document.getElementById('emailAddress').value = ""
             document.getElementById('phoneNumber').value = ""
             document.getElementById('termsCheck').checked = false
-            document.getElementById('idCheck').checked = false
         } else {
-            console.log('Data:', data);
-            const url = '{{ url_for("guest")}}' + data
+            console.log('Data:', uuidData);
+            const url = '{{ url_for("getGuest")}}' + uuidData
             console.log('URL:', url);
             fetch(url)
                 .then(response => {
@@ -285,16 +254,12 @@
 
                     if (data != null) {
                         console.log('Data received:', data);
-                        document.getElementById('dbID').value = data.id
                         document.getElementById('uuid').value = data.uuid
-                        //document.getElementById('showQrCode').dataset.bsQr = data.uuid
                         document.getElementById('fetUsername').value = data.fetUsername
-                        document.getElementById('firstName').value = data.firstName
-                        document.getElementById('lastName').value = data.lastName
+                        document.getElementById('name').value = data.name
                         document.getElementById('emailAddress').value = data.email
                         document.getElementById('phoneNumber').value = data.phone
                         document.getElementById('termsCheck').checked = data.termsCheck
-                        document.getElementById('idCheck').checked = data.idCheck
                     }
 
 
@@ -309,9 +274,8 @@
 
     })
 
-    var refreshQrCode = document.getElementById('refreshQrCode')
     refreshQrCode.addEventListener('click', function (event) {
-        generateUUID()
+        fetchUUID()
     })
 </script>
 

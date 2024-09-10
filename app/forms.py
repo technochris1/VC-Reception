@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, BooleanField
+from wtforms import StringField, SubmitField, BooleanField, IntegerField
 from wtforms.validators import DataRequired, Email, Length, ValidationError, EqualTo
 from app.models import Guest
 
@@ -17,6 +17,8 @@ class AdminLoginForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])    
     password = StringField('Password', validators=[DataRequired()])
     submit = SubmitField('Login')
+
+    
     
    
 
@@ -53,3 +55,10 @@ class AdminRegistrationForm(FlaskForm):
         if user:
             raise ValidationError('Email already in use. Please choose another email address.')
 
+class AddCreditForm(FlaskForm):
+    authorizedSource:str  = StringField('Authorized Source', validators=[DataRequired()]) 
+    description = StringField('Description', validators=[DataRequired()])
+    generalAmountChange = IntegerField('General Admission Credits', default=0)
+    specialEventAmountChange = IntegerField('Special Event Credits', default=0)
+    privateSessionAmountChange = IntegerField('Private Session Credits', default=0)
+    submit = SubmitField('Add Credit')
