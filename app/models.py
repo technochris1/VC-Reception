@@ -118,6 +118,12 @@ class Setting(db.Model):
     tos_updated:str = db.Column(db.String(100))
     checkInCooldownSeconds:int = db.Column(db.Integer, default=60)
 
+
+    show_cashapp:bool = db.Column(db.Boolean(), default=False)
+    show_paypal:bool = db.Column(db.Boolean(), default=False)
+    show_venmo:bool = db.Column(db.Boolean(), default=False)
+    show_credit:bool = db.Column(db.Boolean(), default=False)
+
 @dataclass
 class Tag(db.Model):
     id:int = db.Column(db.Integer, primary_key=True)

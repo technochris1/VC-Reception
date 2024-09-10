@@ -2,7 +2,7 @@
 import os
 import sys
 from os import environ as env
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 
 import json
 import datetime
@@ -26,7 +26,7 @@ from flask_mail import Mail, Message
 from sqlalchemy.sql import func
 from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass
 
-from auto_update import Updater
+#from auto_update import Updater
 
 
 
@@ -35,7 +35,7 @@ from auto_update import Updater
 class Base(DeclarativeBase, MappedAsDataclass):
   pass
 
-load_dotenv()
+# load_dotenv()
 
 db = SQLAlchemy(model_class=Base)
 

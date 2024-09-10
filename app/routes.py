@@ -54,7 +54,7 @@ def guestView():
         return redirect(url_for('guestView', setting=Setting.query.first(), form=form))
 
    
-    return render_template('guest-view.html', setting=Setting.query.first(), form= form)
+    return render_template('guestView.html', setting=Setting.query.first(), form= form)
 
 @app.route('/registerGuest/', methods=['GET', 'POST'])
 def registerGuest():
@@ -184,13 +184,10 @@ def getGuest(uuid = None): return jsonify(Guest.query.filter_by(uuid = uuid).fir
 def guests():
     if request.method == 'POST':
         termsCheckValue = False
-        idCheckValue = False
 
 
         if request.form.get('termsCheck') is not None:
             termsCheckValue = True
-        if request.form.get('idCheck') is not None:
-            idCheckValue = True
         
         rowID = request.values.get('dbID')
         print(rowID)
@@ -207,7 +204,6 @@ def guests():
             guest.email=request.values.get('emailAddress')
             guest.phone=request.values.get('phoneNumber')
             guest.termsCheck=termsCheckValue
-            guest.idCheck=idCheckValue
 
             if(guest.uuid != request.values.get('uuid')):
                 guest.uuid=request.values.get('uuid')
@@ -332,8 +328,29 @@ def sendEmailRoute():
 @login_required
 def settings():
     if request.method == 'POST':
+
+
+        pay_cashappBool = False
+        pay_venmoBool = False
+        pay_paypalBool = False
+        pay_creditBool = False
+
+
+        if request.form.get('pay_cashapp') is not None:
+            pay_cashappBool = True
+        if request.form.get('pay_venmo') is not None:
+            pay_venmoBool = True
+        if request.form.get('pay_paypal') is not None:
+            pay_paypalBool = True
+        if request.form.get('pay_credit') is not None:
+            pay_creditBool = True
+
+
+
+
+
         tos = request.values.get('tos')
-        tos_updated = request.values.get('tosDate')
+        
 
         setting = Setting.query.first()
 
@@ -341,17 +358,26 @@ def settings():
         if setting is None:
             setting = Setting(
                 tos=tos,
-                tos_updated=tos_updated
+
+                show_credit=pay_creditBool,
+                show_cashapp=pay_cashappBool,
+                show_paypal=pay_paypalBool,
+                show_venmo=pay_venmoBool
+                
             )
             db.session.add(setting)
         else:
             setting.tos = tos
-            setting.tos_updated = tos_updated
+            setting.show_credit=pay_creditBool
+            setting.show_cashapp=pay_cashappBool
+            setting.show_paypal=pay_paypalBool
+            setting.show_venmo=pay_venmoBool
+            
 
         db.session.commit()
 
         flash('Settings Updated successfully', 'success')
-        return redirect(url_for('settings'))
+        return redirect(url_for('settings', setting=Setting.query.first()))
     return render_template('settings.html', setting=Setting.query.first())
 
 

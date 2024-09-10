@@ -62,3 +62,10 @@ class AddCreditForm(FlaskForm):
     specialEventAmountChange = IntegerField('Special Event Credits', default=0)
     privateSessionAmountChange = IntegerField('Private Session Credits', default=0)
     submit = SubmitField('Add Credit')
+
+class SettingsForm(FlaskForm):
+    tos:str  = StringField('Terms of Service', validators=[DataRequired()])
+    pay_cashapp:bool = BooleanField('Pay with Cashapp')
+    pay_venmo:bool = BooleanField('Pay with Venmo')
+    pay_paypal:bool = BooleanField('Pay with Paypal')
+    pay_credit:bool = BooleanField('Pay with Credit System')
