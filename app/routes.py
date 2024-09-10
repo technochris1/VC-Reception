@@ -76,6 +76,30 @@ def registerGuest():
         return redirect(url_for('guestView', setting=Setting.query.first()))        
     return render_template('guest_registration.html', setting=Setting.query.first(), form = form)
 
+@app.route('/preCheckIn/')
+@app.route('/preCheckIn/<uuid>')
+def preCheckIn(uuid = None):
+    print("UUID",uuid)
+    #settings = Setting.query.first()
+    guest = Guest.query.filter_by(uuid = uuid).first()
+    
+    response = {}
+    if(guest):
+        print("Guest",guest)
+        response['guest'] = guest.name
+        response['lastCheckin'] = guest.lastVisit.timestamp()
+        guestCredit = GuestCredit.query.filter_by(guest_id=guest.id).first()
+        if(guestCredit):
+            print("GuestCredit",guestCredit)
+            response['generalCredits'] = guestCredit.generalAmount
+            response['specialEventCredits'] = guestCredit.specialEventAmount
+            response['privateSessionCredits'] = guestCredit.privateSessionAmount
+                
+        return json.dumps(response)
+    else:
+        return abort(404)
+
+
 
 
 @app.route('/checkIn/')
