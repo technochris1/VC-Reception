@@ -37,11 +37,11 @@ def load_user(user_id):
 @dataclass
 class Guest(db.Model, UserMixin):
     id:int = db.Column(db.Integer, primary_key=True)
-    uuid:str  = db.Column(db.String, name="uuid")
+    uuid:str  = db.Column(db.String, unique=True, name="uuid")
 
-    fetUsername:str  = db.Column(db.String(100))
+    fetUsername:str  = db.Column(db.String(100) )
     name:str  = db.Column(db.String(100), nullable=False)
-    email:str  = db.Column(db.String(200), nullable=False)
+    email:str  = db.Column(db.String(200), unique=True, nullable=False)
     phone:str  = db.Column(db.String(20))
 
     password:str  = db.Column(db.String(255))
@@ -119,9 +119,10 @@ class Setting(db.Model):
     checkInCooldownSeconds:int = db.Column(db.Integer, default=60)
 
 
-    show_cashapp:bool = db.Column(db.Boolean(), default=False)
-    show_paypal:bool = db.Column(db.Boolean(), default=False)
-    show_venmo:bool = db.Column(db.Boolean(), default=False)
+    show_cashapp:bool = db.Column(db.Boolean(), default=True)
+    show_paypal:bool = db.Column(db.Boolean(), default=True)
+    show_venmo:bool = db.Column(db.Boolean(), default=True)
+    show_cash:bool = db.Column(db.Boolean(), default=True)
     show_credit:bool = db.Column(db.Boolean(), default=False)
 
 @dataclass

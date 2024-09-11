@@ -41,17 +41,6 @@
     </div>
   </div>
 
-  <div class="col py-3">
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="alert alert-{{ category }}">
-      {{ message }}
-    </div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
-  </div>
 
   <div class="row h-100 p-2 align-items-center">
     <div class="col text-center align-middle">
@@ -84,7 +73,7 @@
   <div class="position-fixed bottom-0 start-50 translate-middle-x p-3" style="z-index: 11">
     <div id="infoToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="toast-header">
-        <strong class="me-auto fs-2">Guest Signed IN</strong>
+        <strong id="infoToastHeader" class="me-auto fs-2">Guest Signed IN</strong>
       </div>
       <div class="toast-body fs-2" id="infoToastBody">
         Welcome Guest!
@@ -113,25 +102,24 @@
         </div>
         <div class="modal-body">
           <div class="modal-body d-flex justify-content-center" id="checkInPaymentModalBody">
-            <div class=" d-flex flex-column">
+            <div class="d-flex flex-column ">
               <nav>
-                <div class="nav nav-pills" id="nav-tab" role="tablist">
-                  <div class="btn-group btn-group-lg" role="group" aria-label="Basic radio toggle button group">
+                <div class="nav nav-pills justify-content-center text-center" id="nav-tab" role="tablist">
+                  <div class="btn-group btn-group-lg d-flex" role="group" aria-label="Basic radio toggle button group">
 
                     {% if setting.show_cashapp %}
                     <input type="radio" class="btn-check active" data-bs-toggle="tab" data-bs-target="#nav-cashapp"
                       role="tab" name="btnradio" id="btnradio" autocomplete="off" checked>
                     <label class="btn btn-outline-success" for="btnradio">
-                      <img width="48" height="48" src="https://img.icons8.com/color/96/cash-app.png" alt="cash-app" />
+                      <img width="48" height="48" src="../static/icons8-cashapp-48.png" alt="cash-app" />
                       CashApp
                     </label>
-
                     {% endif %}
                     {% if setting.show_paypal %}
                     <input type="radio" class="btn-check" data-bs-toggle="tab" data-bs-target="#nav-paypal" role="tab"
                       name="btnradio" id="btnradio1" autocomplete="off">
                     <label class="btn btn-outline-primary" for="btnradio1">
-                      <img width="48" height="48" src="https://img.icons8.com/color/48/paypal.png" alt="paypal" />
+                      <img width="48" height="48" src="../static/icons8-paypal-48.png" alt="paypal" />
                       Paypal
                     </label>
                     {% endif %}
@@ -143,14 +131,22 @@
                       Venmo
                     </label>
                     {% endif %}
+                    {% if setting.show_cash %}
+                    <input type="radio" class="btn-check" data-bs-toggle="tab" data-bs-target="#nav-cash" role="tab"
+                      name="btnradio" id="btnradio3" autocomplete="off">
+                    <label class="btn btn-outline-success" for="btnradio3">
+                      <img width="48" height="48" src="../static/icons8-money-48.png" alt="cash" />
+                      Cash
+                    </label>
+                    {% endif %}
                     {% if setting.show_credit %}
                     <input type="radio" class="btn-check" data-bs-toggle="tab" data-bs-target="#nav-credit" role="tab"
-                      name="btnradio" id="btnradio3" autocomplete="off">
-                    <label class="btn btn-outline-warning" for="btnradio3">
-                      <img width="48" height="48" src="https://img.icons8.com/color/48/cheap-2--v1.png"
-                        alt="cheap-2--v1" />
+                      name="btnradio" id="btnradio4" autocomplete="off">
+                    <label class="btn btn-outline-warning" for="btnradio4">
+                      <img width="48" height="48" src="../static/icons8-cash-48.png" alt="credit" />
                       Credit(s)
-                      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="generalCreditAmount">
+                      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                        id="generalCreditAmount">
                         0
                         <span class="visually-hidden"></span>
                       </span>
@@ -162,48 +158,66 @@
 
               <div class="tab-content" id="nav-tabContent">
                 {% if setting.show_cashapp %}
-                <div class="tab-pane fade show text-center m-4 active" id="nav-cashapp" role="tabpanel" tabindex="0">
+                <div class="tab-pane show text-center m-4 active" id="nav-cashapp" role="tabpanel" tabindex="0">
                   <div class="d-inline-flex flex-column mb-3 text-center">
                     <div class="p-2">
-                      <img class="mb-3 text-center" width="300" height="300" src="../static/cashappQR.svg"
+                      <img class="mb-4 text-center" width="300" height="300" src="../static/cashappQR.svg"
                         alt="CashApp" />
                     </div>
                     <div class="p-2">
-                      <button type="button" class="btn btn-success btn-lg">Paid Using CashApp, Checkin Now</button>
+                      <button type="button" id="payWithCashappBtn" data-payment-method="cashapp" data-bs-dismiss="modal"
+                        class="btn btn-success btn-lg">Paid Using CashApp, Check-In Now</button>
                     </div>
                   </div>
                 </div>
                 {% endif %}
                 {% if setting.show_paypal %}
-                <div class="tab-pane fade text-center m-4" id="nav-paypal" role="tabpanel" tabindex="0">
+                <div class="tab-pane text-center m-4" id="nav-paypal" role="tabpanel" tabindex="0">
                   <div class="d-inline-flex flex-column mb-3 text-center">
                     <div class="p-2">
-                      <img class="mb-3 text-center" width="300" height="300" src="../static/paypalQR.svg"
+                      <img class="mb-4 text-center" width="300" height="300" src="../static/paypalQR.svg"
                         alt="Paypal" />
                     </div>
                     <div class="p-2">
-                      <button type="button" class="btn btn-primary btn-lg">Paid Using Paypal, Checkin Now</button>
+                      <button type="button" id="payWithPaypalBtn" data-payment-method="paypal" data-bs-dismiss="modal"
+                        class="btn btn-primary btn-lg">Paid Using Paypal, Check-In Now</button>
                     </div>
                   </div>
                 </div>
                 {% endif %}
                 {% if setting.show_venmo %}
-                <div class="tab-pane fade text-center m-4" id="nav-venmo" role="tabpanel" tabindex="0">
+                <div class="tab-pane text-center m-4" id="nav-venmo" role="tabpanel" tabindex="0">
                   <div class="d-inline-flex flex-column mb-3 text-center">
                     <div class="p-2">
-                      <img class="mb-3 text-center" width="300" height="300" src="../static/venmoQR.svg" alt="Venmo" />
+                      <img class="mb-4 text-center" width="300" height="300" src="../static/venmoQR.svg" alt="Venmo" />
                     </div>
                     <div class="p-2">
-                      <button type="button" class="btn btn-primary btn-lg">Paid Using Venmo, Checkin Now</button>
+                      <button type="button" id="payWithVenmoBtn" data-payment-method="venmo" data-bs-dismiss="modal"
+                        class="btn btn-primary btn-lg">Paid Using Venmo, Check-In Now</button>
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
+                {% if setting.show_cash %}
+                <div class="tab-pane text-center m-4" id="nav-cash" role="tabpanel" tabindex="0">
+                  <div class="d-inline-flex flex-column mb-3 text-center">
+                    <div class="p-2">
+                      <p>Please Provide Payment to VC Staff Shortly After Check-In</p>
+                    </div>
+                    <div class="p-2">
+                      <button type="button" id="payWithCashBtn" data-payment-method="cash" data-bs-dismiss="modal"
+                        class="btn btn-primary btn-lg m-4"> Check-In Now</button>
                     </div>
                   </div>
                 </div>
                 {% endif %}
                 {% if setting.show_credit %}
-                <div class="tab-pane fade text-center m-4" id="nav-credit" role="tabpanel" tabindex="0">
+                <div class="tab-pane text-center m-4 " id="nav-credit" role="tabpanel" tabindex="0">
                   <div class="d-inline-flex flex-column mb-3 text-center">
                     <div class="p-2">
-                      Use A Credit?
+                      <button type="button" id="payWithCreditBtn" data-payment-method="credit" data-bs-dismiss="modal"
+                        class="btn btn-primary btn-lg m-4"> Check-In
+                        Now</button>
                     </div>
                   </div>
                 </div>
@@ -212,15 +226,6 @@
             </div>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="button" class="btn btn-primary">Save changes</button>
-        </div>
-
-
-
-
-
       </div>
     </div>
   </div>
@@ -271,6 +276,48 @@
 
     fullScreenToggle.addEventListener('click', toggleFullScreen);
 
+
+
+    var payWithCashappBtn = document.getElementById('payWithCashappBtn')
+    var payWithPaypalBtn = document.getElementById('payWithPaypalBtn')
+    var payWithVenmoBtn = document.getElementById('payWithVenmoBtn')
+    var payWithCreditBtn = document.getElementById('payWithCreditBtn')
+
+    if (payWithCashappBtn) {
+      payWithCashappBtn.addEventListener('click', {
+        handleEvent(event) {
+          CheckInQrCode(event.target.dataset.qrCode, event.target.dataset.paymentMethod);
+        }
+      })
+    }
+    if (payWithPaypalBtn) {
+      payWithPaypalBtn.addEventListener('click', {
+        handleEvent(event) {
+          CheckInQrCode(event.target.dataset.qrCode, event.target.dataset.paymentMethod);
+        }
+      })
+    }
+    if (payWithVenmoBtn) {
+      payWithVenmoBtn.addEventListener('click', {
+        handleEvent(event) {
+          CheckInQrCode(event.target.dataset.qrCode, event.target.dataset.paymentMethod);
+        }
+      })
+    }
+    if (payWithCashBtn) {
+      payWithCashBtn.addEventListener('click', {
+        handleEvent(event) {
+          CheckInQrCode(event.target.dataset.qrCode, event.target.dataset.paymentMethod);
+        }
+      })
+    }
+    if (payWithCreditBtn) {
+      payWithCreditBtn.addEventListener('click', {
+        handleEvent(event) {
+          CheckInQrCode(event.target.dataset.qrCode, event.target.dataset.paymentMethod);
+        }
+      })
+    }
 
 
     const checkInPaymentModalEl = document.getElementById('checkInPaymentModal')
@@ -369,6 +416,8 @@
     var allowQrCodeInput = true;
 
     var myToastEl = document.getElementById('infoToast')
+
+    var myToastElHeader = document.getElementById('infoToastHeader')
     var myToastElBody = document.getElementById('infoToastBody')
     var myToast = bootstrap.Toast.getOrCreateInstance(myToastEl) // Returns a Bootstrap toast instance
 
@@ -376,12 +425,8 @@
 
 
     function SubmitQrCode() {
-
+      qrCodeInput = document.getElementById('code').value
       console.log('Submitting QR Code:', qrCodeInput);
-
-      if (!qrCodeInput) {
-        qrCodeInput = document.getElementById('code').value
-      }
 
 
       if (qrCodeInput) {
@@ -392,63 +437,6 @@
 
 
         url = '{{ url_for("preCheckIn" ) }}' + encodeURI(qrCodeInput)
-        alert(url)
-
-
-        fetch(url)
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
-            }
-            return response.json();
-          })
-          .then(data => {
-            document.getElementById('code').value = ""
-            console.log('Data received:', data);
-
-            document.getElementById('generalCreditAmount').innerText = data.generalCredits
-
-            checkInPaymentModal.show(checkInPaymentModalEl)
-
-
-
-            //myToastElBody.innerText = 'Welcome ' + data
-            //myToast.show()
-          })
-          .catch(error => {
-            document.getElementById('code').value = ""
-            //console.error('There was a problem with the fetch operation:', error);
-
-          });
-
-
-
-        //alert('QR Code Submitted');
-      } else {
-        //alert('Error');
-      }
-      qrCodeInput = "";
-    }
-
-
-
-    function CheckInQrCode() {
-
-      console.log('Submitting QR Code:', qrCodeInput);
-
-      if (!qrCodeInput) {
-        qrCodeInput = document.getElementById('code').value
-      }
-
-
-      if (qrCodeInput) {
-        //qrCodeInput = qrCodeInput.replace(/[^a-zA-Z0-9]/g, '');
-        //qrCodeInput = qrCodeInput.replace(/[^\w\s]/gi, '');
-        //qrCodeInput = qrCodeInput.replace(/[^ -~]+/g, "");
-
-
-
-        url = '{{ url_for("checkIn" ) }}' + encodeURI(qrCodeInput)
         //alert(url)
 
 
@@ -461,14 +449,91 @@
           })
           .then(data => {
             document.getElementById('code').value = ""
-            console.log('Data received:', data);
+            if (!data.error) {
+              generalCreditAmountPill = document.getElementById('generalCreditAmount')
+              if (generalCreditAmountPill) { // Check if Credit method is shown
+                //console.log('Credit Account:', data);
+                if (data.generalCredits) {
+                  document.getElementById('btnradio4').disabled = false
+                  generalCreditAmountPill.classList.remove('d-none')
+                  generalCreditAmountPill.innerText = data.generalCredits
+                  if (data.generalCredits > 0) {
+                    payWithCreditBtn.disabled = false
+                    payWithCreditBtn.innerText = 'Pay Using 1 of ' + data.generalCredits + ' available Credits, Checkin Now'
+                  } else {
+                    payWithCreditBtn.innerText = '0 available Credits'
+                    payWithCreditBtn.disabled = true
+                  }
+                } else {
+                  document.getElementById('btnradio4').disabled = true
+                  generalCreditAmountPill.classList.add('d-none')
+                }
 
-            checkInPaymentModal.show(checkInPaymentModalEl)
+              } else {
+                console.log('Skipping, No Credit Account', data);
+                //CheckInQrCode(qrCodeInput, data);
+              }
+
+
+              if (payWithCashappBtn) { payWithCashappBtn.dataset.qrCode = data.uuid }
+              if (payWithPaypalBtn) { payWithPaypalBtn.dataset.qrCode = data.uuid }
+              if (payWithVenmoBtn) { payWithVenmoBtn.dataset.qrCode = data.uuid }
+              if (payWithCashBtn) { payWithCashBtn.dataset.qrCode = data.uuid }
+              if (payWithCreditBtn) { payWithCreditBtn.dataset.qrCode = data.uuid }
+
+              checkInPaymentModal.show(checkInPaymentModalEl)
+            } else {
+              myToastElHeader.innerText = 'Error'
+              myToastElBody.innerText = data.error
+              myToast.show()
+            }
 
 
 
+            //myToastElHeader.innerText = 'Error'
             //myToastElBody.innerText = 'Welcome ' + data
             //myToast.show()
+          })
+          .catch(error => {
+            document.getElementById('code').value = ""
+            console.error('There was a problem with the fetch operation:', error);
+            myToastElHeader.innerText = 'Error'
+            myToastElBody.innerText = 'Network Error'
+            myToast.show()
+          });
+
+
+
+        //alert('QR Code Submitted');
+      } else {
+        //alert('Error');
+      }
+      qrCodeInput = "";
+    }
+
+
+
+    function CheckInQrCode(qrCode = null, paymentMethod = null) {
+
+      console.log('Checking In QR Code:', qrCode, paymentMethod);
+
+      if (qrCode && paymentMethod) {
+        url = '{{ url_for("checkIn" ) }}' + encodeURI(qrCode) +'/'+ encodeURI(paymentMethod)
+        
+        fetch(url)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(data => {
+            document.getElementById('code').value = ""
+            console.log('Data received:', data);
+
+            myToastElHeader.innerText = 'Error'
+            myToastElBody.innerText = 'Welcome ' + data
+            myToast.show()
           })
           .catch(error => {
             document.getElementById('code').value = ""
@@ -484,11 +549,6 @@
       }
       qrCodeInput = "";
     }
-
-
-
-
-
 
     var qrCodeInputTimer = null;
 

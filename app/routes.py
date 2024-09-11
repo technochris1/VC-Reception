@@ -80,14 +80,27 @@ def registerGuest():
 @app.route('/preCheckIn/<uuid>')
 def preCheckIn(uuid = None):
     print("UUID",uuid)
-    #settings = Setting.query.first()
+    settings = Setting.query.first()
     guest = Guest.query.filter_by(uuid = uuid).first()
     
     response = {}
     if(guest):
-        print("Guest",guest)
-        response['guest'] = guest.name
-        response['lastCheckin'] = guest.lastVisit.timestamp()
+        print("Guest",guest)        
+        visitTime = datetime.datetime.now(datetime.timezone.utc)
+        response['guest'] = guest.name       
+        response['uuid'] = guest.uuid       
+        if(guest.lastVisit):
+            response['lastCheckin'] = guest.lastVisit.timestamp()
+            lastVisit = guest.lastVisit
+            lastVisit = lastVisit.replace(tzinfo=datetime.timezone.utc)   
+            checkInCooldownSeconds = settings.checkInCooldownSeconds     
+            if (visitTime - lastVisit).total_seconds() < checkInCooldownSeconds:
+                response['checked_in'] = False
+                print('Already Checked In')
+                response['error'] = "Already Checked In"
+                return json.dumps(response)
+
+
         guestCredit = GuestCredit.query.filter_by(guest_id=guest.id).first()
         if(guestCredit):
             print("GuestCredit",guestCredit)
@@ -97,15 +110,21 @@ def preCheckIn(uuid = None):
                 
         return json.dumps(response)
     else:
-        return abort(404)
+        response['error'] = "Invalid QR Code"
+        return response
+        #return abort(404)
 
 
 
 
 @app.route('/checkIn/')
 @app.route('/checkIn/<uuid>')
-def checkIn(uuid = None):
+@app.route('/checkIn/<uuid>/<method>')
+def checkIn(uuid = None, method = None):
+    if(uuid is None or method is None):
+        return abort(404)
     settings = Setting.query.first()
+    print("Settings,",settings)
     guest = Guest.query.filter_by(uuid = uuid).first()
     if(guest):
         visitTime = datetime.datetime.now(datetime.timezone.utc)
@@ -114,17 +133,12 @@ def checkIn(uuid = None):
                 'checked_in': True,
                 'checked_in_at_timestamp': visitTime.timestamp()
             }
-
-
         if(guest.lastVisit):
+            response['lastCheckin'] = guest.lastVisit.timestamp()
             lastVisit = guest.lastVisit
             lastVisit = lastVisit.replace(tzinfo=datetime.timezone.utc)         
 
-            checkInCooldownSeconds = settings.checkInCooldownSeconds
-            if(checkInCooldownSeconds is None):
-                
-                checkInCooldownSeconds = 60
-                
+            checkInCooldownSeconds = settings.checkInCooldownSeconds             
             if (visitTime - lastVisit).total_seconds() < checkInCooldownSeconds:
                 response['checked_in'] = False
                 print('Already Checked In')
@@ -135,8 +149,27 @@ def checkIn(uuid = None):
             checked_in_at = visitTime,
             userID = guest.id
         )
-        #db.session.add(newCheckIn)
+        db.session.add(newCheckIn)
         db.session.commit()
+        if(method == "credit"):     
+            newTransaction = CreditTransactionLog(
+                guest=guest.id,
+                authorizedSource="Check In via "+method,
+                description="Check In via "+method+" - Removed 1 General Credit",
+                generalAmountChange=-1,
+                specialEventAmountChange=0,
+                privateSessionAmountChange=0
+            )
+            db.session.add(newTransaction)
+            db.session.commit()
+
+            guestCredit = GuestCredit.query.filter_by(guest_id=guest.id).first()
+            if(guestCredit):
+                guestCredit.generalAmount -= 1
+                guestCredit.lastUpdate = datetime.datetime.now(datetime.timezone.utc)
+                db.session.commit()
+
+        
 
         
         return json.dumps(response)
