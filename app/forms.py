@@ -18,6 +18,15 @@ class AdminLoginForm(FlaskForm):
     password = StringField('Password', validators=[DataRequired()])
     submit = SubmitField('Login')
 
+
+
+class ChangePasswordForm(FlaskForm):
+    
+    email = StringField('Email', validators=[DataRequired(), Email()])    
+    password = StringField('Password', validators=[DataRequired()])
+    submit = SubmitField('Change Password')
+
+    
     
     
    
@@ -28,7 +37,7 @@ class GuestRegistrationForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     phone = StringField('Phone Number')
 
-    termsCheck = BooleanField('I agree to the terms and conditions')    
+    termsCheck = BooleanField('I agree to the terms and conditions', validators=[DataRequired()])    
     submit = SubmitField('Sign Up')
 
     def validate_email(self, email):

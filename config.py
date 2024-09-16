@@ -11,7 +11,9 @@ class Config(object):
     
     SECRET_KEY = "REPLACE_ME"
     SECURITY_PASSWORD_SALT = "73996734432957991591033005944368149869"
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'database.db') 
+    #SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'empty_database.db')   #Initial Database
+    #SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'dev_database.db')   #Development Database
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'database.db')  #Production Database
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True,}
 
@@ -25,6 +27,8 @@ class Config(object):
     MAIL_USERNAME=None
     MAIL_PASSWORD=None
     MAIL_DEFAULT_SENDER=None
+
+    SCHEDULER_API_ENABLED = True
 
 
 class ProductionConfig(Config):

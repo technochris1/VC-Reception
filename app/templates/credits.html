@@ -9,21 +9,25 @@
 
 
 <div>
-    {% for creds in guestCreds %}
-    <div class="card bg-dark text-light">
-        <div class="card-body">
-            <h5 class="card-title">{{ creds.guest }}</h5>    
-            <p class="card-text">Credit: {{ creds.generalAmount }}</p>
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 g-4">
+        {% for creds in guestCreds %}
+        <div class="col">
+            <div class="card text-center bg-dark text-light">
+                <div class="card-body">
+                    <h1 class="card-title">{{ creds.generalAmount }}</h1>
+                    <p class="card-text">{{ creds.guest.fetUsername }}</p>
+                    <a href="/guestCredit/{{creds.id}}" class=""><i class="bi bi-plus-square"></i></a>
+                </div>
+            </div>
         </div>
+        {% endfor %}
     </div>
-    {% endfor %}
 
 
 
 
 
-    <table class="table-dark rounded-3 overflow-hidden "
-        data-toggle="table" data-search="true">
+    <table class="table-dark rounded-3 overflow-hidden " data-toggle="table" data-search="true">
         <thead>
             <tr>
                 <th data-sortable="true" scope="col">Timestamp</th>
@@ -38,9 +42,9 @@
             {% for logItem in guestCreditLog %}
             <tr>
                 <td scope="row">{{ logItem.timestamp }}</td>
-                <td scope="row">{{ logItem.guest }}</td>
+                <td scope="row">{{ guests[logItem.guest].fetUsername }}</td>
                 <td scope="row">{{ logItem.authorizedSource }}</td>
-                <td scope="row">{{ logItem.authorizedBy }}</td>                
+                <td scope="row">{{ guests[logItem.authorizedBy].role }}</td>
                 <td scope="row">{{ logItem.generalAmountChange }}</td>
                 <td scope="row">{{ logItem.description }}</td>
             </tr>

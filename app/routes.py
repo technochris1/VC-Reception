@@ -1,7 +1,8 @@
+import traceback
 from flask import render_template, jsonify, abort, url_for, redirect, request, flash, render_template_string
 from app import app, db, bcrypt, mail, login_manager
 from app.models import Guest, Guestlog, Event, Setting, func, GuestCredit, CreditTransactionLog   
-from app.forms import AdminRegistrationForm, AdminLoginForm, GuestRegistrationForm, AddCreditForm
+from app.forms import AdminRegistrationForm, AdminLoginForm, GuestRegistrationForm, AddCreditForm, ChangePasswordForm
 from flask_mail import  Message
 from flask_login import login_user, current_user, logout_user, login_required
 
@@ -35,10 +36,7 @@ def home():
 @app.route('/guestView/', methods=['GET', 'POST'])
 def guestView():
     form = GuestRegistrationForm()
-    if form.validate_on_submit():
-
-
-        
+    if form.validate_on_submit():        
         newGuest = Guest(
             fetUsername=form.fetUsername.data,
             name=form.name.data,
@@ -89,10 +87,19 @@ def preCheckIn(uuid = None):
         visitTime = datetime.datetime.now(datetime.timezone.utc)
         response['guest'] = guest.name       
         response['uuid'] = guest.uuid       
+
+
+        print("Guest Roles",guest.roles)
+        if(guest.roles):
+            response['roles'] = ", ".join([role.name for role in guest.roles])
+            response['skip_payment'] = any(x.skip_payment_at_checkin == True for x in guest.roles)
+            response['skip_tos_update'] = any(x.skip_tos_update_at_checkin == True for x in guest.roles)
+
         if(guest.lastVisit):
             response['lastCheckin'] = guest.lastVisit.timestamp()
             lastVisit = guest.lastVisit
             lastVisit = lastVisit.replace(tzinfo=datetime.timezone.utc)   
+            #checkOutBasedOnTime = settings.checkOutBasedOnTime
             checkInCooldownSeconds = settings.checkInCooldownSeconds     
             if (visitTime - lastVisit).total_seconds() < checkInCooldownSeconds:
                 response['checked_in'] = False
@@ -129,9 +136,10 @@ def checkIn(uuid = None, method = None):
     if(guest):
         visitTime = datetime.datetime.now(datetime.timezone.utc)
         response = {
-                'guest': guest.name,
+                'guest': guest.fetUsername,
                 'checked_in': True,
-                'checked_in_at_timestamp': visitTime.timestamp()
+                'checked_in_at_timestamp': visitTime.timestamp(),
+                'payment_method': method
             }
         if(guest.lastVisit):
             response['lastCheckin'] = guest.lastVisit.timestamp()
@@ -147,7 +155,8 @@ def checkIn(uuid = None, method = None):
         guest.lastVisit = visitTime
         newCheckIn = Guestlog(
             checked_in_at = visitTime,
-            userID = guest.id
+            userID = guest.id,
+            paymentMethod = method
         )
         db.session.add(newCheckIn)
         db.session.commit()
@@ -187,8 +196,53 @@ def logout():
     logout_user()
     return redirect(url_for('home'))
 
+@app.route('/setInitialPassword/', methods=['GET', 'POST'])
+def setInitialPassword():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+       hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+       guest = Guest.query.filter_by(email=form.email.data).first()
+       print("GUEST",guest)
+       if guest and not guest.password:    
+           guest.password = hashed_password           
+           db.session.commit()          
+           #next_page = request.args.get('next') 
+           return redirect(url_for('dashboard'))
+       else:
+           flash('Change Password unsuccessful. Please check email', 'danger')
+    return render_template('changePassword.html', form=form)
+
+@app.route('/resetPassword/<id>', methods=['GET', 'POST'])
+def resetPassword(id):   
+    guest = Guest.query.filter_by(id=id).first()
+    tempPassword = uuid.uuid4().hex.upper()[0:6] #"temp-password"
+    hashed_password = bcrypt.generate_password_hash(tempPassword).decode('utf-8')
+    if guest:    
+        guest.password = hashed_password           
+        db.session.commit()          
+        sendPwResetEmail([guest.email], tempPassword)
+        flash('Reset Password Successful. Please check email', 'success')
+        return redirect(url_for('dashboard'))
+    else:
+        flash('Change Password unsuccessful, Contact Support.', 'danger')
+        return redirect(url_for('dashboard'))
+      
 
 
+@app.route('/changePassword/', methods=['GET', 'POST'])
+def changePassword():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+       hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+       guest = Guest.query.filter_by(email=form.email.data).first()
+       if guest and not guest.password:    
+           guest.password = hashed_password           
+           db.session.commit()          
+           #next_page = request.args.get('next') 
+           return redirect(url_for('dashboard'))
+       else:
+           flash('Change Password unsuccessful. Please check email', 'danger')
+    return render_template('changePassword.html', form=form)
 
 
 
@@ -212,7 +266,7 @@ def dashboard():
 
 
 @app.route('/registerAdmin/', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def registerAdmin():
     form = AdminRegistrationForm()
     if form.validate_on_submit():
@@ -233,12 +287,15 @@ def registerAdmin():
 
 
 @app.route('/getGuest/')
-@app.route('/getGuest/<uuid>')
-def getGuest(uuid = None): return jsonify(Guest.query.filter_by(uuid = uuid).first())
+@app.route('/getGuest/<id>')
+def getGuest(id = None): return jsonify(Guest.query.filter_by(id = id).first())
 
 @app.route('/guests/', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def guests():
+    
+
+
     if request.method == 'POST':
         termsCheckValue = False
 
@@ -246,8 +303,8 @@ def guests():
         if request.form.get('termsCheck') is not None:
             termsCheckValue = True
         
-        rowID = request.values.get('dbID')
-        print(rowID)
+        rowID = request.values.get('id')
+        print("ROW ID",rowID)
         
         if (rowID):
             print("Updating Row")
@@ -294,7 +351,7 @@ def guests():
     return render_template('guests.html', guests=Guest.query.all())
 
 @app.route('/guestCredit/<id>', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def guestCredit(id):
     if(id is None):
         return redirect(url_for('guests', guests=Guest.query.all()))
@@ -316,7 +373,7 @@ def guestCredit(id):
     return render_template('guestCredit.html', guest=_guest, guestCredit=GuestCredit.query.filter_by(guest=_guest).first(), guestCreditLog=CreditTransactionLog.query.filter_by(guest=_guest.id).all())
 
 @app.route('/guestCredit/<id>/addCredits', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def addCredits(id):
     form = AddCreditForm()
     _guest = Guest.query.filter_by(id=id).first()
@@ -353,7 +410,7 @@ def addCredits(id):
 
 
 @app.route('/logbook/')
-@login_required
+#@login_required
 def logbook():
     return render_template('logbook.html', guests=Guest.query.all(), log=Guestlog.query.all())
     #return render_template('logbook.html')
@@ -361,7 +418,7 @@ def logbook():
 
 
 @app.route('/credits/', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def credits():
     return render_template('credits.html', guests=Guest.query.all(), guestCreds=GuestCredit.query.all(), guestCreditLog=CreditTransactionLog.query.all())
     #return render_template('logbook.html')
@@ -382,7 +439,7 @@ def sendEmailRoute():
 
 
 @app.route('/settings/', methods=['GET', 'POST'])
-@login_required
+#@login_required
 def settings():
     if request.method == 'POST':
 
@@ -441,6 +498,11 @@ def settings():
 def generate_uuid():
     return str(uuid.uuid4())
 
+def sendPwResetEmail(recipients, pw=None):   
+    if(pw):
+        return sendEmail(recipients=recipients,subject="VC Access - Password Reset", message="Please Use this password to Login: "+ pw)
+
+
 
 def sendQRCodeEmail(recipients, uuid):
     qr = qrcode.QRCode(
@@ -476,6 +538,7 @@ def sendEmail(recipients, subject, message, attachment=None):
         msg = Message(subject,
                     sender=("VC Front Desk", "VC-Desk@whoknows.com"),
                     recipients=recipients)
+        msg.body = message
         if attachment:
             try:
                 

@@ -6,7 +6,8 @@
         <thead>
             <tr>
                 <th data-sortable="true" scope="col">Checkin Time</th>
-                <th data-sortable="true" scope="col">Handle</th>
+                <th data-sortable="true" scope="col">Payment Method</th>
+                <th data-sortable="true" scope="col">Scene Name</th>
                 <th data-sortable="true" scope="col">Name</th>
             </tr>
         </thead>
@@ -15,8 +16,9 @@
             {% for logItem in log %}
             <tr>
                 <td>{{ moment(logItem.checked_in_at).format("dddd, MMMM Do YYYY, h:mm a") }}</td>
-                <td scope="row">{{guests[logItem.userID-1].fetUsername}}</td>
-                <td scope="row">{{guests[logItem.userID-1].name}}</td>
+                <td scope="row">{{ logItem.paymentMethod }}</td>
+                <td scope="row">{{guests[logItem.userID].fetUsername}}</td>
+                <td scope="row">{{guests[logItem.userID].name}}</td>
             </tr>
             {% endfor %}
 

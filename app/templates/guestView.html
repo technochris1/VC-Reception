@@ -161,7 +161,7 @@
                 <div class="tab-pane show text-center m-4 active" id="nav-cashapp" role="tabpanel" tabindex="0">
                   <div class="d-inline-flex flex-column mb-3 text-center">
                     <div class="p-2">
-                      <img class="mb-4 text-center" width="300" height="300" src="../static/cashappQR.svg"
+                      <img class="mb-4 text-center" width="200" height="200" src="../static/cashappQR.svg"
                         alt="CashApp" />
                     </div>
                     <div class="p-2">
@@ -175,7 +175,7 @@
                 <div class="tab-pane text-center m-4" id="nav-paypal" role="tabpanel" tabindex="0">
                   <div class="d-inline-flex flex-column mb-3 text-center">
                     <div class="p-2">
-                      <img class="mb-4 text-center" width="300" height="300" src="../static/paypalQR.svg"
+                      <img class="mb-4 text-center" width="200" height="200" src="../static/paypalQR.svg"
                         alt="Paypal" />
                     </div>
                     <div class="p-2">
@@ -189,7 +189,7 @@
                 <div class="tab-pane text-center m-4" id="nav-venmo" role="tabpanel" tabindex="0">
                   <div class="d-inline-flex flex-column mb-3 text-center">
                     <div class="p-2">
-                      <img class="mb-4 text-center" width="300" height="300" src="../static/venmoQR.svg" alt="Venmo" />
+                      <img class="mb-4 text-center" width="200" height="200" src="../static/venmoQR.svg" alt="Venmo" />
                     </div>
                     <div class="p-2">
                       <button type="button" id="payWithVenmoBtn" data-payment-method="venmo" data-bs-dismiss="modal"
@@ -260,11 +260,8 @@
     //   })
     // })
 
-
-
-
-
-
+    console.log('Guest View Loading...');
+      
 
 
     var themeSwitch = document.getElementById('themeSwitch');
@@ -450,6 +447,13 @@
           .then(data => {
             document.getElementById('code').value = ""
             if (!data.error) {
+              console.log('Data received:', data);
+              skipPaymentView = false
+              skipPaymentView = data.skip_payment
+              if (skipPaymentView === true) {
+                CheckInQrCode(data.uuid, 'SkippedPaymentScreen Via Role Set:' + data.roles);
+                return
+              }
               generalCreditAmountPill = document.getElementById('generalCreditAmount')
               if (generalCreditAmountPill) { // Check if Credit method is shown
                 //console.log('Credit Account:', data);
@@ -482,8 +486,10 @@
               if (payWithCreditBtn) { payWithCreditBtn.dataset.qrCode = data.uuid }
 
               checkInPaymentModal.show(checkInPaymentModalEl)
+
+
             } else {
-              myToastElHeader.innerText = 'Error'
+              myToastElHeader.innerText = 'Notice'
               myToastElBody.innerText = data.error
               myToast.show()
             }
@@ -518,8 +524,8 @@
       console.log('Checking In QR Code:', qrCode, paymentMethod);
 
       if (qrCode && paymentMethod) {
-        url = '{{ url_for("checkIn" ) }}' + encodeURI(qrCode) +'/'+ encodeURI(paymentMethod)
-        
+        url = '{{ url_for("checkIn" ) }}' + encodeURI(qrCode) + '/' + encodeURI(paymentMethod)
+
         fetch(url)
           .then(response => {
             if (!response.ok) {
@@ -531,8 +537,8 @@
             document.getElementById('code').value = ""
             console.log('Data received:', data);
 
-            myToastElHeader.innerText = 'Error'
-            myToastElBody.innerText = 'Welcome ' + data
+            myToastElHeader.innerText = 'Checked In'
+            myToastElBody.innerText = 'Welcome ' + data.guest
             myToast.show()
           })
           .catch(error => {

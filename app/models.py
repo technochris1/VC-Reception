@@ -20,13 +20,18 @@ class Role(db.Model):
     name:str  = db.Column(db.String(100))
     description:str  = db.Column(db.String(200))
     permissions:str  = db.Column(db.String(200))
-    guests = db.relationship('Guest', backref=db.backref('role', lazy='dynamic'), secondary=guest_role)
+    skip_payment_at_checkin:bool = db.Column(db.Boolean(), default=False)
+    skip_tos_update_at_checkin:bool = db.Column(db.Boolean(), default=False)
+    allow_login_to_backoffice:bool = db.Column(db.Boolean(), default=False)
+    allow_password_reset:bool = db.Column(db.Boolean(), default=False)
+    notify_staff_on_checkin:bool = db.Column(db.Boolean(), default=False)
+    auto_checkout_on_event_end:bool = db.Column(db.Boolean(), default=False)
 
     def __str__(self):
         return f'{self.name}'
 
     def __repr__(self):
-        return f'Role(\'{self.name}\')'
+        return f'{self.name}'
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -45,16 +50,18 @@ class Guest(db.Model, UserMixin):
     phone:str  = db.Column(db.String(20))
 
     password:str  = db.Column(db.String(255))
-    roles = db.relationship('Role', backref=db.backref('guest', lazy='dynamic'), secondary=guest_role)
+    roles = db.relationship('Role', backref=db.backref('guests'), secondary=guest_role)
 
     termsCheck:bool = db.Column(db.Boolean(), default=False)
     termsDate = db.Column(db.DateTime(timezone=True), server_default=None)
     
-    credit = db.relationship('GuestCredit',back_populates='guest')
-    logbook = db.relationship('Guestlog', backref='Guest')
+    credit = db.relationship('GuestCredit',backref='guest')
+
+    logbook = db.relationship('Guestlog', backref='guest')
     
 
     lastVisit = db.Column(db.DateTime(timezone=True), server_default=None)
+    lastCheckOut = db.Column(db.DateTime(timezone=True), server_default=None)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
 
@@ -69,23 +76,26 @@ class Guestlog(db.Model):
     id:int = db.Column(db.Integer, primary_key=True)
     checked_in_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
     userID = db.Column(db.Integer, db.ForeignKey('guest.id'))
+    paymentMethod:str  = db.Column(db.String(100))
 
 
 @dataclass
 class GuestCredit(db.Model):
     id:int = db.Column(db.Integer, primary_key=True)
     lastUpdate = db.Column(db.DateTime(timezone=True), server_default=None)
+
     guest_id = db.Column(db.Integer, db.ForeignKey('guest.id'), nullable=False)    
-    guest = db.relationship('Guest' ,back_populates='credit')
-    generalAmount:int  = db.Column(db.Integer, nullable=False, default=0)    
-    specialEventAmount:int  = db.Column(db.Integer, nullable=False, default=0)    
+    #guest = db.relationship('Guest' ,back_populates='credit')
+
+    generalAmount:int  = db.Column(db.Integer, nullable=False, default=0)
+    specialEventAmount:int  = db.Column(db.Integer, nullable=False, default=0)
     privateSessionAmount:int  = db.Column(db.Integer, nullable=False, default=0)
 
     def __str__(self):
         return f'{self.id}:{self.guest_id}:{self.generalAmount}'
 
     def __repr__(self):
-        return f'GuestCredit(\'{self.id}\')'
+        return f'{self.id}'
 
 
 @dataclass
@@ -116,7 +126,13 @@ class Setting(db.Model):
     id:int = db.Column(db.Integer, primary_key=True)
     tos:str  = db.Column(db.String())
     tos_updated:str = db.Column(db.String(100))
+
+    
+
     checkInCooldownSeconds:int = db.Column(db.Integer, default=60)
+    checkOutBasedOnTime:bool = db.Column(db.Boolean(), default=True)
+    checkOutTime:datetime = db.Column(db.DateTime(timezone=True), server_default=None)
+    checkOutBasedOnEventEndTime:bool = db.Column(db.Boolean(), default=False)
 
 
     show_cashapp:bool = db.Column(db.Boolean(), default=True)

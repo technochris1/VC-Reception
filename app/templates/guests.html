@@ -7,9 +7,12 @@
         data-bs-mode="new">
         Add Guest Manually
     </button>
+    <a href="/registerAdmin"><button type="button" class="btn btn-primary">Register Admin</button></a>
+
+
 </div>
 
-<table class="table-dark rounded-3 overflow-hidden"  data-toggle="table">
+<table class="table-dark rounded-3 overflow-hidden" data-toggle="table">
     <thead>
         <tr>
             <th data-sortable="true" scope="col">Handle</th>
@@ -46,6 +49,10 @@
                     class="btn btn-sm btn-danger">Delete</button></td>
         </tr> -->
 
+
+        {{ current_user.roles and current_user | check_role_allow_password_reset }}
+
+
         {% for guest in guests %}
         <tr>
             <th scope="row">{{guest.fetUsername}}</th>
@@ -55,15 +62,24 @@
             {% else %}
             <td>None Assigned</td>
             {% endif %}
-            
-            
+
+
+
+
+
             {% if guest.lastVisit %}
             <td>{{ moment(guest.lastVisit).fromNow() }}</td>
             {% else %}
             <td>Never</td>
             {% endif %}
             <td>
-                <a href="/guestCredit/{{guest.id}}"><button type="button" class="btn btn-sm btn-outline-danger" ><i class="bi bi-cash-coin"></i></button></a>
+
+                {% if current_user.roles and current_user | check_role_allow_password_reset %}
+                <a href="/resetPassword/{{guest.id}}"><button type="button" class="btn btn-sm btn-outline-danger"><i
+                            class="bi bi-arrow-clockwise"></i></button></a>
+                {% endif %}
+                <a href="/guestCredit/{{guest.id}}"><button type="button" class="btn btn-sm btn-outline-danger"><i
+                            class="bi bi-cash-coin"></i></button></a>
                 <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
                     data-bs-target="#registerModal" data-bs-mode="edit" data-bs-uuid="{{guest.id}}"><i
                         class="bi bi-pencil-square"></i></button>
@@ -88,14 +104,21 @@
         <div class="modal-content ">
             <div class="modal-header bg-dark text-light">
                 <h5 class="modal-title" id="exampleModalLabel">New Guest Registration</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
             </div>
             <div class="modal-body bg-dark text-light">
 
                 <form class="row g-3" method="post">
 
 
+                    <div class="col-md-6">
 
+
+                        <label for="id" class="form-label">id</label>
+                        <input type="text" class="form-control" name="id" id="id" readonly>
+
+                    </div>
                     <div class="col-md-6">
                         <label for="uuid" class="form-label">Unique QR Code</label>
                         <div class="input-group mb-3">
@@ -123,7 +146,7 @@
                         <label for="name" class="form-label">Name</label>
                         <input type="text" class="form-control" name="name" id="name" required>
                     </div>
-                    
+
 
                     <div class="col-md-6">
                         <label for="emailAddress" class="form-label">Email address</label>
@@ -138,7 +161,7 @@
                     <div class="col-12">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="False" name="termsCheck"
-                                id="termsCheck" >
+                                id="termsCheck">
                             <label class="form-check-label" for="termsCheck">
                                 Agree to Terms and Conditions
                             </label>
@@ -178,6 +201,14 @@
 
 
 <script>
+
+
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+
+
+
+
     const generateUuidURL = '{{ url_for("generateUUID") }}'
     var registerModal = document.getElementById('registerModal')
     var qrCodeModal = document.getElementById('qrModal')
@@ -194,7 +225,7 @@
             .then(data => {
                 console.log('Data received:', data);
                 document.getElementById('uuid').value = data
-                document.getElementById('showQrCode').dataset.bsQr = data
+                //document.getElementById('showQrCode').dataset.bsQr = data
             })
             .catch(error => {
                 console.error('There was a problem with the fetch operation:', error);
@@ -251,9 +282,11 @@
                     return response.json();
                 })
                 .then(data => {
+                    console.log('Data received:', data);
 
                     if (data != null) {
                         console.log('Data received:', data);
+                        document.getElementById('id').value = data.id
                         document.getElementById('uuid').value = data.uuid
                         document.getElementById('fetUsername').value = data.fetUsername
                         document.getElementById('name').value = data.name
