@@ -50,8 +50,6 @@
         </tr> -->
 
 
-        {{ current_user.roles and current_user | check_role_allow_password_reset }}
-
 
         {% for guest in guests %}
         <tr>
@@ -120,12 +118,30 @@
 
                     </div>
                     <div class="col-md-6">
-                        <label for="uuid" class="form-label">Unique QR Code</label>
+
+
+
+
+
+
+                        <label for="uuid" id="uuidLabel" class="form-label">Unique QR Code</label>
                         <div class="input-group mb-3">
                             <button class="btn btn-outline-secondary" type="button" id="refreshQrCode"><i
                                     class="bi bi-arrow-clockwise"></i></button>
                             <input type="text" class="form-control" placeholder="UUID" name="uuid" id="uuid"
-                                aria-label="Example text with button addon" aria-describedby="button-addon1" readonly>
+                                aria-label="Example text with button addon" aria-describedby="button-addon1">
+
+                            <!-- <label for="uuid" class="form-label">Unique QR Code (Locked)</label>
+                                <div class="input-group mb-3">
+                                <input type="text" class="form-control" placeholder="UUID" name="uuid" id="uuid"
+                                    aria-label="Example text with button addon" aria-describedby="button-addon1"
+                                    readonly>
+                        -->
+
+
+
+
+
                             <!-- <button class="btn btn-outline-secondary" type="button" id="showQrCode"
                                     data-bs-toggle="modal" data-bs-target="#qrModal"><i
                                         class="bi bi-qr-code"></i></button> -->
@@ -285,7 +301,9 @@
                     console.log('Data received:', data);
 
                     if (data != null) {
-                        console.log('Data received:', data);
+                        
+
+                        
                         document.getElementById('id').value = data.id
                         document.getElementById('uuid').value = data.uuid
                         document.getElementById('fetUsername').value = data.fetUsername
@@ -293,6 +311,17 @@
                         document.getElementById('emailAddress').value = data.email
                         document.getElementById('phoneNumber').value = data.phone
                         document.getElementById('termsCheck').checked = data.termsCheck
+
+                        if(data.allow_qrcode_refresh != null){
+                            document.getElementById('uuid').setAttribute('readonly', true)
+                            document.getElementById('uuidLabel').value = 'Unique QR Code (Locked)'
+                            document.getElementById('refreshQrCode').disabled = true
+                        }else{
+                            
+                            document.getElementById('uuid').removeAttribute('readonly')
+                            document.getElementById('uuidLabel').value = 'Unique QR Code'
+                            document.getElementById('refreshQrCode').disabled = false
+                        }
                     }
 
 

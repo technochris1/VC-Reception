@@ -57,10 +57,12 @@ def guestView():
 @app.route('/registerGuest/', methods=['GET', 'POST'])
 def registerGuest():
     form = GuestRegistrationForm()
+
+
     if form.validate_on_submit():        
 
         newGuest = Guest(
-            uuid = request.values.get('uuid'),
+            uuid = generate_uuid(),
             fetUsername=form.fetUsername.data,
             name=form.name.data,
             email=form.email.data,
@@ -69,9 +71,9 @@ def registerGuest():
         )
         db.session.add(newGuest)
         db.session.commit()
-
+        sendQRCodeEmail([newGuest.email], newGuest.uuid)
         flash('New Guest Added', 'success')
-        return redirect(url_for('guestView', setting=Setting.query.first()))        
+        return redirect(url_for('guestView'))        
     return render_template('guest_registration.html', setting=Setting.query.first(), form = form)
 
 @app.route('/preCheckIn/')
@@ -288,7 +290,9 @@ def registerAdmin():
 
 @app.route('/getGuest/')
 @app.route('/getGuest/<id>')
-def getGuest(id = None): return jsonify(Guest.query.filter_by(id = id).first())
+def getGuest(id = None):
+    data = Guest.query.filter_by(id = id).first()   
+    return jsonify(data)
 
 @app.route('/guests/', methods=['GET', 'POST'])
 #@login_required

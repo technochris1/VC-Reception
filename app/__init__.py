@@ -68,7 +68,7 @@ class guestView(ModelView):
     can_delete = False
     column_hide_backrefs = False
     column_list = ('fetUsername', 'uuid', 'email', 'name', 'phone', 'roles')
-    form_columns = ('fetUsername', 'uuid', 'email', 'password', 'name', 'phone' ,'roles')
+    form_columns = ('fetUsername', 'uuid', 'email', 'password', 'name', 'phone' ,'roles','allow_qrcode_refresh')
     can_view_details = True
 
 class roleView(ModelView):
@@ -173,6 +173,13 @@ logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
 def check_role_allow_password_reset(guest):   
     return any(x.allow_password_reset == True for x in guest.roles)
 
+# @app.template_filter('check_role_allow_qrcode_refresh')
+# def check_role_allow_qrcode_refresh(guest):   
+#     if guest and guest.roles:
+#         return any(x.allow_qrcode_refresh == True for x in guest.roles)
+#     else:
+#         return False
+    
 @app.template_filter('utc_to_local')
 def utc_to_local(utc_dt):
     return utc_dt.replace(tzinfo=datetime.timezone.utc).astimezone(tz=None)
