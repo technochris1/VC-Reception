@@ -25,7 +25,8 @@ class Role(db.Model):
     allow_login_to_backoffice:bool = db.Column(db.Boolean(), default=False)
     allow_password_reset:bool = db.Column(db.Boolean(), default=False)
     notify_staff_on_checkin:bool = db.Column(db.Boolean(), default=False)
-    auto_checkout_on_event_end:bool = db.Column(db.Boolean(), default=False)
+    auto_checkout_on_event_end:bool = db.Column(db.Boolean(), default=False)    
+        
 
     def __str__(self):
         return f'{self.name}'
@@ -50,6 +51,8 @@ class Guest(db.Model, UserMixin):
     phone:str  = db.Column(db.String(20))
 
     password:str  = db.Column(db.String(255))
+    allow_qrcode_refresh:bool = db.Column(db.Boolean(), default=True)
+
     roles = db.relationship('Role', backref=db.backref('guests'), secondary=guest_role)
 
     termsCheck:bool = db.Column(db.Boolean(), default=False)
@@ -133,7 +136,6 @@ class Setting(db.Model):
     id:int = db.Column(db.Integer, primary_key=True)
     tos:str  = db.Column(db.String())
     tos_updated:str = db.Column(db.String(100))
-
     
 
     checkInCooldownSeconds:int = db.Column(db.Integer, default=60)
