@@ -29,10 +29,10 @@
 
 
 
-<body class=" bg-dark text-light">
+<body class=" bg-dark text-light ">
 
 
-    <div class="container ">
+    <div class="container bg-dark text-light ">
         <div class="row flex-nowrap">
             <div class="col-auto ">
 
@@ -54,69 +54,78 @@
         </div>
 
 
-        <h1 class="text-center">Guest Registration</h1>
+        <h1 class="text-center pb-4">Guest Registration</h1>
         <form method="POST" action="">
             {{ form.hidden_tag() }}
 
             <fieldset class="form-group">
-                <div class="form-group p-3">
-                    {{ form.fetUsername.label(class="form-control-label") }}
-                    {{ form.fetUsername(class="form-control") }}
-                </div>
 
-                <div class="form-group p-3">
-                    {{ form.name.label(class="form-control-label") }}
-                    {% if form.name.errors %}
-                    {{ form.name(class="form-control is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.name.errors %}
-                        <span>{{ error }}</span>
-                        {% endfor %}
+
+                <div class="form-group text-dark p-1">
+                    <div class="form-floating mx-5">
+                        {{ form.fetUsername(class="form-control", placeholder="fetLife") }}
+                        {{ form.fetUsername.label() }}
                     </div>
-                    {% else %}
-                    {{ form.name(class="form-control") }}
-                    {% endif %}
                 </div>
 
-                <div class="form-group p-3">
-                    {{ form.email.label(class="form-control-label") }}
-                    {% if form.email.errors %}
-                    {{ form.email(class="form-control is-invalid") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.email.errors %}
-                        <span>{{ error }}</span>
-                        {% endfor %}
+
+
+
+
+                <div class="form-group text-dark p-1">
+                    <div class="form-floating mx-5">
+                        {% if form.email.errors %}
+                        {{ form.email(class="form-control is-invalid", placeholder="example@gmail.com") }}
+                        <div class="invalid-feedback">
+                            {% for error in form.email.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        {{ form.email(class="form-control", placeholder="example@gmail.com") }}
+                        {% endif %}
+                        {{ form.email.label() }}
                     </div>
-                    {% else %}
-                    {{ form.email(class="form-control") }}
-                    {% endif %}
-                </div>
-
-                <div class="form-group p-3">
-                    {{ form.phone.label(class="form-control-label") }}
-                    {{ form.phone(class="form-control") }}
                 </div>
 
 
-                <div class="form-group p-3">
-                    {% if form.termsCheck.errors %}
-                    {{ form.termsCheck(class="form-check-input is-invalid m-2") }}
-                    <div class="invalid-feedback">
-                        {% for error in form.termsCheck.errors %}
-                        <span>{{ error }}</span>
-                        {% endfor %}
+                <div class="form-group text-dark p-1">
+                    <div class="form-floating mx-5">
+                        {{ form.phone(class="form-control", type="tel", placeholder="302 000 0000") }}
+                        {{ form.phone.label() }}
                     </div>
-                    {% else %}
-                    {{ form.termsCheck(class="form-check-input m-2") }}
-                    {% endif %}
-                    {{ form.termsCheck.label(class="form-check-label" ) }}
-                    <button class="btn btn-lg btn-outline-primary ms-2" type="button" data-bs-target="#tosModal" data-bs-toggle="modal"
-                        id="tosBtn">Current Terms and
-                        Conditions</button>
+                </div>
+
+
+
+
+
+                <div class="form-group p-2">
+                    <div class="d-flex justify-content-between w-auto m-5">
+                        <div class="d-inline-flex ">
+                            {% if form.termsCheck.errors %}
+                            {{ form.termsCheck(class="form-check-input is-invalid m-md-2 m-lg-3 ") }}
+                            <div class="invalid-feedback">
+                                {% for error in form.termsCheck.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            {{ form.termsCheck(class="form-check-input m-md-2 m-lg-3") }}
+                            {% endif %}
+                            {{ form.termsCheck.label(class="form-check-label align-self-stretch mx-3" ) }}
+                        </div>
+                        <div class="">
+                            <button class="btn btn-lg btn-outline-primary" type="button" data-bs-target="#tosModal"
+                                data-bs-toggle="modal" id="tosBtn">Current Terms and
+                                Conditions</button>
+                        </div>
+
+                    </div>
                 </div>
 
             </fieldset>
-            <div class="form-group p-3">
+            <div class="form-group p-1  mx-5">
                 <div class="d-flex justify-content-between">
                     <a href="/guestView">
                         <button type="button" class="btn btn-primary btn-lg">Go Back</button>

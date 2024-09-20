@@ -1,8 +1,113 @@
 {% extends 'layout.html' %}
 {% block content %}
 <div>
-    <table class="table-dark rounded-3 overflow-hidden "
-        data-toggle="table" data-search="true">
+
+
+
+
+    <div class="accordion" id="accordionExample">
+        {% for item in distinct %}
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapse{{item.date}}" aria-expanded="true" aria-controls="collapseOne">
+                    Check In Date: {{item.date}}      <span class="badge bg-primary rounded-pill">{{item.events|length}}</span>
+                </button>
+            </h2>
+            <div id="collapse{{item.date}}" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    <strong>Events:</strong>
+
+                    <!-- {% for event in item.events %}
+                        <li class="list-group-item">{{event.checked_in_at}}</li>
+                        {% endfor %} -->
+                    <table class="table-dark rounded-3 overflow-hidden " data-toggle="table" >
+                        <thead>
+                            <tr>
+                                <th scope="col">Checkin Time</th>
+                                <th scope="col">Payment Method</th>
+                                <th scope="col">Scene Name</th>
+                                <th scope="col">Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            {% for logItem in item.events %}
+                            <tr>
+                                <td>{{ moment(logItem.checked_in_at).format("h:mm a") }}</td>
+                                <td scope="row">{{ logItem.paymentMethod }}</td>
+                                <td scope="row">{{guests[logItem.userID].fetUsername}}</td>
+                                <td scope="row">{{guests[logItem.userID].name}}</td>
+                            </tr>
+                            {% endfor %}
+
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne"
+                    aria-expanded="true" aria-controls="collapseOne">
+                    Accordion Item #1
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    <strong>This is the first item's accordion body.</strong> It is shown by default, until the collapse
+                    plugin adds the appropriate classes that we use to style each element. These classes control the
+                    overall appearance, as well as the showing and hiding via CSS transitions. You can modify any of
+                    this with custom CSS or overriding our default variables. It's also worth noting that just about any
+                    HTML can go within the <code>.accordion-body</code>, though the transition does limit overflow.
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                    Accordion Item #2
+                </button>
+            </h2>
+            <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    <strong>This is the second item's accordion body.</strong> It is hidden by default, until the
+                    collapse plugin adds the appropriate classes that we use to style each element. These classes
+                    control the overall appearance, as well as the showing and hiding via CSS transitions. You can
+                    modify any of this with custom CSS or overriding our default variables. It's also worth noting that
+                    just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit
+                    overflow.
+                </div>
+            </div>
+        </div>
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                    Accordion Item #3
+                </button>
+            </h2>
+            <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                    <strong>This is the third item's accordion body.</strong> It is hidden by default, until the
+                    collapse plugin adds the appropriate classes that we use to style each element. These classes
+                    control the overall appearance, as well as the showing and hiding via CSS transitions. You can
+                    modify any of this with custom CSS or overriding our default variables. It's also worth noting that
+                    just about any HTML can go within the <code>.accordion-body</code>, though the transition does limit
+                    overflow.
+                </div>
+            </div>
+        </div> -->
+    </div>
+
+
+
+<!-- 
+    <table class="table-dark rounded-3 overflow-hidden " data-toggle="table" data-search="true">
         <thead>
             <tr>
                 <th data-sortable="true" scope="col">Checkin Time</th>
@@ -23,6 +128,6 @@
             {% endfor %}
 
         </tbody>
-    </table>
+    </table> -->
 </div>
 {% endblock content %}

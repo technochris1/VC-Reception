@@ -74,7 +74,13 @@ class Guest(db.Model, UserMixin):
 @dataclass
 class Guestlog(db.Model):
     id:int = db.Column(db.Integer, primary_key=True)
-    checked_in_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    checked_in_at = db.Column(db.DateTime(timezone=True))
+    checked_in_at_date = db.Column(db.Date)
+    checked_in_at_time = db.Column(db.Time)
+    checked_out_at = db.Column(db.DateTime(timezone=True))
+    checked_out_at_date = db.Column(db.Date)
+    checked_out_at_time = db.Column(db.Time)
+    check_out_method:str  = db.Column(db.String(100))
     userID = db.Column(db.Integer, db.ForeignKey('guest.id'))
     paymentMethod:str  = db.Column(db.String(100))
 
@@ -114,11 +120,12 @@ class CreditTransactionLog(db.Model):
 @dataclass
 class Event(db.Model):
     id:int = db.Column(db.Integer, primary_key=True)
-    eventName:str = db.Column(db.String(100))
+    title:str = db.Column(db.String(100))
     eventDescription:str = db.Column(db.String(200))
-    eventStartDate:int = db.Column(db.Integer, default=int(datetime.datetime.timestamp(datetime.datetime.now())))
-    eventEndDate:int = db.Column(db.Integer, default=int(datetime.datetime.timestamp(datetime.datetime.now())))
+    start:int = db.Column(db.Integer, default=int(datetime.datetime.timestamp(datetime.datetime.now())))
+    end:int = db.Column(db.Integer, default=int(datetime.datetime.timestamp(datetime.datetime.now())))
     eventLocation:str = db.Column(db.String(100))
+    eventCost:int = db.Column(db.Integer, default=0)
     #created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
 @dataclass

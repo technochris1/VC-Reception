@@ -75,15 +75,15 @@
             <td>
 
                 {% if current_user.roles and current_user | check_role_allow_password_reset %}
-                <a href="/resetPassword/{{guest.id}}"><button type="button" class="btn btn-sm btn-outline-danger"><i
+                <a href="/resetPassword/{{guest.id}}" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Reset & Email Backoffice User Password"><button type="button"  class="btn btn-sm btn-outline-danger"><i
                             class="bi bi-arrow-clockwise"></i></button></a>
                 {% endif %}
-                <a href="/guestCredit/{{guest.id}}"><button type="button" class="btn btn-sm btn-outline-danger"><i
+                <a href="/guestCredit/{{guest.id}}"  ><button type="button"  class="btn btn-sm btn-outline-danger"><i
                             class="bi bi-cash-coin"></i></button></a>
-                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                <button type="button" class="btn btn-sm btn-outline-danger"  
                     data-bs-target="#registerModal" data-bs-mode="edit" data-bs-uuid="{{guest.id}}"><i
                         class="bi bi-pencil-square"></i></button>
-                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                <button type="button" class="btn btn-sm btn-outline-danger" 
                     data-bs-target="#qrModal" data-bs-qr="{{guest.uuid}}"><i class="bi bi-qr-code"></i></button>
                 <!-- <button type="button" class="btn btn-sm btn-danger">Edit</button>
                 <button type="button" class="btn btn-sm btn-danger">Delete</button> -->
@@ -203,7 +203,7 @@
 <script>
 
 
-    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip-guest"]')
     const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
 
 

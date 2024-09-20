@@ -5,7 +5,7 @@ from app.models import Guest, Guestlog, Event, Setting, func, GuestCredit, Credi
 from app.forms import AdminRegistrationForm, AdminLoginForm, GuestRegistrationForm, AddCreditForm, ChangePasswordForm
 from flask_mail import  Message
 from flask_login import login_user, current_user, logout_user, login_required
-
+from sqlalchemy import cast, Date
 from io import BytesIO
 import qrcode
 import datetime
@@ -155,6 +155,9 @@ def checkIn(uuid = None, method = None):
         guest.lastVisit = visitTime
         newCheckIn = Guestlog(
             checked_in_at = visitTime,
+            
+            checked_in_at_date = visitTime.replace(tzinfo='America/New_York').date(),
+            checked_in_at_time = visitTime.replace(tzinfo='America/New_York').time(),
             userID = guest.id,
             paymentMethod = method
         )
@@ -245,6 +248,31 @@ def changePassword():
     return render_template('changePassword.html', form=form)
 
 
+
+
+@app.route("/events/", methods=['GET', 'POST'])
+#@login_required
+def events():    
+    if request.method == 'POST':        
+        print("Start:",request.values.get('eventStart'))
+        print("End:",request.values.get('eventEnd'))
+        print("Name:",request.values.get('eventName'))
+        print("Description:",request.values.get('eventDescription'))
+        newEvent = Event(            
+            title = request.values.get('eventName'),
+            eventDescription = request.values.get('eventDescription'),
+            start = request.values.get('eventStart'),
+            end = request.values.get('eventEnd'),
+            eventLocation = request.values.get('eventLocation'),
+            eventCost = request.values.get('eventCost')
+        )
+        db.session.add(newEvent)
+        db.session.commit()
+        
+            
+
+        return redirect(url_for('events')) 
+    return render_template('events.html', events=Event.query.all())
 
 
 @app.route("/dashboard/")
@@ -412,7 +440,19 @@ def addCredits(id):
 @app.route('/logbook/')
 #@login_required
 def logbook():
-    return render_template('logbook.html', guests=Guest.query.all(), log=Guestlog.query.all())
+    response = [
+            # {"date":"2021-01-01", "events": [{Guestlog Item}]},
+            # {"date":"2021-01-01", "events": [{Guestlog Item}]}            
+        ]
+    
+    distinct_dates = db.session.query(Guestlog.checked_in_at_date.distinct()).all()
+    print("Distinct:",distinct_dates)
+    for date in distinct_dates:
+        print("Date",date)
+        response.append({"date":date[0].strftime('%Y-%m-%d'), "events": Guestlog.query.filter_by(checked_in_at_date=date[0]).all()})
+
+
+    return render_template('logbook.html', distinct=response ,guests=Guest.query.all(), log=Guestlog.query.all())
     #return render_template('logbook.html')
 
 

@@ -451,7 +451,7 @@
               skipPaymentView = false
               skipPaymentView = data.skip_payment
               if (skipPaymentView === true) {
-                CheckInQrCode(data.uuid, 'SkippedPaymentScreen Via Role Set:' + data.roles);
+                CheckInQrCode(data.uuid, 'Skipped Payment Screen Via Role Set:' + data.roles);
                 return
               }
               generalCreditAmountPill = document.getElementById('generalCreditAmount')
