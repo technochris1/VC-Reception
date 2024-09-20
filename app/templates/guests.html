@@ -73,16 +73,13 @@
             <td>
 
                 {% if current_user.roles and current_user | check_role_allow_password_reset %}
-                <a href="/resetPassword/{{guest.id}}" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="Reset & Email Backoffice User Password"><button type="button"  class="btn btn-sm btn-outline-danger"><i
-                            class="bi bi-arrow-clockwise"></i></button></a>
+                <a href="/resetPassword/{{guest.id}}"><button type="button" data-bs-toggle="tooltip"
+                        data-bs-placement="right" data-bs-title="Reset & Email Backoffice User Password"
+                        class="btn btn-sm btn-outline-danger"><i class="bi bi-arrow-clockwise"></i></button></a>
                 {% endif %}
-                <a href="/guestCredit/{{guest.id}}"  ><button type="button"  class="btn btn-sm btn-outline-danger"><i
-                            class="bi bi-cash-coin"></i></button></a>
-                <button type="button" class="btn btn-sm btn-outline-danger"  
-                    data-bs-target="#registerModal" data-bs-mode="edit" data-bs-uuid="{{guest.id}}"><i
-                        class="bi bi-pencil-square"></i></button>
-                <button type="button" class="btn btn-sm btn-outline-danger" 
-                    data-bs-target="#qrModal" data-bs-qr="{{guest.uuid}}"><i class="bi bi-qr-code"></i></button>
+                <a href="/guestCredit/{{guest.id}}"><button type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-cash-coin"></i></button></a>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-target="#registerModal" data-bs-mode="edit" data-bs-uuid="{{guest.id}}"><i class="bi bi-pencil-square"></i></button>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-target="#qrModal" data-bs-qr="{{guest.uuid}}"><i class="bi bi-qr-code"></i></button>
                 <!-- <button type="button" class="btn btn-sm btn-danger">Edit</button>
                 <button type="button" class="btn btn-sm btn-danger">Delete</button> -->
             </td>
@@ -214,15 +211,11 @@
     </div>
 </div>
 
+{% endblock content %}
 
 
+{% block script %}
 <script>
-
-
-    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip-guest"]')
-    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
-
-
 
 
     const generateUuidURL = '{{ url_for("generateUUID") }}'
@@ -301,9 +294,9 @@
                     console.log('Data received:', data);
 
                     if (data != null) {
-                        
 
-                        
+
+
                         document.getElementById('id').value = data.id
                         document.getElementById('uuid').value = data.uuid
                         document.getElementById('fetUsername').value = data.fetUsername
@@ -312,12 +305,12 @@
                         document.getElementById('phoneNumber').value = data.phone
                         document.getElementById('termsCheck').checked = data.termsCheck
 
-                        if(data.allow_qrcode_refresh != null){
+                        if (data.allow_qrcode_refresh != null) {
                             document.getElementById('uuid').setAttribute('readonly', true)
                             document.getElementById('uuidLabel').value = 'Unique QR Code (Locked)'
                             document.getElementById('refreshQrCode').disabled = true
-                        }else{
-                            
+                        } else {
+
                             document.getElementById('uuid').removeAttribute('readonly')
                             document.getElementById('uuidLabel').value = 'Unique QR Code'
                             document.getElementById('refreshQrCode').disabled = false
@@ -340,6 +333,4 @@
         fetchUUID()
     })
 </script>
-
-
-{% endblock content %}
+{% endblock script %}

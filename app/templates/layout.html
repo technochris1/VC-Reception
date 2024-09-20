@@ -29,14 +29,15 @@
                     <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start"
                         id="menu">
                         <li class="nav-item"></li>
-                            <a href="/logout" class="nav-link align-middle px-0">
-                                <i class="fs-4 bi-box-arrow-left"></i> <span class="ms-1 d-none d-sm-inline">Logout</span>
-                            </a>
+                        <a href="/logout" class="nav-link align-middle px-0">
+                            <i class="fs-4 bi-box-arrow-left"></i> <span class="ms-1 d-none d-sm-inline">Logout</span>
+                        </a>
                         </li>
                         <li class="nav-item">
                             <a href="/dashboard"
                                 class="nav-link align-middle px-0 {% if request.endpoint == 'dashboard' %}text-danger{% endif %}">
-                                <i class="fs-4 bi-speedometer2"></i> <span class="ms-1 d-none d-sm-inline">Dashboard</span>
+                                <i class="fs-4 bi-speedometer2"></i> <span
+                                    class="ms-1 d-none d-sm-inline">Dashboard</span>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -51,19 +52,22 @@
                                 <i class="fs-4 bi-table "></i> <span class="ms-1 d-none d-sm-inline">Logbook</span></a>
                         </li>
                         <li class="nav-item"></li>
-                            <a href="/credits"
-                                class="nav-link px-0 align-middle {% if request.endpoint == 'credits' %}text-danger{% endif %}">
-                                <i class="fs-4 bi-cash-coin "></i> <span class="ms-1 d-none d-sm-inline">Credit System</span></a>
+                        <a href="/credits"
+                            class="nav-link px-0 align-middle {% if request.endpoint == 'credits' %}text-danger{% endif %}">
+                            <i class="fs-4 bi-cash-coin "></i> <span class="ms-1 d-none d-sm-inline">Credit
+                                System</span></a>
                         </li>
                         <li class="nav-item">
                             <a href="/settings"
                                 class="nav-link px-0 align-middle {% if request.endpoint == 'settings' %}text-danger{% endif %}">
-                                <i class="fs-4 bi-sliders "></i> <span class="ms-1 d-none d-sm-inline">Settings</span></a>
+                                <i class="fs-4 bi-sliders "></i> <span
+                                    class="ms-1 d-none d-sm-inline">Settings</span></a>
                         </li>
                         <li class="nav-item"></li>
-                            <a href="/admin"
-                                class="nav-link px-0 align-middle {% if request.endpoint == 'settings' %}text-danger{% endif %}">
-                                <i class="fs-4 bi-sliders "></i> <span class="ms-1 d-none d-sm-inline">Admin Control</span></a>
+                        <a href="/admin"
+                            class="nav-link px-0 align-middle {% if request.endpoint == 'settings' %}text-danger{% endif %}">
+                            <i class="fs-4 bi-sliders "></i> <span class="ms-1 d-none d-sm-inline">Admin
+                                Control</span></a>
                         </li>
                     </ul>
                     <hr>
@@ -84,12 +88,18 @@
             </div>
         </div>
     </div>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
+        integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
+        integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy"
+        crossorigin="anonymous"></script>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.23.2/dist/bootstrap-table.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+
+    {% block script %}{% endblock %}
 
 </body>
 

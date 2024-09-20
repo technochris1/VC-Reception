@@ -267,18 +267,16 @@ def events():
             end = request.values.get('eventEnd'),
             eventLocation = request.values.get('eventLocation'),
             eventCost = request.values.get('eventCost')
+
         )
         db.session.add(newEvent)
         db.session.commit()
         
-            
-
         return redirect(url_for('events')) 
     return render_template('events.html', events=Event.query.all())
 
-
 @app.route("/dashboard/")
-@login_required
+#@login_required
 def dashboard():
 
     current_time = datetime.datetime.now(datetime.UTC)
@@ -289,11 +287,8 @@ def dashboard():
                            guests_total_count=Guest.query.count(),
                            guests_checked_in=Guest.query.filter(Guest.lastVisit > last_24_hours ).all(),
                            quests_top_5=db.session.query(Guest, func.count(Guestlog.id)).join(Guestlog).group_by(Guest.id).order_by(func.count(Guestlog.id).desc()).limit(5).all(),
-                           #guests_top_5=db.session.query(Guest, func.count(Guestlog)).outerjoin(Guestlog, Guest.id == Guestlog.userID).group_by(Guest.id).order_by(func.count(Guestlog.id).desc()).limit(5).all(),
-                           
+                           #guests_top_5=db.session.query(Guest, func.count(Guestlog)).outerjoin(Guestlog, Guest.id == Guestlog.userID).group_by(Guest.id).order_by(func.count(Guestlog.id).desc()).limit(5).all(),                           
                            )
-
-
 
 @app.route('/registerAdmin/', methods=['GET', 'POST'])
 #@login_required
@@ -314,7 +309,6 @@ def registerAdmin():
         flash('Admin added successfully', 'success')
         return redirect(url_for('guests'))
     return render_template('admin_registration.html', title='Register Admin', form=form)
-
 
 @app.route('/getGuest/')
 @app.route('/getGuest/<id>')
@@ -440,7 +434,6 @@ def addCredits(id):
     #return render_template('admin_registration.html', title='Register Admin', form=form)
     return render_template('addCredits.html', form = form, guest=_guest)
 
-
 @app.route('/logbook/')
 #@login_required
 def logbook():
@@ -459,16 +452,11 @@ def logbook():
     return render_template('logbook.html', distinct=response ,guests=Guest.query.all(), log=Guestlog.query.all())
     #return render_template('logbook.html')
 
-
-
 @app.route('/credits/', methods=['GET', 'POST'])
 #@login_required
 def credits():
     return render_template('credits.html', guests=Guest.query.all(), guestCreds=GuestCredit.query.all(), guestCreditLog=CreditTransactionLog.query.all())
     #return render_template('logbook.html')
-
-
-
 
 #https://flask-mail.readthedocs.io/en/latest/#
 @app.route('/sendEmail/')
@@ -479,8 +467,6 @@ def sendEmailRoute():
         recipients=["cfisk@symtechsolutions.com"],
     )
     app.mail.send(msg)
-
-
 
 @app.route('/settings/', methods=['GET', 'POST'])
 #@login_required
@@ -539,14 +525,17 @@ def settings():
     return render_template('settings.html', setting=Setting.query.first())
 
 
+
+
+
+
+
 def generate_uuid():
     return str(uuid.uuid4())
 
 def sendPwResetEmail(recipients, pw=None):   
     if(pw):
         return sendEmail(recipients=recipients,subject="VC Access - Password Reset", message="Please Use this password to Login: "+ pw)
-
-
 
 def sendQRCodeEmail(recipients, uuid):
     qr = qrcode.QRCode(
@@ -571,7 +560,6 @@ def sendQRCodeEmail(recipients, uuid):
     #print("IMG",qr_image['photo'])
     
     return sendEmail(recipients, "VC Access - QR Code", "Please find your VC QR code attached", temp.getvalue())
-
 
 def sendEmail(recipients, subject, message, attachment=None):
     
