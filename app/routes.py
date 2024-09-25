@@ -5,10 +5,12 @@ from app.models import Guest, Guestlog, Event, Setting, func, GuestCredit, Credi
 from app.forms import AdminRegistrationForm, AdminLoginForm, GuestRegistrationForm, AddCreditForm, ChangePasswordForm
 from flask_mail import  Message
 from flask_login import login_user, current_user, logout_user, login_required
-from sqlalchemy import cast, Date
+from sqlalchemy import cast, Date, func
 from io import BytesIO
 import qrcode
-import datetime
+from datetime import datetime, timedelta, timezone
+from dateutil import tz
+
 import uuid
 import json
 
@@ -124,8 +126,6 @@ def preCheckIn(uuid = None):
         #return abort(404)
 
 
-
-
 @app.route('/checkIn/')
 @app.route('/checkIn/<uuid>')
 @app.route('/checkIn/<uuid>/<method>')
@@ -194,8 +194,6 @@ def checkIn(uuid = None, method = None):
 def generateUUID():
     return jsonify(generate_uuid())
 
-
-
 @app.route('/logout/')
 def logout():
     logout_user()
@@ -232,8 +230,6 @@ def resetPassword(id):
         flash('Change Password unsuccessful, Contact Support.', 'danger')
         return redirect(url_for('dashboard'))
       
-
-
 @app.route('/changePassword/', methods=['GET', 'POST'])
 def changePassword():
     form = ChangePasswordForm()
@@ -248,9 +244,6 @@ def changePassword():
        else:
            flash('Change Password unsuccessful. Please check email', 'danger')
     return render_template('changePassword.html', form=form)
-
-
-
 
 @app.route("/events/", methods=['GET', 'POST'])
 #@login_required
@@ -279,9 +272,9 @@ def events():
 #@login_required
 def dashboard():
 
-    current_time = datetime.datetime.now(datetime.UTC)
+    current_time = datetime.now(tz=tz.tzutc())
 
-    last_24_hours = current_time - datetime.timedelta(hours=24)
+    last_24_hours = current_time - timedelta(hours=24)
 
     return render_template('dashboard.html', guests_checked_in_count=Guest.query.filter(Guest.lastVisit > last_24_hours ).count(),
                            guests_total_count=Guest.query.count(),
@@ -390,7 +383,7 @@ def guestCredit(id):
                 generalAmount=0,
                 specialEventAmount=0,
                 privateSessionAmount=0,
-                lastUpdate = datetime.datetime.now(datetime.timezone.utc)                
+                lastUpdate = datetime.now(timezone.utc)                
             )
         print("newCredits",newCredit)
         db.session.add(newCredit)
@@ -407,7 +400,7 @@ def addCredits(id):
     if form.validate_on_submit():
         newCreditLogEntry = CreditTransactionLog(
             guest=_guest.id,
-            authorizedBy=current_user.id,
+            authorizedBy=0,
             authorizedSource=form.authorizedSource.data,
             description=form.description.data,
             generalAmountChange=form.generalAmountChange.data,
@@ -421,7 +414,7 @@ def addCredits(id):
                 guestCredit.generalAmount += newCreditLogEntry.generalAmountChange
                 guestCredit.specialEventAmount += newCreditLogEntry.specialEventAmountChange
                 guestCredit.privateSessionAmount += newCreditLogEntry.privateSessionAmountChange
-                guestCredit.lastUpdate = datetime.datetime.now(datetime.timezone.utc)
+                guestCredit.lastUpdate = datetime.now(timezone.utc)
                 
             db.session.add(newCreditLogEntry)
             db.session.commit()
@@ -437,17 +430,37 @@ def addCredits(id):
 @app.route('/logbook/')
 #@login_required
 def logbook():
+    dates = []
     response = [
             # {"date":"2021-01-01", "events": [{Guestlog Item}]},
             # {"date":"2021-01-01", "events": [{Guestlog Item}]}            
         ]
     
-    distinct_dates = db.session.query(Guestlog.checked_in_at_date.distinct()).all()
-    print("Distinct:",distinct_dates)
+    distinct_dates = db.session.query(Guestlog.checked_in_at).order_by(Guestlog.checked_in_at.desc()).all()
+    #print("Distinct:",distinct_dates)
     for date in distinct_dates:
-        print("Date",date)
-        response.append({"date":date[0].strftime('%Y-%m-%d'), "events": Guestlog.query.filter_by(checked_in_at_date=date[0]).all()})
+        dateItem = date[0]
+        
+        dateItem = dateItem.replace(tzinfo=tz.tzutc())
+        dateItem = dateItem.astimezone(tz.tzlocal())
+        if dateItem.date() not in dates:
+            dates.append(dateItem.date())
 
+
+        #print("Date",dateItem.date())
+        #dateObj = datetime.strptime(date[0], '%Y-%m-%d')
+        #dateObjEnd = dateObj+timedelta(days=1)
+
+
+
+
+
+
+        
+        #response.append({"date": date[0], "events": Guestlog.query.filter(func.date(Guestlog.checked_in_at).between(dateObj, dateObjEnd)).all()})
+    print("Distinct:",dates)
+    for date in dates:
+        response.append({"date": date, "events": Guestlog.query.filter(func.date(Guestlog.checked_in_at).between(date, date + timedelta(days=1))).all()})
 
     return render_template('logbook.html', distinct=response ,guests=Guest.query.all(), log=Guestlog.query.all())
     #return render_template('logbook.html')

@@ -50,6 +50,8 @@ class Guest(db.Model, UserMixin):
     email:str  = db.Column(db.String(200), unique=True, nullable=False)
     phone:str  = db.Column(db.String(20))
 
+    checkin_blocked:bool = db.Column(db.Boolean(), default=False)
+
     password:str  = db.Column(db.String(255))
     allow_qrcode_refresh:bool = db.Column(db.Boolean(), default=True)
 
@@ -100,11 +102,6 @@ class GuestCredit(db.Model):
     specialEventAmount:int  = db.Column(db.Integer, nullable=False, default=0)
     privateSessionAmount:int  = db.Column(db.Integer, nullable=False, default=0)
 
-    def __str__(self):
-        return f'{self.id}:{self.guest_id}:{self.generalAmount}'
-
-    def __repr__(self):
-        return f'{self.id}'
 
 
 @dataclass

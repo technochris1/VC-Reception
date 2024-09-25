@@ -9,24 +9,26 @@
 
 
 <div>
-    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 g-4">
+    <div class="row row-cols-2 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 row-cols-xl-6 g-4">
         {% for creds in guestCreds %}
-        <div class="col">
-            <div class="card text-center bg-dark text-light">
-                <div class="card-body">
-                    <h1 class="card-title">{{ creds.generalAmount }}</h1>
-                    <p class="card-text">{{ creds.guest.fetUsername }}</p>
-                    <a href="/guestCredit/{{creds.id}}" class=""><i class="bi bi-plus-square"></i></a>
+            {% if creds.guest | not_check_role_skip_payment_at_checkin %}
+            <div class="col">
+                <div class="card text-center bg-dark text-light">
+                    <div class="card-body">
+                        <h1 class="card-title">{{ creds.generalAmount }}</h1>
+                        <p class="card-text">{{ creds.guest.fetUsername }}</p>
+                        <a href="/guestCredit/{{creds.guest.id}}" class="m-2 p-3"><i class="bi bi-plus-square"></i></a>
+                    </div>
                 </div>
             </div>
-        </div>
+            {% endif %}
         {% endfor %}
     </div>
 
 
 
 
-
+    <!-- 
     <table class="table-dark rounded-3 overflow-hidden " data-toggle="table" data-search="true">
         <thead>
             <tr>
@@ -52,6 +54,6 @@
             </tr>
             {% endfor %}
         </tbody>
-    </table>
+    </table> -->
 </div>
 {% endblock content %}

@@ -15,53 +15,29 @@
 <table class="table-dark rounded-3 overflow-hidden" data-toggle="table">
     <thead>
         <tr>
-            <th data-sortable="true" scope="col">Handle</th>
-            <th data-sortable="true" scope="col">Name</th>
-            <th data-sortable="true" scope="col">Roles</th>
+            <th data-sortable="true" scope="col" >Handle</th>
+            <th data-sortable="true" scope="col" class='d-none d-md-table-cell' >Name</th>
+            <th data-sortable="true" scope="col" class='d-none d-lg-table-cell' >Roles</th>
+            <th data-sortable="true" scope="col" class='d-none d-xl-table-cell' >Credits</th>
             <th data-sortable="true" scope="col">Last Visit</th>
             <th data-align="right" scope="col"></th>
 
         </tr>
     </thead>
     <tbody>
-        <!-- <tr>
-            <th scope="row">LoyalSub</th>
-            <td>Mark</td>
-            <td>Otto</td>
-            <td>x days ago</td>
-            <td><button type="button" class="btn btn-sm btn-danger">Edit</button> <button type="button"
-                    class="btn btn-sm btn-danger">Delete</button></td>
-        </tr>
-        <tr>
-            <th scope="row">Kari</th>
-            <td>Jacob</td>
-            <td>Thornton</td>
-            <td>x days ago</td>
-            <td><button type="button" class="btn btn-sm btn-danger">Edit</button> <button type="button"
-                    class="btn btn-sm btn-danger">Delete</button></td>
-        </tr>
-        <tr>
-            <th scope="row">Tia</th>
-            <td>Larry the Bird</td>
-            <td>@twitter</td>
-            <td>x days ago</td>
-            <td><button type="button" class="btn btn-sm btn-danger">Edit</button> <button type="button"
-                    class="btn btn-sm btn-danger">Delete</button></td>
-        </tr> -->
-
-
 
         {% for guest in guests %}
         <tr>
             <th scope="row">{{guest.fetUsername}}</th>
-            <th>{{guest.name}}</th>
+            <th class='d-none d-md-table-cell'>{{guest.name}}</th>
             {% if guest.roles %}
-            <td>{{guest.roles}}</td>
+            <td class='d-none d-lg-table-cell'>{{guest.roles}}</td>
             {% else %}
-            <td>None Assigned</td>
+            <td class='d-none d-lg-table-cell'>None Assigned</td>
             {% endif %}
 
 
+            <th class='d-none d-xl-table-cell'>{{guest.credit | get_general_credits }}</th>
 
 
 
@@ -73,15 +49,20 @@
             <td>
 
                 {% if current_user.roles and current_user | check_role_allow_password_reset %}
-                <a href="/resetPassword/{{guest.id}}"><button type="button" data-bs-toggle="tooltip"
-                        data-bs-placement="right" data-bs-title="Reset & Email Backoffice User Password"
-                        class="btn btn-sm btn-outline-danger"><i class="bi bi-arrow-clockwise"></i></button></a>
+                <a href="/resetPassword/{{guest.id}}"><button type="button" class="btn btn-sm btn-outline-danger"><i
+                            class="bi bi-arrow-clockwise"></i></button></a>
                 {% endif %}
-                <a href="/guestCredit/{{guest.id}}"><button type="button" class="btn btn-sm btn-outline-danger"><i class="bi bi-cash-coin"></i></button></a>
-                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-target="#registerModal" data-bs-mode="edit" data-bs-uuid="{{guest.id}}"><i class="bi bi-pencil-square"></i></button>
-                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-target="#qrModal" data-bs-qr="{{guest.uuid}}"><i class="bi bi-qr-code"></i></button>
-                <!-- <button type="button" class="btn btn-sm btn-danger">Edit</button>
-                <button type="button" class="btn btn-sm btn-danger">Delete</button> -->
+                <a href="/guestCredit/{{guest.id}}"><button type="button"
+                        class="btn btn-sm btn-outline-danger"><i class="bi bi-cash-coin"></i></button></a>
+
+
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                    data-bs-target="#registerModal" data-bs-mode="edit" data-bs-uuid="{{guest.id}}"><i
+                        class="bi bi-pencil-square"></i></button>
+
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-target="#qrModal"
+                    data-bs-qr="{{guest.uuid}}"><i class="bi bi-qr-code"></i></button>
+
             </td>
         </tr>
         {% endfor %}

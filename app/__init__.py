@@ -196,6 +196,26 @@ logging.getLogger('sqlalchemy').setLevel(logging.ERROR)
 def check_role_allow_password_reset(guest):   
     return any(x.allow_password_reset == True for x in guest.roles)
 
+@app.template_filter('get_general_credits') 
+def get_general_credits(credit):   
+    return sum(x.generalAmount for x in credit)
+
+@app.template_filter('get_special_event_credits')
+def get_special_event_credits(credit):   
+    return sum(x.specialEventAmount for x in credit)
+
+@app.template_filter('get_private_session_credits')
+def get_private_session_credits(credit):   
+    return sum(x.privateSessionAmount for x in credit)
+
+@app.template_filter('check_role_skip_payment_at_checkin')
+def check_role_skip_payment_at_checkin(guest):   
+    return any(x.skip_payment_at_checkin == True for x in guest.roles)
+
+@app.template_filter('not_check_role_skip_payment_at_checkin')
+def not_check_role_skip_payment_at_checkin(guest):   
+    return not any(x.skip_payment_at_checkin == True for x in guest.roles)
+
 # @app.template_filter('check_role_allow_qrcode_refresh')
 # def check_role_allow_qrcode_refresh(guest):   
 #     if guest and guest.roles:
