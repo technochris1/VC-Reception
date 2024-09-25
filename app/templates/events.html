@@ -14,6 +14,21 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@event-calendar/build@3.4.0/event-calendar.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@event-calendar/build@3.4.0/event-calendar.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script>
+    
+    window.vcEvents = {{events|tojson }}
+    for (let i = 0; i < window.vcEvents.length; i++) {
+        window.vcEvents[i].extendedProps = {
+            db_id: window.vcEvents[i].id,
+            description: window.vcEvents[i].eventDescription,
+            location: window.vcEvents[i].eventLocation,            
+            cost: window.vcEvents[i].eventCost
+        }
+    }
+
+    
+    
+    </script>
 
 </head>
 
@@ -57,12 +72,6 @@
                 </div>
             </div>
             <div class="col py-3">
-
-                {{events|tojson }}
-
-
-
-
                 <div id="ec"></div>
             </div>
         </div>
@@ -80,6 +89,11 @@
                 </div>
                 <div class="modal-body">
                     <form class="row g-3 needs-validation" method="post" novalidate>
+
+                        <div class="col-md-6 visually-hidden">
+                            <label for="eventId" class="form-label">Event ID</label>
+                            <input type="number" class="form-control" name="eventId" id="eventId" value="">                            
+                        </div>
                         <div class="col-md-6">
                             <label for="eventStart" class="form-label">Event Start</label>
                             <input type="text" class="form-control" name="eventStart" id="eventStart" value="" required>
@@ -122,7 +136,7 @@
                                 Please provide a description.
                             </div>
                         </div>
-                        <div class="col-md-12"></div>
+                        <div class="col-md-12">
                         <label for="eventCost" class="form-label">Event Cost</label>
                         <input type="number" class="form-control" name="eventCost" id="eventCost"
                             aria-describedby="inputGroupPrepend" required>
@@ -158,8 +172,9 @@
                                 </div>
                             </div>
                         </div> -->
-                <div class="col-12">
+                <div class="col-12 m-2">
                     <button class="btn btn-primary" type="submit">Save Event</button>
+                    <button class="btn btn-danger" type="button" id="delBtn">Delete Event</button>
                 </div>
                 </form>
             </div>
@@ -175,7 +190,8 @@
 
 
     <script>
-      
+
+        
 
 
         eventStartEl = document.getElementById("eventStart");
@@ -191,6 +207,7 @@
 
 
         myModalel.addEventListener('show.bs.modal', event => {
+            console.log("Modal Show", event.relatedTarget.extendedProps);
 
 
             const mediumTime = new Intl.DateTimeFormat("en-US", {
@@ -203,6 +220,11 @@
             eventEndEl.value = mediumTime.format(new Date(Date.parse(event.relatedTarget.end)));
             eventStartFP.setDate(new Date(Date.parse(event.relatedTarget.start)));
             eventEndFP.setDate(new Date(Date.parse(event.relatedTarget.end)));
+            document.getElementById("eventId").value = event.relatedTarget.extendedProps.db_id;
+            document.getElementById("eventName").value = event.relatedTarget.title;
+            document.getElementById("eventDescription").value = event.relatedTarget.extendedProps.description;
+            document.getElementById("eventLocation").value = event.relatedTarget.extendedProps.location;
+            document.getElementById("eventCost").value = event.relatedTarget.extendedProps.cost;
 
 
         })
@@ -226,18 +248,19 @@
             selectable: true,
             editable: false,
             eventClick: function (info) {
-                //console.log("EventClick: ",info);
-                console.log("Click Event Start:", Date.parse(info.event.start));
+                console.log("EventClick: ",info.event);
+                //console.log("Click Event Start:", Date.parse(info.event.start));
                 myModal.show(info.event);
             },
             select: function (info) {
-                //console.log("Create Event:", info);
+                console.log("Create Event:", info);
                 //console.log("Create Event Start:", Date.parse(info.start));
                 myModal.show(info);
 
 
 
             },
+            events: window.vcEvents
            // events: ' 
 
 

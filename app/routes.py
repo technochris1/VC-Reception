@@ -248,24 +248,42 @@ def changePassword():
 @app.route("/events/", methods=['GET', 'POST'])
 #@login_required
 def events():    
-    if request.method == 'POST':        
+    if request.method == 'POST': 
+        print("Request",request.values)       
+        print("ID:",request.values.get('eventId'))
         print("Start:",request.values.get('eventStart'))
         print("End:",request.values.get('eventEnd'))
         print("Name:",request.values.get('eventName'))
         print("Description:",request.values.get('eventDescription'))
-        newEvent = Event(            
-            title = request.values.get('eventName'),
-            eventDescription = request.values.get('eventDescription'),
-            start = request.values.get('eventStart'),
-            end = request.values.get('eventEnd'),
-            eventLocation = request.values.get('eventLocation'),
-            eventCost = request.values.get('eventCost')
 
-        )
-        db.session.add(newEvent)
-        db.session.commit()
-        
-        return redirect(url_for('events')) 
+        if(request.values.get('eventId')):
+            event = Event.query.filter_by(id=request.values.get('eventId')).first()
+            if event is None:
+                return abort(404)
+            
+            event.title=request.values.get('eventName')
+            event.eventDescription=request.values.get('eventDescription')
+            event.start=request.values.get('eventStart')
+            event.end=request.values.get('eventEnd')
+            event.eventLocation=request.values.get('eventLocation')
+            event.eventCost=request.values.get('eventCost')
+
+            db.session.commit()
+            return redirect(url_for('events'))
+        else:
+            newEvent = Event(            
+                title = request.values.get('eventName'),
+                eventDescription = request.values.get('eventDescription'),
+                start = request.values.get('eventStart'),
+                end = request.values.get('eventEnd'),
+                eventLocation = request.values.get('eventLocation'),
+                eventCost = request.values.get('eventCost')
+
+            )
+            db.session.add(newEvent)
+            db.session.commit()
+            
+            return redirect(url_for('events')) 
     return render_template('events.html', events=Event.query.all())
 
 @app.route("/dashboard/")
