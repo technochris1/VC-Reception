@@ -14,22 +14,30 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@event-calendar/build@3.4.0/event-calendar.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@event-calendar/build@3.4.0/event-calendar.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    {{ moment.include_moment() }}
     <script>
-    
-    window.vcEvents = {{events|tojson }}
-    for (let i = 0; i < window.vcEvents.length; i++) {
-        window.vcEvents[i].extendedProps = {
-            db_id: window.vcEvents[i].id,
-            description: window.vcEvents[i].eventDescription,
-            location: window.vcEvents[i].eventLocation,            
-            cost: window.vcEvents[i].eventCost
+
+        window.vcEvents = {{ events | tojson }}
+        for (let i = 0; i < window.vcEvents.length; i++) {
+            
+            window.vcEvents[i].start = moment(new Date(window.vcEvents[i].start * 1000)).format("YYYY-MM-DD HH:mm");
+            window.vcEvents[i].end = moment(new Date(window.vcEvents[i].end * 1000)).format("YYYY-MM-DD HH:mm");
+            window.vcEvents[i].extendedProps = {
+                id: window.vcEvents[i].id,
+                description: window.vcEvents[i].eventDescription,
+                location: window.vcEvents[i].eventLocation,
+                cost: window.vcEvents[i].eventCost,
+                prepay: window.vcEvents[i].prepay,
+                display: window.vcEvents[i].display,
+                specialEvent: window.vcEvents[i].specialEvent
+            }
+            console.log(window.vcEvents[i]);
         }
-    }
 
-    
-    
+
+
     </script>
-
+    
 </head>
 
 <body>
@@ -90,9 +98,30 @@
                 <div class="modal-body">
                     <form class="row g-3 needs-validation" method="post" novalidate>
 
-                        <div class="col-md-6 visually-hidden">
+
+                        <div class="col-md-1 visually-hidden">
                             <label for="eventId" class="form-label">Event ID</label>
-                            <input type="number" class="form-control" name="eventId" id="eventId" value="">                            
+                            <input type="number" class="form-control" name="eventId" id="eventId" value="">
+                        </div>
+                        <div class="col-12">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value=""  name="display" id="display" required>
+                                <label class="form-check-label" for="display">
+                                Display Event On Kiosk
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value=""  name="prepay" id="prepay" required>
+                                <label class="form-check-label" for="prepay">
+                                PrePay Event
+                                </label>
+                            </div>
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value=""  name="specialevent" id="specialevent" required>
+                                <label class="form-check-label" for="specialevent">
+                                Special Event
+                                </label>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <label for="eventStart" class="form-label">Event Start</label>
@@ -137,50 +166,25 @@
                             </div>
                         </div>
                         <div class="col-md-12">
-                        <label for="eventCost" class="form-label">Event Cost</label>
-                        <input type="number" class="form-control" name="eventCost" id="eventCost"
-                            aria-describedby="inputGroupPrepend" required>
-                        <div class="invalid-feedback">
-                            Please provide an event title.
-                        </div>
-                </div>
-                <!-- <div class="col-md-3">
-                            <label for="validationCustom04" class="form-label">State</label>
-                            <select class="form-select" id="validationCustom04" required>
-                                <option selected disabled value="">Choose...</option>
-                                <option>...</option>
-                            </select>
+                            <label for="eventCost" class="form-label">Event Cost</label>
+                            <input type="number" class="form-control" name="eventCost" id="eventCost"
+                                aria-describedby="inputGroupPrepend" required>
                             <div class="invalid-feedback">
-                                Please select a valid state.
+                                Please provide an event title.
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <label for="validationCustom05" class="form-label">Zip</label>
-                            <input type="text" class="form-control" id="validationCustom05" required>
-                            <div class="invalid-feedback">
-                                Please provide a valid zip.
-                            </div>
+                        
+                        <div class="col-12 m-2">
+                            <button class="btn btn-primary" type="submit">Save Event</button>
+                            <button class="btn btn-danger" type="button" id="delBtn">Delete Event</button>
+                            <button type="button" class="btn btn-outline-danger visually-hidden" disabled><i
+                                    class="bi bi-lock-fill"></i></button>
                         </div>
-                        <div class="col-12">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="invalidCheck" required>
-                                <label class="form-check-label" for="invalidCheck">
-                                    Agree to terms and conditions
-                                </label>
-                                <div class="invalid-feedback">
-                                    You must agree before submitting.
-                                </div>
-                            </div>
-                        </div> -->
-                <div class="col-12 m-2">
-                    <button class="btn btn-primary" type="submit">Save Event</button>
-                    <button class="btn btn-danger" type="button" id="delBtn">Delete Event</button>
+                    </form>
                 </div>
-                </form>
-            </div>
 
+            </div>
         </div>
-    </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
@@ -191,18 +195,40 @@
 
     <script>
 
-        
+
 
 
         eventStartEl = document.getElementById("eventStart");
         eventEndEl = document.getElementById("eventEnd");
         eventStartFP = flatpickr(eventStartEl, { enableTime: true });
         eventEndFP = flatpickr(eventEndEl, { enableTime: true });
+        delBtn = document.getElementById("delBtn");
 
 
         const myModalel = document.getElementById('eventModal')
         const myModal = new bootstrap.Modal(myModalel, {
             keyboard: true
+        })
+        delBtn.addEventListener('click', event => {
+            console.log("Delete Event");
+            console.log(document.getElementById("eventId").value);
+            fetch('/events/' + document.getElementById("eventId").value, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    'eventId': document.getElementById("eventId").value
+                })
+            }).then(response => {
+                console.log(response);
+                if (response.ok) {
+                    myModal.hide();
+                    location.reload();
+                } else {
+                    alert("Error Deleting Event");
+                }
+            })
         })
 
 
@@ -220,7 +246,10 @@
             eventEndEl.value = mediumTime.format(new Date(Date.parse(event.relatedTarget.end)));
             eventStartFP.setDate(new Date(Date.parse(event.relatedTarget.start)));
             eventEndFP.setDate(new Date(Date.parse(event.relatedTarget.end)));
-            document.getElementById("eventId").value = event.relatedTarget.extendedProps.db_id;
+            document.getElementById("specialevent").checked = event.relatedTarget.extendedProps.specialEvent;
+            document.getElementById("display").checked = event.relatedTarget.extendedProps.display;
+            document.getElementById("prepay").checked = event.relatedTarget.extendedProps.prepay;
+            document.getElementById("eventId").value = event.relatedTarget.extendedProps.id;
             document.getElementById("eventName").value = event.relatedTarget.title;
             document.getElementById("eventDescription").value = event.relatedTarget.extendedProps.description;
             document.getElementById("eventLocation").value = event.relatedTarget.extendedProps.location;
@@ -248,32 +277,13 @@
             selectable: true,
             editable: false,
             eventClick: function (info) {
-                console.log("EventClick: ",info.event);
-                //console.log("Click Event Start:", Date.parse(info.event.start));
                 myModal.show(info.event);
             },
             select: function (info) {
-                console.log("Create Event:", info);
-                //console.log("Create Event Start:", Date.parse(info.start));
                 myModal.show(info);
-
-
-
             },
             events: window.vcEvents
-           // events: ' 
-
-
-            // {
-            //     title: 'event 1',
-            //     start: '2024-09-18T10:00:00',
-            //     end: '2024-09-19T12:00:00'
-            // }
-            //]
         });
-
-
-
     </script>
 
 </body>

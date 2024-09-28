@@ -5,7 +5,7 @@ from app.models import Guest, Guestlog, Event, Setting, func, GuestCredit, Credi
 from app.forms import AdminRegistrationForm, AdminLoginForm, GuestRegistrationForm, AddCreditForm, ChangePasswordForm
 from flask_mail import  Message
 from flask_login import login_user, current_user, logout_user, login_required
-from sqlalchemy import cast, Date, func
+from sqlalchemy import cast, Date,and_, func
 from io import BytesIO
 import qrcode
 from datetime import datetime, timedelta, timezone
@@ -44,17 +44,33 @@ def guestView():
             name=form.name.data,
             email=form.email.data,
             phone=form.phone.data,
-            termsCheck=form.termsCheck.data,
-            
+            termsCheck=form.termsCheck.data,            
         )
         db.session.add(newGuest)
         db.session.commit()
         sendQRCodeEmail([newGuest.email], newGuest.uuid)
         flash('Guest added successfully', 'success')
         return redirect(url_for('guestView', setting=Setting.query.first(), form=form))
+    
+    date = datetime.now().timestamp()
+    events  = []
+    query = Event.query.filter(Event.start > date).order_by(Event.start.asce()).all()
+    print("Query",query)
+    for event in query:
+        #print("Event",event)
+        if event.start > date and event.display == True and event.specialEvent == True:
+            events.append(event)
+    for event in query:
+        #print("Event",event)
+        if event.start > date and event.display == True:
+            events.append(event)
 
    
-    return render_template('guestView.html', setting=Setting.query.first(), form= form)
+    return render_template('guestView.html',
+                           todaysEvents=Event.query.filter(and_(Event.start <= date, Event.end >= date)).order_by(Event.start).all(),                        
+                            upComingEvents=events,
+                            setting=Setting.query.first(),
+                            form= form)
 
 @app.route('/registerGuest/', methods=['GET', 'POST'])
 def registerGuest():
@@ -245,9 +261,21 @@ def changePassword():
            flash('Change Password unsuccessful. Please check email', 'danger')
     return render_template('changePassword.html', form=form)
 
-@app.route("/events/", methods=['GET', 'POST'])
+@app.route("/events/", methods=['GET', 'POST', 'DELETE'])
+@app.route('/events/<id>', methods=['DELETE'])
 #@login_required
-def events():    
+def events(id = None):
+    if request.method == 'DELETE':
+        print("Request",request.values)       
+        print("ID:",id)
+        if(id):
+            event = Event.query.filter_by(id=id).first()
+            if event is None:
+                return abort(404)
+            
+            db.session.delete(event)
+            db.session.commit()
+            return redirect(url_for('events'))
     if request.method == 'POST': 
         print("Request",request.values)       
         print("ID:",request.values.get('eventId'))
@@ -255,30 +283,43 @@ def events():
         print("End:",request.values.get('eventEnd'))
         print("Name:",request.values.get('eventName'))
         print("Description:",request.values.get('eventDescription'))
+        print("PrePay:",  False if request.values.get('prepay') == None else True)
+        print("Display:",  False if request.values.get('display')== None else True)
+        print("Special Event:",  False if request.values.get('specialevent')== None else True)
 
         if(request.values.get('eventId')):
             event = Event.query.filter_by(id=request.values.get('eventId')).first()
             if event is None:
                 return abort(404)
-            
+            event.specialEvent= False if request.values.get('specialevent') == None else True
+            event.prepay= False if request.values.get('prepay') == None else True
+            event.display= False if request.values.get('display') == None else True
             event.title=request.values.get('eventName')
             event.eventDescription=request.values.get('eventDescription')
-            event.start=request.values.get('eventStart')
-            event.end=request.values.get('eventEnd')
+            DateStart = datetime.strptime(request.values.get('eventStart'), '%Y-%m-%d %H:%M')
+            DateEnd = datetime.strptime(request.values.get('eventEnd'), '%Y-%m-%d %H:%M')
+            event.start=DateStart.timestamp()
+            event.end=DateEnd.timestamp()
             event.eventLocation=request.values.get('eventLocation')
             event.eventCost=request.values.get('eventCost')
 
             db.session.commit()
             return redirect(url_for('events'))
         else:
+            DateStart = datetime.strptime(request.values.get('eventStart'), '%Y-%m-%d %H:%M')
+            DateEnd = datetime.strptime(request.values.get('eventEnd'), '%Y-%m-%d %H:%M')
             newEvent = Event(            
+                specialEvent= False if request.values.get('specialevent') == None else True,
+                prepay= False if request.values.get('prepay') == None else True,
+                display= False if request.values.get('display') == None else True,
                 title = request.values.get('eventName'),
-                eventDescription = request.values.get('eventDescription'),
-                start = request.values.get('eventStart'),
-                end = request.values.get('eventEnd'),
+                eventDescription = request.values.get('eventDescription'),                
+                start=DateStart.timestamp(),
+                end=DateEnd.timestamp(),
+                # start = request.values.get('eventStart'),
+                # end = request.values.get('eventEnd'),
                 eventLocation = request.values.get('eventLocation'),
                 eventCost = request.values.get('eventCost')
-
             )
             db.session.add(newEvent)
             db.session.commit()
@@ -455,7 +496,7 @@ def logbook():
         ]
     
     distinct_dates = db.session.query(Guestlog.checked_in_at).order_by(Guestlog.checked_in_at.desc()).all()
-    #print("Distinct:",distinct_dates)
+    print("Distinct:",distinct_dates)
     for date in distinct_dates:
         dateItem = date[0]
         

@@ -80,11 +80,11 @@ class Guest(db.Model, UserMixin):
 class Guestlog(db.Model):
     id:int = db.Column(db.Integer, primary_key=True)
     checked_in_at = db.Column(db.DateTime(timezone=True))
-    checked_in_at_date = db.Column(db.Date)
-    checked_in_at_time = db.Column(db.Time)
+    #checked_in_at_date = db.Column(db.Date)
+    #checked_in_at_time = db.Column(db.Time)
     checked_out_at = db.Column(db.DateTime(timezone=True))
-    checked_out_at_date = db.Column(db.Date)
-    checked_out_at_time = db.Column(db.Time)
+    #checked_out_at_date = db.Column(db.Date)
+    #checked_out_at_time = db.Column(db.Time)
     check_out_method:str  = db.Column(db.String(100))
     userID = db.Column(db.Integer, db.ForeignKey('guest.id'))
     paymentMethod:str  = db.Column(db.String(100))
@@ -126,6 +126,10 @@ class Event(db.Model):
     end:int = db.Column(db.Integer, default=int(datetime.datetime.timestamp(datetime.datetime.now())))
     eventLocation:str = db.Column(db.String(100))
     eventCost:int = db.Column(db.Integer, default=0)
+    prepay:bool = db.Column(db.Boolean(), default=False)
+    specialEvent:bool = db.Column(db.Boolean(), default=False)
+    display:bool = db.Column(db.Boolean(), default=False)
+    locked:bool = db.Column(db.Boolean(), default=False)
     #created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
 @dataclass

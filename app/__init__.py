@@ -147,11 +147,11 @@ with app.app_context():
 
     #     #models.db.session.add(guest)
         
-    guestLog = models.Guestlog.query.all()
-    if(guestLog is not None):
-        for log in guestLog:
-            if(log.checked_in_at):
-                print("IN:",log.checked_in_at, log.checked_in_at.replace(tzinfo=timezone.utc).astimezone(tz=None))
+    #guestLog = models.Guestlog.query.all()
+    #if(guestLog is not None):
+        #for log in guestLog:
+            #if(log.checked_in_at):
+                #print("IN:",log.checked_in_at, log.checked_in_at.replace(tzinfo=timezone.utc).astimezone(tz=None))
  
                 #print(log.checked_in_at.date())
                 #print(log.checked_in_at.time())
@@ -160,8 +160,8 @@ with app.app_context():
 
             #if(log.checked_out_at is None):
                 #log.checked_out_at = log.checked_in_at + datetime.timedelta(hours=3)
-            if(log.checked_out_at):
-                print("OUT:",log.checked_out_at)
+            #if(log.checked_out_at):
+                #print("OUT:",log.checked_out_at)
                 #print(log.checked_out_at.date())
                 #print(log.checked_out_at.time())
             #    if(log.checked_out_at_date is None):
@@ -228,7 +228,13 @@ def utc_to_local(utc_dt):
     return utc_dt.replace(tzinfo=datetime.timezone.utc).astimezone(tz=None)
 
 
+@app.template_filter('timestamp_to_str')
+def timestamp_to_date(timestamp):
+    return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M')
 
+@app.template_filter('timestamp_to_str_ampm')
+def timestamp_to_date(timestamp):
+    return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %I:%M %p')
     
 
 
