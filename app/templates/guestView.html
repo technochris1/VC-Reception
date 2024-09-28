@@ -83,7 +83,7 @@
                   <h1 class="card-title">{{event.title}}</h1>
                   <h4 class="card-subtitle mb-2 text-body-secondary">{{event.start | timestamp_to_str_ampm}} - {{event.end |
                     timestamp_to_str_ampm}}</h4>
-                  <p class="card-text">{% if event.eventCost %}{{event.eventCost}}{% else %}TBD{% endif %} Credits</p>
+                  <p class="card-text">{% if event.eventCost %}{{event.eventCost}} Credits{% else %}{{event.eventDescription}}{% endif %}</p>
                 </div>
               </div>
             </div>

@@ -54,7 +54,7 @@ def guestView():
     
     date = datetime.now().timestamp()
     events  = []
-    query = Event.query.filter(Event.start > date).order_by(Event.start.asce()).all()
+    query = Event.query.filter(Event.start > date).order_by(Event.start).all()
     print("Query",query)
     for event in query:
         #print("Event",event)
