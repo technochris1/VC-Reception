@@ -31,9 +31,19 @@ class Config(object):
     SCHEDULER_API_ENABLED = True
 
 
-class ProductionConfig(Config):
-    pass
 
+class ProductionConfig(Config):
+    DEBUG = True    
+    
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    MAIL_SERVER = 'smtp.gmail.com'
+    MAIL_PORT = 587
+    MAIL_USE_TLS = True
+    MAIL_USE_SSL = False
+    MAIL_USERNAME = 'vikingscastlellc@gmail.com'
+    MAIL_PASSWORD = 'gllo mftg pnya bfzd'
+    MAIL_DEFAULT_SENDER = 'vikingscastlellc@gmail.com'
 
 class DevelopmentConfig(Config):
     DEBUG = True    

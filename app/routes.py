@@ -72,6 +72,26 @@ def guestView():
                             setting=Setting.query.first(),
                             form= form)
 
+
+@app.route('/guestView/registerGuest', methods=['GET', 'POST'])
+def gw_registerGuest():
+    form = GuestRegistrationForm()
+    if form.validate_on_submit():        
+        newGuest = Guest(
+            uuid = generate_uuid(),
+            fetUsername=form.fetUsername.data,
+            name=form.name.data,
+            email=form.email.data,
+            phone=form.phone.data,
+            termsCheck=form.termsCheck.data
+        )
+        db.session.add(newGuest)
+        db.session.commit()
+        sendQRCodeEmail([newGuest.email], newGuest.uuid)
+        flash('New Guest Added', 'success')
+        return redirect(url_for('guestView'))        
+    return render_template('guest_registration.html', setting=Setting.query.first(), form = form)
+
 @app.route('/registerGuest/', methods=['GET', 'POST'])
 def registerGuest():
     form = GuestRegistrationForm()
@@ -91,7 +111,7 @@ def registerGuest():
         db.session.commit()
         sendQRCodeEmail([newGuest.email], newGuest.uuid)
         flash('New Guest Added', 'success')
-        return redirect(url_for('guestView'))        
+        return redirect(url_for('gw_registerGuest'))        
     return render_template('guest_registration.html', setting=Setting.query.first(), form = form)
 
 @app.route('/preCheckIn/')
@@ -104,7 +124,7 @@ def preCheckIn(uuid = None):
     response = {}
     if(guest):
         print("Guest",guest)        
-        visitTime = datetime.datetime.now(datetime.timezone.utc)
+        visitTime = datetime.now(timezone.utc)
         response['guest'] = guest.name       
         response['uuid'] = guest.uuid       
 
@@ -118,7 +138,7 @@ def preCheckIn(uuid = None):
         if(guest.lastVisit):
             response['lastCheckin'] = guest.lastVisit.timestamp()
             lastVisit = guest.lastVisit
-            lastVisit = lastVisit.replace(tzinfo=datetime.timezone.utc)   
+            lastVisit = lastVisit.replace(tzinfo=timezone.utc)   
             #checkOutBasedOnTime = settings.checkOutBasedOnTime
             checkInCooldownSeconds = settings.checkInCooldownSeconds     
             if (visitTime - lastVisit).total_seconds() < checkInCooldownSeconds:
@@ -152,7 +172,7 @@ def checkIn(uuid = None, method = None):
     print("Settings,",settings)
     guest = Guest.query.filter_by(uuid = uuid).first()
     if(guest):
-        visitTime = datetime.datetime.now(datetime.timezone.utc)
+        visitTime = datetime.now(timezone.utc)
         response = {
                 'guest': guest.fetUsername,
                 'checked_in': True,
@@ -162,7 +182,7 @@ def checkIn(uuid = None, method = None):
         if(guest.lastVisit):
             response['lastCheckin'] = guest.lastVisit.timestamp()
             lastVisit = guest.lastVisit
-            lastVisit = lastVisit.replace(tzinfo=datetime.timezone.utc)         
+            lastVisit = lastVisit.replace(tzinfo=timezone.utc)         
 
             checkInCooldownSeconds = settings.checkInCooldownSeconds             
             if (visitTime - lastVisit).total_seconds() < checkInCooldownSeconds:
@@ -171,11 +191,13 @@ def checkIn(uuid = None, method = None):
                 return json.dumps(response)
         
         guest.lastVisit = visitTime
+        est = tz.gettz('Europe / Berlin')
+        
         newCheckIn = Guestlog(
-            checked_in_at = visitTime,
+            checked_in_at = visitTime,         
             
-            checked_in_at_date = visitTime.replace(tzinfo='America/New_York').date(),
-            checked_in_at_time = visitTime.replace(tzinfo='America/New_York').time(),
+            #checked_in_at_date = visitTime.replace(tzinfo=est).date(),
+            #checked_in_at_time = visitTime.replace(tzinfo=est).time(),
             userID = guest.id,
             paymentMethod = method
         )

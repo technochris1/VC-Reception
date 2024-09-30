@@ -47,6 +47,7 @@ db = SQLAlchemy(model_class=Base)
 # create the app
 app = Flask(__name__)
 app.config.from_object('config.DevelopmentConfig')
+#app.config.from_object('config.ProductionConfig')
 admin = Admin(app, name='VC-Admin')
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
