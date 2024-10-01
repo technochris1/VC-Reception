@@ -8,7 +8,7 @@ from flask_login import login_user, current_user, logout_user, login_required
 from sqlalchemy import cast, Date,and_, func
 from io import BytesIO
 import qrcode
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, time
 from dateutil import tz
 
 import uuid
@@ -52,23 +52,24 @@ def guestView():
         flash('Guest added successfully', 'success')
         return redirect(url_for('guestView', setting=Setting.query.first(), form=form))
     
-    date = datetime.now().timestamp()
-    events  = []
-    query = Event.query.filter(Event.start > date).order_by(Event.start).all()
-    print("Query",query)
+    date = datetime.combine(datetime.now(), time.min)
+    tommorowDate = (date+timedelta(days=1)).timestamp()
+    thirtyDays = (date+timedelta(days=30)).timestamp()
+    #print("Date",date)
+    upComingEvents  = []
+    query = Event.query.filter(and_(Event.start >= tommorowDate, Event.start <= thirtyDays)).order_by(Event.start).all()
+    #print("Query",query)
     for event in query:
-        #print("Event",event)
-        if event.start > date and event.display == True and event.specialEvent == True:
-            events.append(event)
+        if event.start > date.timestamp() and event.display == True and event.specialEvent == True:
+            upComingEvents.append(event)
     for event in query:
-        #print("Event",event)
-        if event.start > date and event.display == True:
-            events.append(event)
-
+        if event.start > date.timestamp() and event.display == True:
+            upComingEvents.append(event)
+    #print("Events",upComingEvents)
    
     return render_template('guestView.html',
-                           todaysEvents=Event.query.filter(and_(Event.start <= date, Event.end >= date)).order_by(Event.start).all(),                        
-                            upComingEvents=events,
+                           todaysEvents=Event.query.filter(and_(Event.start >= date.timestamp(), Event.start <= tommorowDate)).order_by(Event.start).all(),                        
+                            upComingEvents=upComingEvents,
                             setting=Setting.query.first(),
                             form= form)
 
@@ -352,6 +353,9 @@ def events(id = None):
 @app.route("/dashboard/")
 #@login_required
 def dashboard():
+    date = datetime.combine(datetime.now(), time.min)
+    tommorowDate = (date+timedelta(days=1)).timestamp()
+    thirtyDays = (date+timedelta(days=30)).timestamp()
 
     current_time = datetime.now(tz=tz.tzutc())
 
@@ -361,6 +365,8 @@ def dashboard():
                            guests_total_count=Guest.query.count(),
                            guests_checked_in=Guest.query.filter(Guest.lastVisit > last_24_hours ).all(),
                            quests_top_5=db.session.query(Guest, func.count(Guestlog.id)).join(Guestlog).group_by(Guest.id).order_by(func.count(Guestlog.id).desc()).limit(5).all(),
+                           todaysEvents=Event.query.filter(and_(Event.start >= date.timestamp(), Event.start <= tommorowDate)).order_by(Event.start).all(),                        
+                           
                            #guests_top_5=db.session.query(Guest, func.count(Guestlog)).outerjoin(Guestlog, Guest.id == Guestlog.userID).group_by(Guest.id).order_by(func.count(Guestlog.id).desc()).limit(5).all(),                           
                            )
 

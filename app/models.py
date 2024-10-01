@@ -13,6 +13,16 @@ guest_role = db.Table('guest_roles',
                     db.Column('role_id', db.Integer, db.ForeignKey('role.id'))
                     )
 
+guest_addon = db.Table('guest_addons',
+                    db.Column('guest_id', db.Integer, db.ForeignKey('guest.id')),
+                    db.Column('addon_id', db.Integer, db.ForeignKey('addon.id'))
+                    )
+
+event_addon = db.Table('event_addons',
+                    db.Column('event_id', db.Integer, db.ForeignKey('event.id')),
+                    db.Column('addon_id', db.Integer, db.ForeignKey('addon.id'))
+                    )
+
 
 @dataclass
 class Role(db.Model):
@@ -56,6 +66,9 @@ class Guest(db.Model, UserMixin):
     allow_qrcode_refresh:bool = db.Column(db.Boolean(), default=True)
 
     roles = db.relationship('Role', backref=db.backref('guests'), secondary=guest_role)
+
+    performs = db.relationship('Addon', backref='guests', secondary='guest_addons')
+
 
     termsCheck:bool = db.Column(db.Boolean(), default=False)
     termsDate = db.Column(db.DateTime(timezone=True), server_default=None)
@@ -130,7 +143,16 @@ class Event(db.Model):
     specialEvent:bool = db.Column(db.Boolean(), default=False)
     display:bool = db.Column(db.Boolean(), default=False)
     locked:bool = db.Column(db.Boolean(), default=False)
+    addons = db.relationship('Addon', backref='events', secondary='event_addons')
     #created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
+
+@dataclass
+class Addon(db.Model):
+    id:int = db.Column(db.Integer, primary_key=True)
+    title:str = db.Column(db.String(100))    
+    description:str = db.Column(db.String(200))
+    cost:int = db.Column(db.Integer(), default=0)
+
 
 @dataclass
 class Setting(db.Model):

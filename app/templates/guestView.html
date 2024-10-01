@@ -59,31 +59,52 @@
     <div class="col text-center align-middle">
       <div>
         {% if todaysEvents|length > 0 %}
-        <h3>Todays Event:</h3>
+        <h4>Todays Event:</h4>
         {% for event in todaysEvents %}
         <div class="card">
           <div class="card-body">
             <h1>{{event.title}}</h1>
+            {% if event.start | timestamp_to_date_min_time == event.end | timestamp_to_date_min_time %}
+            <h4 class="card-subtitle mb-2 text-body-secondary">{{event.start | timestamp_to_date_str}} {{event.start |
+              timestamp_to_time_str_ampm}} - {{event.end | timestamp_to_time_str_ampm}}</h4>
+            {% else %}
             <h4 class="card-subtitle mb-2 text-body-secondary">{{event.start | timestamp_to_str_ampm}} - {{event.end |
               timestamp_to_str_ampm}}</h4>
+            {% endif %}
+
+            {% if event.addons %}
+            <ul class="list-group list-group-flush">
+              {% for addon in event.addons %}
+              <li class="list-group-item">{{addon.title}} By: {{addon.guests|guests_to_str}} for ${{addon.cost}}</li>
+              {% endfor %}
+            </ul>
+            {% endif %}
+
+
+            <!-- <h4 class="card-subtitle mb-2 text-body-secondary">{{event.start | timestamp_to_date_str}} - {{event.end |
+              timestamp_to_str_ampm}}</h4> -->
+            {% if event.eventCost %}
             <p class="card-text">{{event.eventCost}} Credits</p>
+            {% endif %}
           </div>
         </div>
         {% endfor %}
         {% endif %}
-        
+
         {% if upComingEvents|length > 0 %}
-        <h3>Upcoming Events:</h3>
+        <h4 class="pt-4">Upcoming Events:</h4>
         <div id="carouselExampleSlidesOnly" class="carousel slide" data-bs-ride="carousel">
-          <div class="carousel-inner">            
+          <div class="carousel-inner">
             {% for event in upComingEvents %}
             <div class="carousel-item {% if loop.first %}active{% endif %} p-2">
               <div class="card">
                 <div class="card-body">
                   <h1 class="card-title">{{event.title}}</h1>
-                  <h4 class="card-subtitle mb-2 text-body-secondary">{{event.start | timestamp_to_str_ampm}} - {{event.end |
+                  <h4 class="card-subtitle mb-2 text-body-secondary">{{event.start | timestamp_to_str_ampm}} -
+                    {{event.end |
                     timestamp_to_str_ampm}}</h4>
-                  <p class="card-text">{% if event.eventCost %}{{event.eventCost}} Credits{% else %}{{event.eventDescription}}{% endif %}</p>
+                  <p class="card-text">{% if event.eventCost %}{{event.eventCost}} Credits{% else
+                    %}{{event.eventDescription}}{% endif %}</p>
                 </div>
               </div>
             </div>
@@ -91,7 +112,7 @@
           </div>
         </div>
         {% endif %}
-        
+
       </div>
       <h1>Please Scan your QR Code</h1>
       <h4>Or</h4>
@@ -143,8 +164,8 @@
                   <div class="btn-group btn-group-lg d-flex" role="group" aria-label="Basic radio toggle button group">
 
                     {% if setting.show_cashapp %}
-                    <input type="radio" class="btn-check active" data-bs-toggle="tab" data-bs-target="#nav-cashapp"
-                      role="tab" name="btnradio" id="btnradio" autocomplete="off" checked>
+                    <input type="radio" class="btn-check " data-bs-toggle="tab" data-bs-target="#nav-cashapp" role="tab"
+                      name="btnradio" id="btnradio" autocomplete="off" checked>
                     <label class="btn btn-outline-success" for="btnradio">
                       <img width="48" height="48" src="../static/icons8-cashapp-48.png" alt="cash-app" />
                       CashApp
@@ -166,14 +187,12 @@
                       Venmo
                     </label>
                     {% endif %}
-                    {% if setting.show_cash %}
-                    <input type="radio" class="btn-check" data-bs-toggle="tab" data-bs-target="#nav-cash" role="tab"
-                      name="btnradio" id="btnradio3" autocomplete="off">
+                    <input type="radio" class="btn-check active" data-bs-toggle="tab" data-bs-target="#nav-cash"
+                      role="tab" name="btnradio" id="btnradio3" autocomplete="off">
                     <label class="btn btn-outline-success" for="btnradio3">
                       <img width="48" height="48" src="../static/icons8-money-48.png" alt="cash" />
                       Cash
                     </label>
-                    {% endif %}
                     {% if setting.show_credit %}
                     <input type="radio" class="btn-check" data-bs-toggle="tab" data-bs-target="#nav-credit" role="tab"
                       name="btnradio" id="btnradio4" autocomplete="off">
@@ -233,7 +252,7 @@
                   </div>
                 </div>
                 {% endif %}
-                {% if setting.show_cash %}
+                
                 <div class="tab-pane text-center m-4" id="nav-cash" role="tabpanel" tabindex="0">
                   <div class="d-inline-flex flex-column mb-3 text-center">
                     <div class="p-2">
@@ -245,7 +264,7 @@
                     </div>
                   </div>
                 </div>
-                {% endif %}
+                
                 {% if setting.show_credit %}
                 <div class="tab-pane text-center m-4 " id="nav-credit" role="tabpanel" tabindex="0">
                   <div class="d-inline-flex flex-column mb-3 text-center">

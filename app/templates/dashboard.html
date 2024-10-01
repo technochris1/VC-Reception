@@ -15,6 +15,20 @@
             </div>
         </div>
     </div>
+    {% if todaysEvents|length > 0 %}
+    <div class="col">
+        <div class="card text-bg-primary ">
+            <div class="card-body">
+                <h1 class="card-title text-center">Todays Event:</h1>
+                <p class="card-text text-center"> {% if todaysEvents[0].title %}{{todaysEvents[0].title}}{% else %}No Event Title{% endif %}</p>
+            </div>
+        </div>
+
+
+        
+
+    </div>
+    {% endif %}
 
     <!-- <div class="col">
             <div class="card text-bg-danger  ">

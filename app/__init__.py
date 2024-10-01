@@ -5,7 +5,7 @@ from os import environ as env
 # from dotenv import load_dotenv
 
 import json
-from datetime import datetime, timezone
+from datetime import datetime, timezone, time
 import pytz
 
 import re
@@ -101,6 +101,13 @@ class creditTransactionLogView(ModelView):
     column_list = ('timestamp', 'guest', 'authorizedBy', 'authorizedSource', 'generalAmountChange', 'description')
     column_sortable_list = ('timestamp', 'guest', 'authorizedBy', 'authorizedSource', 'generalAmountChange', 'description')
 
+#class eventsView(ModelView):   
+    #column_hide_backrefs = False
+    #column_list = ('title', 'eventDescription', 'start', 'end', 'addons')
+
+class addonView(ModelView):   
+    column_hide_backrefs = False
+    column_list = ('title', 'description', 'guests', 'cost')
 
 
 admin.add_view(guestView(models.Guest, db.session))
@@ -109,6 +116,7 @@ admin.add_view(guestLogView(models.Guestlog, db.session))
 admin.add_view(creditTransactionLogView(models.CreditTransactionLog, db.session))
 admin.add_view(roleView(models.Role, db.session))
 admin.add_view(ModelView(models.Event, db.session))
+admin.add_view(addonView(models.Addon, db.session))
 #admin.add_view(ModelView(models.Setting, db.session))
 
 
@@ -228,16 +236,34 @@ def not_check_role_skip_payment_at_checkin(guest):
 def utc_to_local(utc_dt):
     return utc_dt.replace(tzinfo=datetime.timezone.utc).astimezone(tz=None)
 
+@app.template_filter('timestamp_to_date_min_time')
+def timestamp_to_date_min_time(timestamp):
+    return datetime.combine(datetime.fromtimestamp(timestamp), time.min)
+
+@app.template_filter('timestamp_to_date_str')
+def timestamp_to_date_str(timestamp):
+    return datetime.fromtimestamp(timestamp).strftime('%Y/%m/%d')
+
+@app.template_filter('timestamp_to_time_str')
+def timestamp_to_time_str(timestamp):
+    return datetime.fromtimestamp(timestamp).strftime('%H:%M')
+
+@app.template_filter('timestamp_to_time_str_ampm')
+def timestamp_to_time_str_ampm(timestamp):
+    return datetime.fromtimestamp(timestamp).strftime('%I:%M %p')
 
 @app.template_filter('timestamp_to_str')
-def timestamp_to_date(timestamp):
+def timestamp_to_str(timestamp):
     return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M')
 
 @app.template_filter('timestamp_to_str_ampm')
-def timestamp_to_date(timestamp):
-    return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %I:%M %p')
+def timestamp_to_str_ampm(timestamp):
+    return datetime.fromtimestamp(timestamp).strftime('%m/%d %I:%M %p')
     
 
-
+@app.template_filter('guests_to_str')
+def guests_to_str(guests):
+    print(len(guests))
+    return ','.join([x.fetUsername for x in guests if x])
 
 
