@@ -29,10 +29,30 @@
   textarea {
     color: #00000000;
   }
+
+  .checkbox-lg .form-check-input {
+    top: .8rem;
+    scale: 1.4;
+    margin-right: 0.7rem;
+  }
+
+  .checkbox-lg .form-check-label {
+    padding-top: 13px;
+  }
+
+  .checkbox-xl .form-check-input {
+    top: 1.2rem;
+    scale: 1.7;
+    margin-right: 0.8rem;
+  }
+
+  .checkbox-xl .form-check-label {
+    padding-top: 19px;
+  }
 </style>
 
 <body>
-  ## This is the Left content of the page
+  <!-- This is the Left content of the page -->
   <div class="position-absolute top-0 end-0 m-4">
     <div class="btn-group m-1" role="group" aria-label="Basic example">
       <button type="button" class="btn btn-outline-dark btn-sm" id="themeSwitch"><i
@@ -41,16 +61,20 @@
           class="bi bi-arrows-fullscreen text-light"></i></button>
     </div>
   </div>
-  ## This is the Right content of the page
+  <!-- This is the Right content of the page -->
   <div class="row h-100 p-2 align-items-center">
     <div class="col text-center align-middle">
       <img src="../static/VC_logo_dark.png" id="image" class="img-fluid" alt="..." style="width: 40vw;">
     </div>
     <div class="col text-center align-middle">
       <div>
-        ## This is the Event Section
+        <!-- This is the Event Section -->
         {% if todaysEvents|length > 0 %}
-        <h4>Todays Event:</h4>
+        {% if todaysEvents|length == 1 %}
+        <h4>Current Event:</h4>
+        {% else %}
+        <h4>Current Events:</h4>
+        {% endif %}
         {% for event in todaysEvents %}
         <div class="card">
           <div class="card-body">
@@ -113,7 +137,7 @@
     </div>
   </div>
 
-  ## This is the Toast Notification
+  <!-- This is the Toast Notification -->
   <div class="position-fixed bottom-0 start-50 translate-middle-x p-3" style="z-index: 11">
     <div id="infoToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="toast-header">
@@ -125,7 +149,7 @@
     </div>
   </div>
 
-  ## This is the QR Code Entry Field
+  <!-- This is the QR Code Entry Field -->
   <div class="position-absolute bottom-0 start-50 translate-middle-x">
     <div class="form-group">
       <input type="text" class="form-control" inputmode="none" id="code" placeholder="QR CODE ENTRY"></input>
@@ -135,20 +159,78 @@
   <div class="modal fade " id="checkInPaymentModal" aria-hidden="true" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable ">
       <div class="modal-content bg-dark text-light">
-        <div class="modal-header">
-          <h5 class="modal-title">Before Checking In, Please Choose a Payment Method.</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
+
         <div class="modal-body">
           <div class="modal-body d-flex justify-content-center" id="checkInPaymentModalBody">
+
+
             <div class="d-flex flex-column ">
+              <div class="justify-content-center text-center">
+                {% if todaysEvents|length > 0 %}
+                {% for event in todaysEvents %}
+                <div class="card m-4">
+                  <div class="card-body">
+                    <div class="position-relative">
+                      <div class="position-absolute top-0 start-0">
+                        <div class="form-check checkbox-xl">
+                          <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" checked>
+                        </div>
+                      </div>
+                    </div>
+                    <h1>{{event.title}}</h1>
+                    {% if event.start | timestamp_to_date_min_time == event.end | timestamp_to_date_min_time %}
+                    <h4 class="card-subtitle mb-2 text-body-secondary">{{event.start | timestamp_to_date_str}}
+                      {{event.start |
+                      timestamp_to_time_str_ampm}} - {{event.end | timestamp_to_time_str_ampm}}</h4>
+                    {% else %}
+                    <h4 class="card-subtitle mb-2 text-body-secondary">{{event.start | timestamp_to_str_ampm}} -
+                      {{event.end |
+                      timestamp_to_str_ampm}}</h4>
+                    {% endif %}
+                    {% if event.eventCost %}
+                    <p class="card-text">{{event.eventCost}} Credits</p>
+                    {% endif %}
+
+                    {% if event.addons %}
+                    <ul class="list-group list-group-flush">
+                      {% for addon in event.addons %}
+                      <li class="list-group-item w-100">
+                        <div class="d-flex justify-content-center">
+                          <input class="form-check-input me-1" type="checkbox" value="" id="checkbox{{addon.id}}">
+                          <label class="form-check-label" for="checkbox{{addon.id}}">{{addon.title}} By:
+                            {{addon.guests|guests_to_str}} for ${{addon.cost}}</label>
+
+
+                        </div>
+
+
+
+                      </li>
+                      {% endfor %}
+                    </ul>
+
+
+
+                    {% endif %}
+
+
+
+                  
+                  </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+
+              </div>
+
+
               <nav>
                 <div class="nav nav-pills justify-content-center text-center" id="nav-tab" role="tablist">
                   <div class="btn-group btn-group-lg d-flex" role="group" aria-label="Basic radio toggle button group">
 
                     {% if setting.show_cashapp %}
                     <input type="radio" class="btn-check " data-bs-toggle="tab" data-bs-target="#nav-cashapp" role="tab"
-                      name="btnradio" id="btnradio" autocomplete="off" checked>
+                      name="btnradio" id="btnradio" autocomplete="off">
                     <label class="btn btn-outline-success" for="btnradio">
                       <img width="48" height="48" src="../static/icons8-cashapp-48.png" alt="cash-app" />
                       CashApp
@@ -170,12 +252,6 @@
                       Venmo
                     </label>
                     {% endif %}
-                    <input type="radio" class="btn-check active" data-bs-toggle="tab" data-bs-target="#nav-cash"
-                      role="tab" name="btnradio" id="btnradio3" autocomplete="off">
-                    <label class="btn btn-outline-success" for="btnradio3">
-                      <img width="48" height="48" src="../static/icons8-money-48.png" alt="cash" />
-                      Cash
-                    </label>
                     {% if setting.show_credit %}
                     <input type="radio" class="btn-check" data-bs-toggle="tab" data-bs-target="#nav-credit" role="tab"
                       name="btnradio" id="btnradio4" autocomplete="off">
@@ -189,6 +265,12 @@
                       </span>
                     </label>
                     {% endif %}
+                    <input type="radio" class="btn-check active" data-bs-toggle="tab" data-bs-target="#nav-cash"
+                      role="tab" name="btnradio" id="btnradio3" autocomplete="off" checked>
+                    <label class="btn btn-outline-success" for="btnradio3">
+                      <img width="48" height="48" src="../static/icons8-money-48.png" alt="cash" />
+                      Cash
+                    </label>
                   </div>
                 </div>
               </nav>
@@ -198,7 +280,7 @@
                 <div class="tab-pane show text-center m-4 " id="nav-cashapp" role="tabpanel" tabindex="0">
                   <div class="d-inline-flex flex-column mb-3 text-center">
                     <div class="p-2">
-                      <img class="mb-4 text-center" width="200" height="200" src="../static/cashappQR.svg"
+                      <img class="mb-4 text-center" width="250" height="250" src="../static/cashappQR.svg"
                         alt="CashApp" />
                     </div>
                     <div class="p-2">
@@ -212,7 +294,7 @@
                 <div class="tab-pane text-center m-4" id="nav-paypal" role="tabpanel" tabindex="0">
                   <div class="d-inline-flex flex-column mb-3 text-center">
                     <div class="p-2">
-                      <img class="mb-4 text-center" width="200" height="200" src="../static/paypalQR.svg"
+                      <img class="mb-4 text-center" width="250" height="250" src="../static/paypalQR.svg"
                         alt="Paypal" />
                     </div>
                     <div class="p-2">
@@ -226,7 +308,7 @@
                 <div class="tab-pane text-center m-4" id="nav-venmo" role="tabpanel" tabindex="0">
                   <div class="d-inline-flex flex-column mb-3 text-center">
                     <div class="p-2">
-                      <img class="mb-4 text-center" width="200" height="200" src="../static/venmoQR.svg" alt="Venmo" />
+                      <img class="mb-4 text-center" width="250" height="250" src="../static/venmoQR.svg" alt="Venmo" />
                     </div>
                     <div class="p-2">
                       <button type="button" id="payWithVenmoBtn" data-payment-method="venmo" data-bs-dismiss="modal"
@@ -234,11 +316,11 @@
                     </div>
                   </div>
                 </div>
-                {% endif %}                
+                {% endif %}
                 <div class="tab-pane text-center m-4 active" id="nav-cash" role="tabpanel" tabindex="0">
                   <div class="d-inline-flex flex-column mb-3 text-center">
                     <div class="p-2">
-                      <p>Please Provide Payment to VC Staff Shortly After Check-In</p>
+                      <h2>Please Provide Payment to VC Staff Shortly After Check-In</h2>
                     </div>
                     <div class="p-2">
                       <button type="button" id="payWithCashBtn" data-payment-method="cash" data-bs-dismiss="modal"
@@ -250,7 +332,8 @@
                 <div class="tab-pane text-center m-4 " id="nav-credit" role="tabpanel" tabindex="0">
                   <div class="d-inline-flex flex-column mb-3 text-center">
                     <div class="p-2">
-                      <button type="button" id="payWithCreditBtn" data-payment-method="credit" data-bs-dismiss="modal" class="btn btn-primary btn-lg m-4"> Check-In Now</button>
+                      <button type="button" id="payWithCreditBtn" data-payment-method="credit" data-bs-dismiss="modal"
+                        class="btn btn-primary btn-lg m-4"> Check-In Now</button>
                     </div>
                   </div>
                 </div>

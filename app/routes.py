@@ -52,23 +52,29 @@ def guestView():
         flash('Guest added successfully', 'success')
         return redirect(url_for('guestView', setting=Setting.query.first(), form=form))
     
-    date = datetime.combine(datetime.now(), time.min)
-    tommorowDate = (date+timedelta(days=1)).timestamp()
+    date = datetime.now()
+    dateMin = datetime.combine(date, time.min)
+    tommorow =  date+timedelta(days=1) 
+    tommorowDate =  datetime.combine(tommorow, time.max).timestamp()  
     thirtyDays = (date+timedelta(days=30)).timestamp()
-    #print("Date",date)
+
+    print("Now!",date.timestamp())
+    print("Tommorow",tommorow.timestamp())
+    print("TommorowDate",tommorowDate)
+    
+    
+    
     upComingEvents  = []
     query = Event.query.filter(and_(Event.start >= tommorowDate, Event.start <= thirtyDays)).order_by(Event.start).all()
-    #print("Query",query)
     for event in query:
         if event.start > date.timestamp() and event.display == True and event.specialEvent == True:
             upComingEvents.append(event)
     for event in query:
-        if event.start > date.timestamp() and event.display == True:
+        if event.start > date.timestamp() and event.display == True and event.specialEvent == False:
             upComingEvents.append(event)
-    #print("Events",upComingEvents)
    
     return render_template('guestView.html',
-                           todaysEvents=Event.query.filter(and_(Event.start >= date.timestamp(), Event.start <= tommorowDate)).order_by(Event.start).all(),                        
+                           todaysEvents=Event.query.filter(and_(Event.start <= date.timestamp(), date.timestamp() <= Event.end)).order_by(Event.start).all(),                        
                             upComingEvents=upComingEvents,
                             setting=Setting.query.first(),
                             form= form)
@@ -121,8 +127,38 @@ def preCheckIn(uuid = None):
     print("UUID",uuid)
     settings = Setting.query.first()
     guest = Guest.query.filter_by(uuid = uuid).first()
-    
     response = {}
+    todaysEvents = {}
+    upComingEvents = {}
+
+    date = datetime.combine(datetime.now(), time.min)
+    tommorowDate = (date+timedelta(days=1)).timestamp()
+
+    _todaysEvents=Event.query.filter(and_(Event.start >= date.timestamp(), Event.start <= tommorowDate)).order_by(Event.start).all()  
+    for event in _todaysEvents:
+        print("Event",event)
+
+
+
+    
+    # thirtyDays = (date+timedelta(days=30)).timestamp()
+    # #print("Date",date)
+    # upComingEvents  = []
+    # query = Event.query.filter(and_(Event.start >= tommorowDate, Event.start <= thirtyDays)).order_by(Event.start).all()
+    # #print("Query",query)
+    # for event in query:
+    #     if event.start > date.timestamp() and event.display == True and event.specialEvent == True:
+    #         upComingEvents.append(event)
+    # for event in query:
+    #     if event.start > date.timestamp() and event.display == True:
+    #         upComingEvents.append(event)
+    #print("Events",upComingEvents)
+   
+    
+    #                 
+    #upComingEvents=upComingEvents
+    
+    
     if(guest):
         print("Guest",guest)        
         visitTime = datetime.now(timezone.utc)
