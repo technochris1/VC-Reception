@@ -32,6 +32,7 @@
 </style>
 
 <body>
+  ## This is the Left content of the page
   <div class="position-absolute top-0 end-0 m-4">
     <div class="btn-group m-1" role="group" aria-label="Basic example">
       <button type="button" class="btn btn-outline-dark btn-sm" id="themeSwitch"><i
@@ -40,24 +41,14 @@
           class="bi bi-arrows-fullscreen text-light"></i></button>
     </div>
   </div>
-
-
+  ## This is the Right content of the page
   <div class="row h-100 p-2 align-items-center">
     <div class="col text-center align-middle">
       <img src="../static/VC_logo_dark.png" id="image" class="img-fluid" alt="..." style="width: 40vw;">
     </div>
-    <!-- <div class="col-auto align-items-stretch m-2" >
-     
-        <div class="vr vh-100 "></div>
-     
-    </div> -->
-
-
-
-
-
     <div class="col text-center align-middle">
       <div>
+        ## This is the Event Section
         {% if todaysEvents|length > 0 %}
         <h4>Todays Event:</h4>
         {% for event in todaysEvents %}
@@ -122,10 +113,7 @@
     </div>
   </div>
 
-
-
-
-
+  ## This is the Toast Notification
   <div class="position-fixed bottom-0 start-50 translate-middle-x p-3" style="z-index: 11">
     <div id="infoToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
       <div class="toast-header">
@@ -137,17 +125,12 @@
     </div>
   </div>
 
-
+  ## This is the QR Code Entry Field
   <div class="position-absolute bottom-0 start-50 translate-middle-x">
     <div class="form-group">
       <input type="text" class="form-control" inputmode="none" id="code" placeholder="QR CODE ENTRY"></input>
     </div>
   </div>
-
-
-
-
-
 
   <div class="modal fade " id="checkInPaymentModal" aria-hidden="true" tabindex="-1" data-bs-backdrop="static">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable ">
@@ -212,7 +195,7 @@
 
               <div class="tab-content" id="nav-tabContent">
                 {% if setting.show_cashapp %}
-                <div class="tab-pane show text-center m-4 active" id="nav-cashapp" role="tabpanel" tabindex="0">
+                <div class="tab-pane show text-center m-4 " id="nav-cashapp" role="tabpanel" tabindex="0">
                   <div class="d-inline-flex flex-column mb-3 text-center">
                     <div class="p-2">
                       <img class="mb-4 text-center" width="200" height="200" src="../static/cashappQR.svg"
@@ -251,9 +234,8 @@
                     </div>
                   </div>
                 </div>
-                {% endif %}
-                
-                <div class="tab-pane text-center m-4" id="nav-cash" role="tabpanel" tabindex="0">
+                {% endif %}                
+                <div class="tab-pane text-center m-4 active" id="nav-cash" role="tabpanel" tabindex="0">
                   <div class="d-inline-flex flex-column mb-3 text-center">
                     <div class="p-2">
                       <p>Please Provide Payment to VC Staff Shortly After Check-In</p>
@@ -264,19 +246,17 @@
                     </div>
                   </div>
                 </div>
-                
                 {% if setting.show_credit %}
                 <div class="tab-pane text-center m-4 " id="nav-credit" role="tabpanel" tabindex="0">
                   <div class="d-inline-flex flex-column mb-3 text-center">
                     <div class="p-2">
-                      <button type="button" id="payWithCreditBtn" data-payment-method="credit" data-bs-dismiss="modal"
-                        class="btn btn-primary btn-lg m-4"> Check-In
-                        Now</button>
+                      <button type="button" id="payWithCreditBtn" data-payment-method="credit" data-bs-dismiss="modal" class="btn btn-primary btn-lg m-4"> Check-In Now</button>
                     </div>
                   </div>
                 </div>
                 {% endif %}
               </div>
+
             </div>
           </div>
         </div>

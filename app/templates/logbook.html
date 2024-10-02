@@ -35,8 +35,8 @@
                             <tr>
                                 <td>{{ moment(logItem.checked_in_at).format("h:mm a") }}</td>
                                 <td scope="row" class='d-none d-lg-table-cell'>{{ logItem.paymentMethod }}</td>
-                                <td scope="row">{{guests[logItem.userID].fetUsername}}</td>
-                                <td scope="row" class='d-none d-md-table-cell'>{{guests[logItem.userID].name}}</td>
+                                <td scope="row">{{guests[logItem.userID-1].fetUsername}}</td>
+                                <td scope="row" class='d-none d-md-table-cell'>{{guests[logItem.userID-1].name}}</td>
                             </tr>
                             {% endfor %}
 
@@ -105,7 +105,7 @@
 
 
 
-<!-- 
+
     <table class="table-dark rounded-3 overflow-hidden " data-toggle="table" data-search="true">
         <thead>
             <tr>
@@ -121,12 +121,12 @@
             <tr>
                 <td>{{ moment(logItem.checked_in_at).format("dddd, MMMM Do YYYY, h:mm a") }}</td>
                 <td scope="row">{{ logItem.paymentMethod }}</td>
-                <td scope="row">{{guests[logItem.userID].fetUsername}}</td>
-                <td scope="row">{{guests[logItem.userID].name}}</td>
+                <td scope="row">{{guests[logItem.userID-1].fetUsername}}</td>
+                <td scope="row">{{guests[logItem.userID-1].name}}</td>
             </tr>
             {% endfor %}
 
         </tbody>
-    </table> -->
+    </table> 
 </div>
 {% endblock content %}
