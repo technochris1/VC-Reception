@@ -23,7 +23,7 @@ from flask_login import LoginManager
 #from flask_apscheduler import APScheduler
 from flask_moment import Moment
 from flask_mail import Mail, Message
-
+from sqlalchemy import MetaData 
 from sqlalchemy.sql import func
 from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass
 
@@ -49,7 +49,21 @@ app = Flask(__name__)
 app.config.from_object('config.DevelopmentConfig')
 #app.config.from_object('config.ProductionConfig')
 admin = Admin(app, name='VC-Admin')
-db = SQLAlchemy(app)
+
+
+
+convention = {
+  "ix": "ix_%(column_0_label)s",
+  "uq": "uq_%(table_name)s_%(column_0_name)s",
+  "ck": "ck_%(table_name)s_%(constraint_name)s",
+  "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+  "pk": "pk_%(table_name)s"
+}
+
+
+
+
+db = SQLAlchemy(app,metadata=MetaData(naming_convention=convention))
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'home' 
@@ -119,8 +133,6 @@ admin.add_view(ModelView(models.Event, db.session))
 admin.add_view(addonView(models.Addon, db.session))
 #admin.add_view(ModelView(models.Setting, db.session))
 
-
-
 migrate = Migrate(app, db)
 
 
@@ -156,11 +168,11 @@ with app.app_context():
 
     #     #models.db.session.add(guest)
         
-    guestLog = models.Guestlog.query.all()
-    if(guestLog is not None):
-        for log in guestLog:
-            if(log.checked_in_at):
-                log.checked_in_at_local = log.checked_in_at.replace(tzinfo=timezone.utc).astimezone(tz=None)
+    # guestLog = models.Guestlog.query.all()
+    # if(guestLog is not None):
+    #     for log in guestLog:
+    #         if(log.checked_in_at):
+    #             log.checked_in_at_local = log.checked_in_at.replace(tzinfo=timezone.utc).astimezone(tz=None)
             
    # db.session.commit()
 
