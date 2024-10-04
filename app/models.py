@@ -93,7 +93,7 @@ class Guest(db.Model, UserMixin):
 class Guestlog(db.Model):
     id:int = db.Column(db.Integer, primary_key=True)
     checked_in_at = db.Column(db.DateTime(timezone=True))
-    #checked_in_at_date = db.Column(db.Date)
+    checked_in_at_local= db.Column(db.DateTime(timezone=True))
     #checked_in_at_time = db.Column(db.Time)
     checked_out_at = db.Column(db.DateTime(timezone=True))
     #checked_out_at_date = db.Column(db.Date)
@@ -101,6 +101,8 @@ class Guestlog(db.Model):
     check_out_method:str  = db.Column(db.String(100))
     userID = db.Column(db.Integer, db.ForeignKey('guest.id'))
     paymentMethod:str  = db.Column(db.String(100))
+    paymentAmount:int  = db.Column(db.Integer)
+
 
 
 @dataclass

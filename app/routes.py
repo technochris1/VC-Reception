@@ -389,7 +389,7 @@ def events(id = None):
 @app.route("/dashboard/")
 #@login_required
 def dashboard():
-    date = datetime.combine(datetime.now(), time.min)
+    date = datetime.now()
     tommorowDate = (date+timedelta(days=1)).timestamp()
     thirtyDays = (date+timedelta(days=30)).timestamp()
 
@@ -401,7 +401,7 @@ def dashboard():
                            guests_total_count=Guest.query.count(),
                            guests_checked_in=Guest.query.filter(Guest.lastVisit > last_24_hours ).all(),
                            quests_top_5=db.session.query(Guest, func.count(Guestlog.id)).join(Guestlog).group_by(Guest.id).order_by(func.count(Guestlog.id).desc()).limit(5).all(),
-                           todaysEvents=Event.query.filter(and_(Event.start >= date.timestamp(), Event.start <= tommorowDate)).order_by(Event.start).all(),                        
+                           todaysEvents=Event.query.filter(and_(Event.start <= date.timestamp(), date.timestamp() <= Event.end )).order_by(Event.start).all(),                        
                            
                            #guests_top_5=db.session.query(Guest, func.count(Guestlog)).outerjoin(Guestlog, Guest.id == Guestlog.userID).group_by(Guest.id).order_by(func.count(Guestlog.id).desc()).limit(5).all(),                           
                            )
@@ -559,18 +559,19 @@ def logbook():
             # {"date":"2021-01-01", "events": [{Guestlog Item}]}            
         ]
     
-    distinct_dates = db.session.query(Guestlog.checked_in_at).order_by(Guestlog.checked_in_at.desc()).all()
-    print("Distinct:",distinct_dates)
-    for date in distinct_dates:
-        dateItem = date[0]
+    all_dates = db.session.query(Guestlog.checked_in_at_local).order_by(Guestlog.checked_in_at_local.desc()).all()
+    #print("All Dates:",distinct_dates)
+    for date in all_dates:
         
-        dateItem = dateItem.replace(tzinfo=tz.tzutc())
-        dateItem = dateItem.astimezone(tz.tzlocal())
+        dateItem = date[0] #.replace(tzinfo=tz.tzutc()).astimezone(tz.tzlocal())
+       
+
+
         if dateItem.date() not in dates:
             dates.append(dateItem.date())
 
 
-        #print("Date",dateItem.date())
+        #
         #dateObj = datetime.strptime(date[0], '%Y-%m-%d')
         #dateObjEnd = dateObj+timedelta(days=1)
 
@@ -581,9 +582,11 @@ def logbook():
 
         
         #response.append({"date": date[0], "events": Guestlog.query.filter(func.date(Guestlog.checked_in_at).between(dateObj, dateObjEnd)).all()})
-    print("Distinct:",dates)
+    #print("Distinct Dates:",dates)
     for date in dates:
-        response.append({"date": date, "events": Guestlog.query.filter(func.date(Guestlog.checked_in_at).between(date, date + timedelta(days=1))).all()})
+        events = Guestlog.query.filter(func.date(Guestlog.checked_in_at_local) == date).all()
+        print("Date:",date, events)
+        response.append({"date": date, "events": events })
 
     return render_template('logbook.html', distinct=response ,guests=Guest.query.all(), log=Guestlog.query.all())
     #return render_template('logbook.html')

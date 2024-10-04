@@ -156,29 +156,13 @@ with app.app_context():
 
     #     #models.db.session.add(guest)
         
-    #guestLog = models.Guestlog.query.all()
-    #if(guestLog is not None):
-        #for log in guestLog:
-            #if(log.checked_in_at):
-                #print("IN:",log.checked_in_at, log.checked_in_at.replace(tzinfo=timezone.utc).astimezone(tz=None))
- 
-                #print(log.checked_in_at.date())
-                #print(log.checked_in_at.time())
-                #log.checked_in_at_date = log.checked_in_at.replace(tzinfo=timezone.utc).astimezone(tz=None).date()
-                #log.checked_in_at_time = log.checked_in_at.replace(tzinfo=timezone.utc).astimezone(tz=None).time()
-
-            #if(log.checked_out_at is None):
-                #log.checked_out_at = log.checked_in_at + datetime.timedelta(hours=3)
-            #if(log.checked_out_at):
-                #print("OUT:",log.checked_out_at)
-                #print(log.checked_out_at.date())
-                #print(log.checked_out_at.time())
-            #    if(log.checked_out_at_date is None):
-                #log.checked_out_at_date = log.checked_out_at.replace(tzinfo=timezone.utc).astimezone(tz=None).date()
-            #    if(log.checked_out_at_time is None):
-                #log.checked_out_at_time = log.checked_out_at.replace(tzinfo=timezone.utc).astimezone(tz=None).time()
-                #models.db.session.add(log)
-    #db.session.commit()
+    guestLog = models.Guestlog.query.all()
+    if(guestLog is not None):
+        for log in guestLog:
+            if(log.checked_in_at):
+                log.checked_in_at_local = log.checked_in_at.replace(tzinfo=timezone.utc).astimezone(tz=None)
+            
+   # db.session.commit()
 
 
 
