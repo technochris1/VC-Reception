@@ -157,10 +157,11 @@ with app.app_context():
     #     #models.db.session.add(guest)
         
     guestLog = models.Guestlog.query.all()
-    if(guestLog is not None):
-        for log in guestLog:
-            if(log.checked_in_at):
-                log.checked_in_at_local = log.checked_in_at.replace(tzinfo=timezone.utc).astimezone(tz=None)
+    #if(guestLog is not None):
+        #for log in guestLog:
+            #pass
+            #if(log.checked_in_at):
+                #log.checked_in_at_local = log.checked_in_at.replace(tzinfo=timezone.utc).astimezone(tz=None)
             
    # db.session.commit()
 
