@@ -86,6 +86,11 @@
             <h4 class="card-subtitle mb-2 text-body-secondary">{{event.start | timestamp_to_str_ampm}} - {{event.end |
               timestamp_to_str_ampm}}</h4>
             {% endif %}
+            <!-- <h4 class="card-subtitle mb-2 text-body-secondary">{{event.start | timestamp_to_date_str}} - {{event.end |
+              timestamp_to_str_ampm}}</h4> -->
+            {% if event.eventCost %}
+            <p class="card-text">${{event.eventCost}} </p>
+            {% endif %}
 
             {% if event.addons %}
             <ul class="list-group list-group-flush">
@@ -96,11 +101,7 @@
             {% endif %}
 
 
-            <!-- <h4 class="card-subtitle mb-2 text-body-secondary">{{event.start | timestamp_to_date_str}} - {{event.end |
-              timestamp_to_str_ampm}}</h4> -->
-            {% if event.eventCost %}
-            <p class="card-text">{{event.eventCost}} Credits</p>
-            {% endif %}
+
           </div>
         </div>
         {% endfor %}
@@ -118,7 +119,7 @@
                   <h4 class="card-subtitle mb-2 text-body-secondary">{{event.start | timestamp_to_str_ampm}} -
                     {{event.end |
                     timestamp_to_str_ampm}}</h4>
-                  <p class="card-text">{% if event.eventCost %}{{event.eventCost}} Credits{% else
+                  <p class="card-text">{% if event.eventCost %}${{event.eventCost}} {% else
                     %}{{event.eventDescription}}{% endif %}</p>
                 </div>
               </div>
@@ -173,7 +174,7 @@
                     <div class="position-relative">
                       <div class="position-absolute top-0 start-0">
                         <div class="form-check checkbox-xl">
-                          <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" checked>
+                          <input class="form-check-input" type="checkbox" value="" id="event{{event.id}}" checked>
                         </div>
                       </div>
                     </div>
@@ -188,7 +189,7 @@
                       timestamp_to_str_ampm}}</h5>
                     {% endif %}
                     {% if event.eventCost %}
-                    <p class="card-text">{{event.eventCost}} Credits</p>
+                    <p class="card-text">${{event.eventCost}}</p>
                     {% endif %}
 
                     {% if event.addons %}
@@ -196,9 +197,8 @@
                       {% for addon in event.addons %}
                       <li class="list-group-item w-100">
                         <div class="d-flex justify-content-center">
-                          <input class="form-check-input me-1" type="checkbox" value="" id="checkbox{{addon.id}}">
-                          <label class="form-check-label" for="checkbox{{addon.id}}">{{addon.title}} By:
-                            {{addon.guests|guests_to_str}} for ${{addon.cost}}</label>
+
+                          {{addon.title}} By: {{addon.guests|guests_to_str}} for ${{addon.cost}}
 
 
                         </div>
@@ -644,7 +644,19 @@
       if (qrCode && paymentMethod) {
         url = '{{ url_for("checkIn" ) }}' + encodeURI(qrCode) + '/' + encodeURI(paymentMethod)
 
-        fetch(url)
+
+        body = JSON.stringify({
+          'qrCode': qrCode,
+          'paymentMethod': paymentMethod
+        })
+
+        //fetch(url)
+        fetch(url, {
+          //method: "POST",
+          //body: body
+        })
+
+
           .then(response => {
             if (!response.ok) {
               throw new Error('Network response was not ok');

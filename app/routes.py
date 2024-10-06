@@ -208,6 +208,8 @@ def checkIn(uuid = None, method = None):
     settings = Setting.query.first()
     print("Settings,",settings)
     guest = Guest.query.filter_by(uuid = uuid).first()
+    todaysEvent=Event.query.filter(and_(Event.start <= datetime.now().timestamp(), datetime.now().timestamp() <= Event.end)).order_by(Event.start).first(),                        
+                           
     if(guest):
         visitTime = datetime.now(timezone.utc)
         response = {
@@ -232,12 +234,13 @@ def checkIn(uuid = None, method = None):
         
         newCheckIn = Guestlog(
             checked_in_at = visitTime,         
-            
+            event = todaysEvent[0],
             #checked_in_at_date = visitTime.replace(tzinfo=est).date(),
             #checked_in_at_time = visitTime.replace(tzinfo=est).time(),
             userID = guest.id,
             paymentMethod = method
         )
+        print("New Check In",newCheckIn)
         db.session.add(newCheckIn)
         db.session.commit()
         if(method == "credit"):     
@@ -588,7 +591,7 @@ def logbook():
         print("Date:",date, events)
         response.append({"date": date, "events": events })
 
-    return render_template('logbook.html', distinct=response ,guests=Guest.query.all(), log=Guestlog.query.all())
+    return render_template('logbook.html', distinct=response, events=  ,guests=Guest.query.all(), log=Guestlog.query.all())
     #return render_template('logbook.html')
 
 @app.route('/credits/', methods=['GET', 'POST'])
