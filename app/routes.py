@@ -591,7 +591,7 @@ def logbook():
         print("Date:",date, events)
         response.append({"date": date, "events": events })
 
-    return render_template('logbook.html', distinct=response, events=  ,guests=Guest.query.all(), log=Guestlog.query.all())
+    return render_template('logbook.html', distinct=response, events= events  ,guests=Guest.query.all(), log=Guestlog.query.all())
     #return render_template('logbook.html')
 
 @app.route('/credits/', methods=['GET', 'POST'])
