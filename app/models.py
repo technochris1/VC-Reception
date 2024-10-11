@@ -103,7 +103,7 @@ class Guestlog(db.Model):
     #checked_out_at_time = db.Column(db.Time)
     check_out_method:str  = db.Column(db.String(100))
     userID = db.Column(db.Integer, db.ForeignKey('guest.id'))
-    eventID = db.Column(db.Integer, db.ForeignKey('event.id'))
+    #eventID = db.Column(db.Integer, db.ForeignKey('event.id'))
     paymentMethod:str  = db.Column(db.String(100))
     paymentAmount:int  = db.Column(db.Integer)
 
@@ -150,7 +150,7 @@ class Event(db.Model):
     display:bool = db.Column(db.Boolean(), default=False)
     locked:bool = db.Column(db.Boolean(), default=False)
     addons = db.relationship('Addon', backref='events', secondary='event_addons')
-    guestlogs = db.relationship('Guestlog', backref='event')
+    #guestlogs = db.relationship('Guestlog', backref='event')
     #created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
 @dataclass

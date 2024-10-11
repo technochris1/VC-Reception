@@ -21,10 +21,10 @@ def upgrade():
     with op.batch_alter_table('guestlog', schema=None) as batch_op:
         #batch_op.add_column(sa.Column('checked_in_at_date', sa.Date(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True))
         #batch_op.add_column(sa.Column('checked_in_at_time', sa.Time(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True))
-        batch_op.add_column(sa.Column('checked_out_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True))
+        #batch_op.add_column(sa.Column('checked_out_at', sa.DateTime(timezone=True), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True))
         #batch_op.add_column(sa.Column('checked_out_at_date', sa.Date(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True))
         #batch_op.add_column(sa.Column('checked_out_at_time', sa.Time(), server_default=sa.text('(CURRENT_TIMESTAMP)'), nullable=True))
-
+        pass
     # ### end Alembic commands ###
 
 

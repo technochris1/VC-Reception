@@ -563,14 +563,16 @@ def logbook():
         ]
     
     all_dates = db.session.query(Guestlog.checked_in_at_local).order_by(Guestlog.checked_in_at_local.desc()).all()
-    #print("All Dates:",distinct_dates)
+    print("All Dates:", all_dates)
+    events = []
     for date in all_dates:
         
         dateItem = date[0] #.replace(tzinfo=tz.tzutc()).astimezone(tz.tzlocal())
+        #print("DateItem",date)
        
 
 
-        if dateItem.date() not in dates:
+        if dateItem is not None and dateItem.date() not in dates:
             dates.append(dateItem.date())
 
 
@@ -585,13 +587,13 @@ def logbook():
 
         
         #response.append({"date": date[0], "events": Guestlog.query.filter(func.date(Guestlog.checked_in_at).between(dateObj, dateObjEnd)).all()})
-    #print("Distinct Dates:",dates)
+    print("Distinct Dates:",dates)
     for date in dates:
         events = Guestlog.query.filter(func.date(Guestlog.checked_in_at_local) == date).all()
         print("Date:",date, events)
         response.append({"date": date, "events": events })
 
-    return render_template('logbook.html', distinct=response, events= events  ,guests=Guest.query.all(), log=Guestlog.query.all())
+    return render_template('logbook.html', distinct=response ,guests=Guest.query.all(), log=Guestlog.query.all())
     #return render_template('logbook.html')
 
 @app.route('/credits/', methods=['GET', 'POST'])
