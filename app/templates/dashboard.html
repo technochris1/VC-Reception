@@ -6,36 +6,40 @@
 
 
 
-<div class="row row-cols-1 row-cols-md-2 g-4">
+
+<div class="row  row-cols-md-2 g-4">
     <div class="col">
         <div class="card text-bg-primary ">
             <div class="card-body">
-                <h1 class="card-title text-center">{{guests_checked_in_count}}</h1>
+                <h1 class="card-title text-center">{{guests_checked_in|length}}</h1>
                 <p class="card-text text-center">Guests Currently Checked In</p>
                 <div class="accordion accordion" id="accordionFlushExample">
                     <div class="accordion-item">
-                      <h2 class="accordion-header">
-                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
-                          Guests Checked In
-                        </button>
-                      </h2>
-                      <div id="flush-collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordionFlushExample">
-                        <div class="accordion-body">
-                            <ul>
-                                {% for guest in guests_checked_in %}
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#flush-collapseOne" aria-expanded="false"
+                                aria-controls="flush-collapseOne">
+                                Guests Checked In
+                            </button>
+                        </h2>
+                        <div id="flush-collapseOne" class="accordion-collapse collapse"
+                            data-bs-parent="#accordionFlushExample">
+                            <div class="accordion-body">
+                                <ul>
+                                    {% for guest in guests_checked_in %}
                                     <li>
-                                        {% if guest.fetUsername  %}
-                                            @{{guest.fetUsername |e}}
+                                        {% if guest.fetUsername %}
+                                        @{{guest.fetUsername |e}}
                                         {% else %}
-                                            {{guest.name |e}}
-                                        {% endif %}                                                                     
+                                        {{guest.name |e}}
+                                        {% endif %}
                                     </li>
-                                {% endfor %}
-                              </ul>
+                                    {% endfor %}
+                                </ul>
+                            </div>
                         </div>
-                      </div>
                     </div>
-                  </div>
+                </div>
             </div>
         </div>
     </div>
@@ -44,12 +48,13 @@
         <div class="card text-bg-primary ">
             <div class="card-body">
                 <h1 class="card-title text-center">Todays Event:</h1>
-                <p class="card-text text-center"> {% if todaysEvents[0].title %}{{todaysEvents[0].title}}{% else %}No Event Title{% endif %}</p>
+                <p class="card-text text-center"> {% if todaysEvents[0].title %}{{todaysEvents[0].title}}{% else %}No
+                    Event Title{% endif %}</p>
             </div>
         </div>
 
 
-        
+
 
     </div>
     {% endif %}
@@ -93,5 +98,161 @@
         </div>
     -->
 
+
+
+
+
+
+
+
+
+
+
+    <!-- TOAST ALERTS -->
+
+    <div class="toast-container position-static" id="toast-container">
+        <!--   <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <img src="..." class="rounded me-2" alt="...">
+                <strong class="me-auto">Bootstrap</strong>
+                <small class="text-body-secondary">just now</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                See? Just like this.
+            </div>
+        </div>
+
+        <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <img src="..." class="rounded me-2" alt="...">
+                <strong class="me-auto">Bootstrap</strong>
+                <small class="text-body-secondary">2 seconds ago</small>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+                Heads up, toasts will stack automatically
+            </div>
+        </div>
+
+        <div class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    Hello, world! This is a toast message.
+                </div>
+                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div> -->
+
+
+    </div>
+
 </div>
 {% endblock content %}
+
+
+{% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+    integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+    crossorigin="anonymous"></script>
+<script>
+
+    var socket = io();
+    socket.on('connect', function () {
+        console.log('Connected!');
+        socket.emit('my event', { data: 'I\'m connected!' });
+    });
+    socket.on('disconnect', function () {
+        console.log('Disconnected!');
+    });
+
+
+
+    socket.on("user checked in", (arg, callback) => {
+        console.log(arg);
+        //callback("got it");
+        const toastContainer = document.createElement('div');
+        toastContainer.classList.add('toast');
+        toastContainer.setAttribute('data-bs-autohide', 'true');
+
+        const toastHeader = document.createElement('div');
+        toastHeader.classList.add('toast-header');
+
+        const toastHeaderText = document.createElement('strong');
+        toastHeaderText.classList.add('me-auto');
+        toastHeaderText.innerText = "Guest Checked In";
+
+        toastHeader.appendChild(toastHeaderText);
+
+        const toastCloseButton = document.createElement('button');
+        toastCloseButton.type = 'button';
+        toastCloseButton.classList.add('btn-close');
+        toastCloseButton.setAttribute('data-bs-dismiss', 'toast');
+        toastCloseButton.setAttribute('aria-label', 'Close');
+
+        toastHeader.appendChild(toastCloseButton);
+
+        const toastBody = document.createElement('div');
+        toastBody.classList.add('toast-body');
+        toastBody.innerText = arg.guest;
+
+        toastContainer.appendChild(toastHeader);
+        toastContainer.appendChild(toastBody);
+
+        document.getElementById('toast-container').appendChild(toastContainer);
+
+
+        new bootstrap.Toast(toastContainer, {autohide:true ,delay: 20000 }).show();
+        
+        
+
+    });
+
+    socket.on("user precheckin", (arg, callback) => {
+        console.log(arg);
+        //callback("got it");
+        const toastContainer = document.createElement('div');
+        toastContainer.classList.add('toast');
+        toastContainer.setAttribute('data-bs-autohide', 'true');
+
+        const toastHeader = document.createElement('div');
+        toastHeader.classList.add('toast-header');
+
+        const toastHeaderText = document.createElement('strong');
+        toastHeaderText.classList.add('me-auto');
+        toastHeaderText.innerText = "Guest Checkin Event";
+
+        toastHeader.appendChild(toastHeaderText);
+
+        const toastCloseButton = document.createElement('button');
+        toastCloseButton.type = 'button';
+        toastCloseButton.classList.add('btn-close');
+        toastCloseButton.setAttribute('data-bs-dismiss', 'toast');
+        toastCloseButton.setAttribute('aria-label', 'Close');
+
+        toastHeader.appendChild(toastCloseButton);
+
+        const toastBody = document.createElement('div');
+        toastBody.classList.add('toast-body');
+        toastBody.innerText = arg.error;
+
+        toastContainer.appendChild(toastHeader);
+        toastContainer.appendChild(toastBody);
+
+        document.getElementById('toast-container').appendChild(toastContainer);
+
+
+        new bootstrap.Toast(toastContainer, {autohide:false ,delay: 20000 }).show();
+        
+        
+
+    });
+
+
+    //const toastElList = document.querySelectorAll('.toast')
+    //const toastList = [...toastElList].map(toastEl =>
+        //new bootstrap.Toast(toastEl, { delay: 5000 }).show()
+    //)
+
+</script>
+{% endblock script %}

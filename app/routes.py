@@ -1,11 +1,11 @@
 import traceback
 from flask import render_template, jsonify, abort, url_for, redirect, request, flash, render_template_string
-from app import app, db, bcrypt, mail, login_manager
+from app import app, db, bcrypt, mail, login_manager, socketio
 from app.models import Guest, Guestlog, Event, Setting, func, GuestCredit, CreditTransactionLog   
 from app.forms import AdminRegistrationForm, AdminLoginForm, GuestRegistrationForm, AddCreditForm, ChangePasswordForm
 from flask_mail import  Message
 from flask_login import login_user, current_user, logout_user, login_required
-from sqlalchemy import cast, Date,and_, func
+from sqlalchemy import cast, Date,and_, func, or_
 from io import BytesIO
 import qrcode
 from datetime import datetime, timedelta, timezone, time
@@ -18,8 +18,6 @@ import json
 # @login_manager.unauthorized_handler
 # def unauthorized_callback():
 #     return redirect('/home?next=' + request.path)
-
-
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -78,7 +76,6 @@ def guestView():
                             upComingEvents=upComingEvents,
                             setting=Setting.query.first(),
                             form= form)
-
 
 @app.route('/guestView/registerGuest', methods=['GET', 'POST'])
 def gw_registerGuest():
@@ -164,6 +161,16 @@ def preCheckIn(uuid = None):
         visitTime = datetime.now(timezone.utc)
         response['guest'] = guest.name       
         response['uuid'] = guest.uuid       
+        response['checkin_blocked'] = guest.checkin_blocked
+
+        if(guest.termsCheck):
+            pass
+            
+        if(guest.checkin_blocked):
+            response['error'] = "See Staff for Check In"
+
+            socketio.emit('user precheckin', response)
+            return json.dumps(response)
 
 
         print("Guest Roles",guest.roles)
@@ -182,6 +189,7 @@ def preCheckIn(uuid = None):
                 response['checked_in'] = False
                 print('Already Checked In')
                 response['error'] = "Already Checked In"
+                socketio.emit('user precheckin', response)
                 return json.dumps(response)
 
 
@@ -192,22 +200,27 @@ def preCheckIn(uuid = None):
             response['specialEventCredits'] = guestCredit.specialEventAmount
             response['privateSessionCredits'] = guestCredit.privateSessionAmount
                 
+        socketio.emit('user precheckin', response)
         return json.dumps(response)
     else:
         response['error'] = "Invalid QR Code"
         return response
         #return abort(404)
 
-
 @app.route('/checkIn/')
 @app.route('/checkIn/<uuid>')
 @app.route('/checkIn/<uuid>/<method>')
-def checkIn(uuid = None, method = None):
+def checkIn( uuid = None, method = None):
     if(uuid is None or method is None):
         return abort(404)
     settings = Setting.query.first()
     print("Settings,",settings)
-    guest = Guest.query.filter_by(uuid = uuid).first()
+      
+    if(uuid is not None):
+        guest = Guest.query.filter_by(id = uuid).first()
+        if(guest is None):
+            guest = Guest.query.filter_by(uuid = uuid).first()
+
     todaysEvent=Event.query.filter(and_(Event.start <= datetime.now().timestamp(), datetime.now().timestamp() <= Event.end)).order_by(Event.start).first(),                        
                            
     if(guest):
@@ -230,16 +243,27 @@ def checkIn(uuid = None, method = None):
                 return json.dumps(response)
         
         guest.lastVisit = visitTime
+        guest.checkedIn = True
+
+
+
         est = tz.gettz('Europe / Berlin')
         
         newCheckIn = Guestlog(
             checked_in_at = visitTime,         
-            event = todaysEvent[0],
+            
+            
             #checked_in_at_date = visitTime.replace(tzinfo=est).date(),
             #checked_in_at_time = visitTime.replace(tzinfo=est).time(),
             userID = guest.id,
             paymentMethod = method
         )
+
+        if(todaysEvent[0]):
+            newCheckIn.event = todaysEvent[0]
+        else:       
+            newCheckIn.event = None
+
         print("New Check In",newCheckIn)
         db.session.add(newCheckIn)
         db.session.commit()
@@ -261,10 +285,32 @@ def checkIn(uuid = None, method = None):
                 guestCredit.lastUpdate = datetime.datetime.now(datetime.timezone.utc)
                 db.session.commit()
 
-        
+        socketio.emit('user checked in', response)
+	
+        next_page = request.args.get('next') 
+        return redirect(next_page) if next_page else json.dumps(response)
+    else:
+        return abort(404)
 
+@app.route('/checkOut/')
+@app.route('/checkOut/<id>')
+@app.route('/checkOut/<id>/<method>')
+def checkOut(id = None, method = None):
+    print("Check Out",id,method)
+    if(id is None or method is None):
+        return abort(404)
+    guest = Guest.query.filter_by(id = id).first()
+    print("Guest",guest)                    
+                           
+    if(guest):
         
-        return json.dumps(response)
+        guest.checkedIn = False     
+   
+        db.session.commit()      
+
+        next_page = request.args.get('next') 
+        return redirect(next_page) if next_page else json.dumps(True)
+        #return json.dumps(True)
     else:
         return abort(404)
 
@@ -400,9 +446,9 @@ def dashboard():
 
     last_24_hours = current_time - timedelta(hours=24)
 
-    return render_template('dashboard.html', guests_checked_in_count=Guest.query.filter(Guest.lastVisit > last_24_hours ).count(),
+    return render_template('dashboard.html', guests_checked_in=Guest.query.filter(Guest.checkedIn ==True).all(),
+                           guests_recently_visited=Guest.query.filter(Guest.lastVisit > last_24_hours).all(),
                            guests_total_count=Guest.query.count(),
-                           guests_checked_in=Guest.query.filter(Guest.lastVisit > last_24_hours ).all(),
                            quests_top_5=db.session.query(Guest, func.count(Guestlog.id)).join(Guestlog).group_by(Guest.id).order_by(func.count(Guestlog.id).desc()).limit(5).all(),
                            todaysEvents=Event.query.filter(and_(Event.start <= date.timestamp(), date.timestamp() <= Event.end )).order_by(Event.start).all(),                        
                            

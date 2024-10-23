@@ -12,13 +12,17 @@
 
 </div>
 
+
+
 <table class="table-dark rounded-3 overflow-hidden" data-toggle="table">
     <thead>
         <tr>
-            <th data-sortable="true" scope="col" >Handle</th>
-            <th data-sortable="true" scope="col" class='d-none d-md-table-cell' >Name</th>
-            <th data-sortable="true" scope="col" class='d-none d-lg-table-cell' >Roles</th>
-            <th data-sortable="true" scope="col" class='d-none d-xl-table-cell' >Credits</th>
+            <th scope="col"></th>
+            <th data-sortable="true" scope="col">Handle</th>
+            <th data-sortable="true" scope="col" class='d-none d-md-table-cell'>Name</th>
+            <th data-sortable="true" scope="col" class='d-none d-lg-table-cell'>Roles</th>
+            <th data-sortable="true" scope="col" class='d-none d-xl-table-cell'>Credits</th>
+            <th data-sortable="true" scope="col">Checked In</th>
             <th data-sortable="true" scope="col">Last Visit</th>
             <th data-align="right" scope="col"></th>
 
@@ -28,18 +32,42 @@
 
         {% for guest in guests %}
         <tr>
-            <th scope="row">{{guest.fetUsername}}</th>
-            <th class='d-none d-md-table-cell'>{{guest.name}}</th>
+            <td>
+                <button type="button" class="btn btn-sm" data-bs-mode="edit" data-bs-uuid="{{guest.id}}">
+
+                    {% if guest.checkin_blocked == None %}
+                    <i class="bi bi-person-fill-lock text-success"></i>
+                    {% elif guest.checkin_blocked == False %}
+                    <i class="bi bi-person-fill-lock text-success"></i>
+                    {% else %}
+                    <i class="bi bi-person-fill-lock text-danger"></i>
+                    {% endif %}
+
+                    <!-- <i class="bi bi-pencil-square"></i>-->
+
+
+                </button>
+            </td>
+            <!-- <td scope="row">{{guest.checkin_blocked}} </td> -->
+            <td>{{guest.fetUsername}}</td>
+            <td class='d-none d-md-table-cell'>{{guest.name}}</td>
             {% if guest.roles %}
             <td class='d-none d-lg-table-cell'>{{guest.roles}}</td>
             {% else %}
-            <td class='d-none d-lg-table-cell'>None Assigned</td>
+            <td class='d-none d-lg-table-cell'>None Assigned</th>
+                {% endif %}
+
+
+            <td class='d-none d-xl-table-cell'>{{guest.credit | get_general_credits }}</td>
+
+
+            {% if guest.checkedIn %}
+            <td class='d-none d-lg-table-cell'><i class="bi bi-clipboard2-check-fill text-success"></i> <a
+                    href="/checkOut/{{guest.id}}/Manually?next=%2Fguests">(CheckOut)</a></td>
+            {% else %}
+            <td class='d-none d-lg-table-cell'><i class="bi bi-clipboard2-x-fill text-danger"></i> <a
+                    href="/checkIn/{{guest.id}}/Manually?next=%2Fguests">(CheckIn)</a></td>
             {% endif %}
-
-
-            <th class='d-none d-xl-table-cell'>{{guest.credit | get_general_credits }}</th>
-
-
 
             {% if guest.lastVisit %}
             <td>{{ moment(guest.lastVisit).fromNow() }}</td>
@@ -52,8 +80,8 @@
                 <a href="/resetPassword/{{guest.id}}"><button type="button" class="btn btn-sm btn-outline-danger"><i
                             class="bi bi-arrow-clockwise"></i></button></a>
                 {% endif %}
-                <a href="/guestCredit/{{guest.id}}"><button type="button"
-                        class="btn btn-sm btn-outline-danger"><i class="bi bi-cash-coin"></i></button></a>
+                <a href="/guestCredit/{{guest.id}}"><button type="button" class="btn btn-sm btn-outline-danger"><i
+                            class="bi bi-cash-coin"></i></button></a>
 
 
                 <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
@@ -199,119 +227,119 @@
 <script>
 
 
-    const generateUuidURL = '{{ url_for("generateUUID") }}'
-    var registerModal = document.getElementById('registerModal')
-    var qrCodeModal = document.getElementById('qrModal')
-    var refreshQrCode = document.getElementById('refreshQrCode')
+    // const generateUuidURL = '{{ url_for("generateUUID") }}'
+    // var registerModal = document.getElementById('registerModal')
+    // var qrCodeModal = document.getElementById('qrModal')
+    // var refreshQrCode = document.getElementById('refreshQrCode')
 
-    function fetchUUID() {
-        fetch(generateUuidURL)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Data received:', data);
-                document.getElementById('uuid').value = data
-                //document.getElementById('showQrCode').dataset.bsQr = data
-            })
-            .catch(error => {
-                console.error('There was a problem with the fetch operation:', error);
-            });
-    }
+    // function fetchUUID() {
+    //     fetch(generateUuidURL)
+    //         .then(response => {
+    //             if (!response.ok) {
+    //                 throw new Error('Network response was not ok');
+    //             }
+    //             return response.json();
+    //         })
+    //         .then(data => {
+    //             console.log('Data received:', data);
+    //             document.getElementById('uuid').value = data
+    //             //document.getElementById('showQrCode').dataset.bsQr = data
+    //         })
+    //         .catch(error => {
+    //             console.error('There was a problem with the fetch operation:', error);
+    //         });
+    // }
 
-    var qrcode = new QRCode(document.getElementById("qrcode"), {
-        text: "http://jindo.dev.naver.com/collie",
-        width: 256,
-        height: 256,
-        colorDark: "#000000",
-        colorLight: "#ffffff",
-        correctLevel: QRCode.CorrectLevel.H
-    });
+    // var qrcode = new QRCode(document.getElementById("qrcode"), {
+    //     text: "http://jindo.dev.naver.com/collie",
+    //     width: 256,
+    //     height: 256,
+    //     colorDark: "#000000",
+    //     colorLight: "#ffffff",
+    //     correctLevel: QRCode.CorrectLevel.H
+    // });
 
-    qrCodeModal.addEventListener('show.bs.modal', function (event) {
-        // Button that triggered the modal
-        var button = event.relatedTarget
-        // Extract info from data-bs-* attributes
-        var data = button.getAttribute('data-bs-qr')
+    // qrCodeModal.addEventListener('show.bs.modal', function (event) {
+    //     // Button that triggered the modal
+    //     var button = event.relatedTarget
+    //     // Extract info from data-bs-* attributes
+    //     var data = button.getAttribute('data-bs-qr')
 
-        if (data != null) {
-            document.getElementById("qrcodeRaw").innerHTML = data;
-            qrcode.clear(); // clear the code.
-            qrcode.makeCode(data); // make another code.
-        }
-    })
+    //     if (data != null) {
+    //         document.getElementById("qrcodeRaw").innerHTML = data;
+    //         qrcode.clear(); // clear the code.
+    //         qrcode.makeCode(data); // make another code.
+    //     }
+    // })
 
-    registerModal.addEventListener('show.bs.modal', function (event) {
-        var button = event.relatedTarget
-        // Extract info from data-bs-* attributes
-        var uuidData = button.getAttribute('data-bs-uuid')
-        var mode = button.getAttribute('data-bs-mode')
-        console.log('Mode:', mode);
-
-
-
-        if (uuidData == null) {
-            fetchUUID()
-            document.getElementById('fetUsername').value = ""
-            document.getElementById('name').value = ""
-            document.getElementById('emailAddress').value = ""
-            document.getElementById('phoneNumber').value = ""
-            document.getElementById('termsCheck').checked = false
-        } else {
-            console.log('Data:', uuidData);
-            const url = '{{ url_for("getGuest")}}' + uuidData
-            console.log('URL:', url);
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Data received:', data);
-
-                    if (data != null) {
+    // registerModal.addEventListener('show.bs.modal', function (event) {
+    //     var button = event.relatedTarget
+    //     // Extract info from data-bs-* attributes
+    //     var uuidData = button.getAttribute('data-bs-uuid')
+    //     var mode = button.getAttribute('data-bs-mode')
+    //     console.log('Mode:', mode);
 
 
 
-                        document.getElementById('id').value = data.id
-                        document.getElementById('uuid').value = data.uuid
-                        document.getElementById('fetUsername').value = data.fetUsername
-                        document.getElementById('name').value = data.name
-                        document.getElementById('emailAddress').value = data.email
-                        document.getElementById('phoneNumber').value = data.phone
-                        document.getElementById('termsCheck').checked = data.termsCheck
+    //     if (uuidData == null) {
+    //         fetchUUID()
+    //         document.getElementById('fetUsername').value = ""
+    //         document.getElementById('name').value = ""
+    //         document.getElementById('emailAddress').value = ""
+    //         document.getElementById('phoneNumber').value = ""
+    //         document.getElementById('termsCheck').checked = false
+    //     } else {
+    //         console.log('Data:', uuidData);
+    //         const url = '{{ url_for("getGuest")}}' + uuidData
+    //         console.log('URL:', url);
+    //         fetch(url)
+    //             .then(response => {
+    //                 if (!response.ok) {
+    //                     throw new Error('Network response was not ok');
+    //                 }
+    //                 return response.json();
+    //             })
+    //             .then(data => {
+    //                 console.log('Data received:', data);
 
-                        if (data.allow_qrcode_refresh != null) {
-                            document.getElementById('uuid').setAttribute('readonly', true)
-                            document.getElementById('uuidLabel').value = 'Unique QR Code (Locked)'
-                            document.getElementById('refreshQrCode').disabled = true
-                        } else {
-
-                            document.getElementById('uuid').removeAttribute('readonly')
-                            document.getElementById('uuidLabel').value = 'Unique QR Code'
-                            document.getElementById('refreshQrCode').disabled = false
-                        }
-                    }
-
-
-                })
-                .catch(error => {
-                    console.error('There was a problem with the fetch operation:', error);
-                });
-        }
+    //                 if (data != null) {
 
 
 
+    //                     document.getElementById('id').value = data.id
+    //                     document.getElementById('uuid').value = data.uuid
+    //                     document.getElementById('fetUsername').value = data.fetUsername
+    //                     document.getElementById('name').value = data.name
+    //                     document.getElementById('emailAddress').value = data.email
+    //                     document.getElementById('phoneNumber').value = data.phone
+    //                     document.getElementById('termsCheck').checked = data.termsCheck
 
-    })
+    //                     if (data.allow_qrcode_refresh != null) {
+    //                         document.getElementById('uuid').setAttribute('readonly', true)
+    //                         document.getElementById('uuidLabel').value = 'Unique QR Code (Locked)'
+    //                         document.getElementById('refreshQrCode').disabled = true
+    //                     } else {
 
-    refreshQrCode.addEventListener('click', function (event) {
-        fetchUUID()
-    })
+    //                         document.getElementById('uuid').removeAttribute('readonly')
+    //                         document.getElementById('uuidLabel').value = 'Unique QR Code'
+    //                         document.getElementById('refreshQrCode').disabled = false
+    //                     }
+    //                 }
+
+
+    //             })
+    //             .catch(error => {
+    //                 console.error('There was a problem with the fetch operation:', error);
+    //             });
+    //     }
+
+
+
+
+    // })
+
+    // refreshQrCode.addEventListener('click', function (event) {
+    //     fetchUUID()
+    // })
 </script>
 {% endblock script %}

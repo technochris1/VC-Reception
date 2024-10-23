@@ -20,7 +20,7 @@ from flask_migrate import Migrate
 from flask_sqlalchemy.model import Model
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
-#from flask_apscheduler import APScheduler
+from flask_socketio import SocketIO
 from flask_moment import Moment
 from flask_mail import Mail, Message
 
@@ -57,6 +57,9 @@ login_manager.login_message_category = "info"
 moment = Moment(app)
 mail = Mail(app)
 
+socketio = SocketIO(app)
+
+
 # initialize scheduler
 #scheduler = APScheduler()
 # if you don't wanna use a config, you can set options here:
@@ -70,8 +73,9 @@ from app import routes, models
 class guestView(ModelView):    
     can_delete = False
     column_hide_backrefs = False
-    column_list = ('fetUsername', 'uuid', 'email', 'name', 'phone', 'roles')
-    form_columns = ('fetUsername', 'uuid', 'email', 'password', 'name', 'phone' ,'roles','allow_qrcode_refresh')
+    #column_sortable_list = ('fetUsername', 'email','name','phone','checkedIn','roles')
+    column_list = ('checkin_blocked','fetUsername', 'uuid', 'email', 'name', 'phone', 'roles', 'checkedIn')
+    form_columns = ('checkin_blocked','fetUsername', 'uuid', 'email', 'password', 'name', 'phone' ,'roles','allow_qrcode_refresh', 'checkedIn')
     can_view_details = True
 
 class roleView(ModelView):
