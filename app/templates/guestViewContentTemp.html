@@ -1,0 +1,102 @@
+  <!-- This is the Left & Right content of the page -->
+  <div class="row h-100 p-2 align-items-center">
+    <div class="col text-center align-middle">
+      <div class="vh-100">
+        <img src="../static/VC_logo_dark.png" id="image" class="img-fluid " alt="...">
+      </div>
+
+      <div class="vh-100">
+        <p class="text-center pt-1"><small>Sponsors</small></p>
+        <div id="carouselExampleSlidesOnly" class="carousel slide text-center align-middle align-items-center"
+          data-bs-ride="carousel">
+          <div class="carousel-inner">
+
+            <div class="carousel-item active">
+              <img src="../static/SPUNK_logo.png" class="d-block img-fluid" alt="...">
+            </div>
+            <div class="carousel-item">
+              <img src="../static/TPA.jpg" class="d-block img-fluid" alt="...">
+            </div>
+            <div class="carousel-item">
+              <img src="../static/Tremor.jpg" class="d-block img-fluid" alt="...">
+            </div>
+            <div class="carousel-item">
+              <h2 class="text-center">Desires</h2>
+              <h3 class="text-center">DVD❤️LINGERIE❤️NOVELTIES</h3>
+              <h5 class="text-center">4200 N Dupont Hwy #2, Dover DE</h5>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col text-center align-middle">
+      <div>
+        <!-- This is the Event Section -->
+        {% if todaysEvents|length > 0 %}
+        {% if todaysEvents|length == 1 %}
+        <h4>Current Event:</h4>
+        {% else %}
+        <h4>Current Events:</h4>
+        {% endif %}
+        {% for event in todaysEvents %}
+        <div class="card">
+          <div class="card-body">
+            <h1>{{event.title}}</h1>
+            {% if event.start | timestamp_to_date_min_time == event.end | timestamp_to_date_min_time %}
+            <h4 class="card-subtitle mb-2 text-body-secondary">{{event.start | timestamp_to_date_str}} {{event.start |
+              timestamp_to_time_str_ampm}} - {{event.end | timestamp_to_time_str_ampm}}</h4>
+            {% else %}
+            <h4 class="card-subtitle mb-2 text-body-secondary">{{event.start | timestamp_to_str_ampm}} - {{event.end |
+              timestamp_to_str_ampm}}</h4>
+            {% endif %}
+            <!-- <h4 class="card-subtitle mb-2 text-body-secondary">{{event.start | timestamp_to_date_str}} - {{event.end |
+              timestamp_to_str_ampm}}</h4> -->
+            {% if event.eventCost %}
+            <p class="card-text">${{event.eventCost}} </p>
+            {% endif %}
+
+            {% if event.addons %}
+            <ul class="list-group list-group-flush">
+              {% for addon in event.addons %}
+              <li class="list-group-item">{{addon.title}} By: {{addon.guests|guests_to_str}} for ${{addon.cost}}</li>
+              {% endfor %}
+            </ul>
+            {% endif %}
+
+
+
+          </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        {% if upComingEvents|length > 0 %}
+        <h4 class="pt-4">Upcoming Events:</h4>
+        <div id="carouselExampleSlidesOnly" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-inner">
+            {% for event in upComingEvents %}
+            <div class="carousel-item {% if loop.first %}active{% endif %} p-2">
+              <div class="card">
+                <div class="card-body">
+                  <h1 class="card-title">{{event.title}}</h1>
+                  <h4 class="card-subtitle mb-2 text-body-secondary">{{event.start | timestamp_to_str_ampm}} -
+                    {{event.end |
+                    timestamp_to_str_ampm}}</h4>
+                  <p class="card-text">{% if event.eventCost %}${{event.eventCost}} {% else
+                    %}{{event.eventDescription}}{% endif %}</p>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+      <h1>Please Scan your QR Code</h1>
+      <h4>Or</h4>
+      <a href="/guestView/registerGuest">
+        <button type="button" class="btn btn-danger btn-lg">Sign Up</button>
+      </a>
+    </div>
+  </div>
