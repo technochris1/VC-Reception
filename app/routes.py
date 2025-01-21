@@ -1,4 +1,5 @@
 import traceback
+import os
 from flask import render_template, jsonify, abort, url_for, redirect, request, flash, render_template_string
 from app import app, db, bcrypt, mail, login_manager, socketio
 from app.models import Guest, Guestlog, Event, Setting, func, GuestCredit, CreditTransactionLog   
@@ -46,7 +47,9 @@ def guestView():
         )
         db.session.add(newGuest)
         db.session.commit()
-        sendQRCodeEmail([newGuest.email], newGuest.uuid)
+        
+        sendQRCodeEmailFromUser(newGuest)
+        #sendQRCodeEmail([newGuest.email], newGuest.uuid)
         flash('Guest added successfully', 'success')
         return redirect(url_for('guestView', setting=Setting.query.first(), form=form))
     
@@ -76,6 +79,51 @@ def guestView():
                             upComingEvents=upComingEvents,
                             setting=Setting.query.first(),
                             form= form)
+
+@app.route('/guestView2/', methods=['GET', 'POST'])
+def guestView2():
+    form = GuestRegistrationForm()
+    if form.validate_on_submit():        
+        newGuest = Guest(
+            fetUsername=form.fetUsername.data,
+            name=form.name.data,
+            email=form.email.data,
+            phone=form.phone.data,
+            termsCheck=form.termsCheck.data,            
+        )
+        db.session.add(newGuest)
+        db.session.commit()
+        sendQRCodeEmail([newGuest.email], newGuest.uuid)
+        flash('Guest added successfully', 'success')
+        return redirect(url_for('guestView', setting=Setting.query.first(), form=form))
+    
+    date = datetime.now()
+    dateMin = datetime.combine(date, time.min)
+    tommorow =  date+timedelta(days=1) 
+    tommorowDate =  datetime.combine(tommorow, time.max).timestamp()  
+    thirtyDays = (date+timedelta(days=30)).timestamp()
+
+    print("Now!",date.timestamp())
+    print("Tommorow",tommorow.timestamp())
+    print("TommorowDate",tommorowDate)
+    
+    
+    
+    upComingEvents  = []
+    query = Event.query.filter(and_(Event.start >= tommorowDate, Event.start <= thirtyDays)).order_by(Event.start).all()
+    for event in query:
+        if event.start > date.timestamp() and event.display == True and event.specialEvent == True:
+            upComingEvents.append(event)
+    for event in query:
+        if event.start > date.timestamp() and event.display == True and event.specialEvent == False:
+            upComingEvents.append(event)
+   
+    return render_template('guestView2.html',
+                           todaysEvents=Event.query.filter(and_(Event.start <= date.timestamp(), date.timestamp() <= Event.end)).order_by(Event.start).all(),                        
+                            upComingEvents=upComingEvents,
+                            setting=Setting.query.first(),
+                            form= form)
+
 
 @app.route('/guestView/registerGuest', methods=['GET', 'POST'])
 def gw_registerGuest():
@@ -264,9 +312,10 @@ def checkIn( uuid = None, method = None):
         else:       
             newCheckIn.event = None
 
-        print("New Check In",newCheckIn)
+        print("New Check In",newCheckIn.userID,newCheckIn)
         db.session.add(newCheckIn)
         db.session.commit()
+
         if(method == "credit"):     
             newTransaction = CreditTransactionLog(
                 guest=guest.id,
@@ -504,16 +553,17 @@ def guests():
                 return abort(404)
             
             guest.fetUsername=request.values.get('fetUsername')
-            guest.firstName=request.values.get('firstName')
-            guest.lastName=request.values.get('lastName')
-            guest.email=request.values.get('emailAddress')
+            guest.name=request.values.get('name')
+            
             guest.phone=request.values.get('phoneNumber')
             guest.termsCheck=termsCheckValue
 
-            if(guest.uuid != request.values.get('uuid')):
+            if(guest.uuid != request.values.get('uuid') or guest.email != request.values.get('emailAddress')):
                 guest.uuid=request.values.get('uuid')
+                guest.email=request.values.get('emailAddress')                          
                 #send email for new QR code
-                sendQRCodeEmail([guest.email], guest.uuid)
+                #sendQRCodeEmail([guest.email], guest.uuid)
+                sendQRCodeEmailFromUser(guest)
 
 
             
@@ -603,23 +653,27 @@ def addCredits(id):
 #@login_required
 def logbook():
     dates = []
+    localDates = []
     response = [
             # {"date":"2021-01-01", "events": [{Guestlog Item}]},
             # {"date":"2021-01-01", "events": [{Guestlog Item}]}            
         ]
     
-    all_dates = db.session.query(Guestlog.checked_in_at_local).order_by(Guestlog.checked_in_at_local.desc()).all()
+    #all_dates = db.session.query(Guestlog.checked_in_at_local).order_by(Guestlog.checked_in_at_local.desc()).all()
+    all_dates = db.session.query(Guestlog.checked_in_at).order_by(Guestlog.checked_in_at.desc()).all()
     print("All Dates:", all_dates)
     events = []
     for date in all_dates:
         
-        dateItem = date[0] #.replace(tzinfo=tz.tzutc()).astimezone(tz.tzlocal())
+        dateItem = date[0]
+         #.replace(tzinfo=tz.tzutc()).astimezone(tz.tzlocal())
         #print("DateItem",date)
        
 
 
         if dateItem is not None and dateItem.date() not in dates:
             dates.append(dateItem.date())
+            localDates.append(dateItem.replace(tzinfo=timezone.utc).astimezone(tz=None).date())
 
 
         #
@@ -634,10 +688,17 @@ def logbook():
         
         #response.append({"date": date[0], "events": Guestlog.query.filter(func.date(Guestlog.checked_in_at).between(dateObj, dateObjEnd)).all()})
     print("Distinct Dates:",dates)
+    i = 0
     for date in dates:
-        events = Guestlog.query.filter(func.date(Guestlog.checked_in_at_local) == date).all()
-        print("Date:",date, events)
-        response.append({"date": date, "events": events })
+
+        
+        
+        #events = Guestlog.query.filter(func.date(Guestlog.checked_in_at_local) == date).all()
+        events = Guestlog.query.filter(func.date(Guestlog.checked_in_at) == date).all()
+       # date.replace(tzinfo=timezone.utc).astimezone(tz=None)
+        print("Date:",localDates[i], events)
+        response.append({"date": localDates[i], "events": events })
+        i += 1
 
     return render_template('logbook.html', distinct=response ,guests=Guest.query.all(), log=Guestlog.query.all())
     #return render_template('logbook.html')
@@ -727,6 +788,57 @@ def sendPwResetEmail(recipients, pw=None):
     if(pw):
         return sendEmail(recipients=recipients,subject="VC Access - Password Reset", message="Please Use this password to Login: "+ pw)
 
+
+def sendQRCodeEmailFromUser(user):
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(user.uuid)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="black", back_color="white")
+    
+    print("IMG",img)
+
+    temp = BytesIO()
+    temp.name = "QR.png"
+    img.save(temp)
+    temp.seek(0)
+
+    print("User",user)
+
+    #qr_image = {'photo': temp.getvalue()}
+    #print("IMG",qr_image['photo'])
+    
+    # return sendEmail(
+    #     user.recipients, 
+    #     "VC Access Code", 
+    #     "Please find your VC QR code attached", 
+    #     temp.getvalue())
+
+    try:
+        msg = Message("VC Access - Password Reset",
+                    sender=("VC Front Desk", app.config['MAIL_USERNAME']),
+                    recipients=[user.email])
+        #msg.body = message
+        msg.body = 'Hello '+user.name+',\nYou or someone else has requested that a new password be generated for your account. If you made this request, then please follow this link:'
+        msg.html = render_template('qrEmail.html' )
+        #msg.attach('header.gif','image/gif',open(join(mail_blueprint.static_folder, 'header.gif'), 'rb').read(), 'inline', headers=[['Content-ID','<Myimage>'],])
+        
+        msg.attach('qrcode.gif','image/gif',temp.getvalue(), 'inline', headers=[['Content-ID','<qrcode>'],])
+        #msg.attach('qrcode.gif','image/gif',temp.getvalue())
+
+
+        mail.send(msg)
+    except:
+        print("send_mail exception:\n{}".format(traceback.format_exc()))
+    return
+
+
+
 def sendQRCodeEmail(recipients, uuid):
     qr = qrcode.QRCode(
         version=1,
@@ -749,7 +861,7 @@ def sendQRCodeEmail(recipients, uuid):
     #qr_image = {'photo': temp.getvalue()}
     #print("IMG",qr_image['photo'])
     
-    return sendEmail(recipients, "VC Access - QR Code", "Please find your VC QR code attached", temp.getvalue())
+    return sendEmail(recipients, "VC Access Code", "Please find your VC QR code attached", temp.getvalue())
 
 def sendEmail(recipients, subject, message, attachment=None):
     

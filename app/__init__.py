@@ -45,8 +45,27 @@ db = SQLAlchemy(model_class=Base)
 
 # create the app
 app = Flask(__name__)
-app.config.from_object('config.DevelopmentConfig')
+#app.config.from_object('config.DevelopmentConfig')
 #app.config.from_object('config.ProductionConfig')
+
+
+#print(os.environ)
+print("VC_SYSTEM: ",os.environ.get('VC_SYSTEM'))
+if os.environ.get('VC_SYSTEM') == None:
+    #print('VC_SYSTEM not set in environment variables, please set it to "SERVER", exiting...')
+    #sys.exit()
+
+    print('VC_SYSTEM not set in environment variables, please set it to "SERVER", continuing with DevelopmentConfig...')    
+    app.config.from_object('config.DevelopmentConfig')
+    
+elif os.environ.get('VC_SYSTEM') == 'SERVER':    
+    app.config.from_object('config.ProductionConfig')
+else:
+    app.config.from_object('config.DevelopmentConfig')
+
+print(app.config['MAIL_USERNAME'])
+
+
 admin = Admin(app, name='VC-Admin')
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)

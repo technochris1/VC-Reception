@@ -1,0 +1,1604 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VC - Guest Check-In</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  {{ moment.include_moment() }}
+</head>
+
+<style>
+  html,
+  body {
+
+    height: 100%;
+    overflow-x: hidden;
+    margin: 0px;
+  }
+
+  *:focus {
+    outline: none;
+  }
+
+  input,
+  select,
+  textarea {
+    color: #00000000;
+  }
+
+  .checkbox-lg .form-check-input {
+    top: .8rem;
+    scale: 1.4;
+    margin-right: 0.7rem;
+  }
+
+  .checkbox-lg .form-check-label {
+    padding-top: 13px;
+  }
+
+  .checkbox-xl .form-check-input {
+    top: 1.2rem;
+    scale: 1.7;
+    margin-right: 0.8rem;
+  }
+
+  .checkbox-xl .form-check-label {
+    padding-top: 19px;
+  }
+
+
+  /* https://getbutterfly.com/fast-and-accessible-css-only-client-logo-carousel/ */
+
+
+  .slider {
+
+    height: 75pt;
+    margin: 0 auto;
+    overflow: hidden;
+    position: relative;
+    cursor: default;
+    user-select: none;
+    touch-action: none;
+  }
+
+  .slider:before {
+    left: 0;
+    top: 0;
+  }
+
+  .slider:after,
+  .slider:before {
+    background: linear-gradient(to right,
+        #000 0%,
+        hsla(0, 0%, 100%, 0) 100%);
+    content: "";
+    height: 75pt;
+    position: absolute;
+    width: 200px;
+    z-index: 2;
+  }
+
+  .slider:after {
+    right: 0;
+    top: 0;
+    transform: rotateZ(180deg);
+  }
+
+  .slider:after,
+  .slider:before {
+    background: linear-gradient(to right,
+        #000 0%,
+        hsla(0, 0%, 100%, 0) 100%);
+    content: "";
+    height: 75pt;
+    position: absolute;
+    width: 200px;
+    z-index: 2;
+  }
+
+  .slider .slide-track-1 {
+    animation: scroll-l 30s linear infinite;
+    display: flex;
+    width: 1750px;
+  }
+
+  .slider .slide-track-2 {
+    animation: scroll-r 30s linear infinite;
+    display: flex;
+    width: 3500px;
+  }
+
+  .slider .slide {
+    height: 75pt;
+    width: 250px;
+    display: flex;
+    align-items: center;
+    text-align: center;
+  }
+
+  .slider .slide img {
+    width: 180px;
+    padding: 1pc;
+    vertical-align: middle;
+    margin: 0 auto;
+    display: inline-block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  @keyframes scroll-l {
+    0% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(calc(-250px * 7));
+    }
+  }
+
+  @keyframes scroll-r {
+    100% {
+      transform: translateX(0);
+    }
+
+    0% {
+      transform: translateX(calc(-250px * 7));
+    }
+  }
+
+
+  .bg-image {
+
+    /* Add the blur effect */
+    filter: blur(10px);
+    -webkit-filter: blur(10px);
+
+  }
+</style>
+
+<body>
+
+
+  <div class="row h-100 align-items-center">
+    <img class=" bg-image" src="../static/VC_logo_dark.png" height="100%" width="100%" style="object-fit: contain;"
+      alt="...">
+    <div class="position-absolute start-0 p-2">
+      <img src="../static/BNO_VC_logo_dark.png" height="50%" width="25%" style="object-fit: contain;" alt="...">
+    </div>
+
+  </div>
+
+
+  <!-- This is the Floating Buttons on the page -->
+  <div class="position-absolute top-0 end-0 m-4">
+    <div class="btn-group m-1" role="group" aria-label="Basic example">
+      <button type="button" class="btn btn-outline-dark btn-sm" id="settingBtn" data-bs-toggle="modal"
+        data-bs-target="#settingsModal"><i class="bi bi-gear-fill text-light"></i></button>
+      <button type="button" class="btn btn-outline-dark btn-sm" id="themeSwitch"><i
+          class="bi bi-brightness-high-fill"></i></button>
+      <button type="button" class="btn btn-outline-dark btn-sm" id="fullScreenToggle"><i
+          class="bi bi-arrows-fullscreen text-light"></i></button>
+    </div>
+  </div>
+
+
+
+  <!-- This is the Toast Notification -->
+  <div class="position-fixed bottom-0 start-50 translate-middle-x p-3" style="z-index: 11">
+    <div id="infoToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-header">
+        <strong id="infoToastHeader" class="me-auto fs-2">Guest Signed IN</strong>
+      </div>
+      <div class="toast-body fs-2" id="infoToastBody">
+        Welcome Guest!
+      </div>
+    </div>
+  </div>
+
+
+  <!-- This is the QR Code Entry Field -->
+  <div class="position-absolute bottom-0 start-0 p-2">
+    <div class="form-group">
+      <input type="text" class="form-control" inputmode="none" id="code" placeholder="QR CODE"
+        style="width: 100px;"></input>
+    </div>
+  </div>
+
+  <!-- This is the New Guest Button -->
+  <div class="position-absolute bottom-0 end-0 p-2">
+    <!-- <a href="/guestView/registerGuest"> -->
+    <button type="button" class="btn btn-danger btn-lg" data-bs-toggle="modal" data-bs-target="#tosModal">New
+      Member Sign Up</button>
+    <!-- </a> -->
+  </div>
+
+  <div class="modal fade" id="settingsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h1 class="modal-title fs-5" id="exampleModalLabel">Modal title</h1>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Save changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade " id="idScanModal" aria-hidden="true" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-fullscreen modal-dialog-scrollable ">
+      <div class="modal-content bg-dark text-light">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalToggleLabel2">Terms and Conditions</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="container bg-dark text-light ">
+            <p>Scan Back of ID</p>
+            <div class="form-group">
+              <input type="text" class="form-control" inputmode="none" id="idInput" placeholder=""
+                style="width: 100px;"></input>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade " id="tosModal" aria-hidden="true" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-xl modal-fullscreen modal-dialog-scrollable ">
+      <div class="modal-content bg-dark text-light">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalToggleLabel2">Terms and Conditions</h5>
+        </div>
+        <div class="modal-body" id="tosModalBody">
+
+          <div class="container bg-dark text-light ">
+            {{setting.tos|safe}}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-danger btn-lg" id="disagreeBtn" data-bs-dismiss="modal">Disagree</button>
+          <button class="btn btn-success btn-lg" data-bs-target="#idScanModal" id="agreeBtn" data-bs-option="true"
+            data-bs-toggle="modal" data-bs-dismiss="modal">Agree</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade " id="registerModal" aria-hidden="true" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg  modal-fullscreen modal-dialog-scrollable ">
+      <div class="modal-content ">
+        <div class="modal-header">
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body bg-dark text-light">
+          <div class="container bg-dark text-light ">
+            <form method="POST" action="" class="bg-dark text-light">
+              {{ form.hidden_tag() }}
+
+              <fieldset class="form-group bg-dark text-light">
+
+
+                <div class="form-group p-2">
+                  <div class="d-flex justify-content-between w-auto m-5">
+                    <div class="d-inline-flex ">
+                      {% if form.termsCheck.errors %}
+                      {{ form.termsCheck(class="form-check-input is-invalid m-md-2 m-lg-3 ") }}
+                      <div class="invalid-feedback">
+                        {% for error in form.termsCheck.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                      </div>
+                      {% else %}
+                      {{ form.termsCheck(class="form-check-input m-md-2 m-lg-3") }}
+                      {% endif %}
+                      {{ form.termsCheck.label(class="form-check-label align-self-stretch mx-3" ) }}
+                    </div>
+                    <div class="">
+                      <button class="btn btn-lg btn-outline-primary" type="button" data-bs-target="#tosModal"
+                        data-bs-toggle="modal" id="tosBtn">Current Terms and
+                        Conditions</button>
+                    </div>
+
+                  </div>
+                </div>
+
+
+                <div class="form-group text-light p-1">
+                  <div class="form-floating mx-5">
+                    {{ form.fetUsername(class="form-control", placeholder="fetLife") }}
+                    {{ form.fetUsername.label() }}
+                  </div>
+                </div>
+
+
+
+                <div class="form-group text-light p-1">
+                  <div class="form-floating mx-5">
+                    {{ form.name(class="form-control", placeholder="Name") }}
+                    {{ form.name.label() }}
+                  </div>
+                </div>
+
+
+                <div class="form-group text-light p-1">
+                  <div class="form-floating mx-5">
+                    {% if form.email.errors %}
+                    {{ form.email(class="form-control is-invalid", placeholder="example@gmail.com") }}
+                    <div class="invalid-feedback">
+                      {% for error in form.email.errors %}
+                      <span>{{ error }}</span>
+                      {% endfor %}
+                    </div>
+                    {% else %}
+                    {{ form.email(class="form-control", placeholder="example@gmail.com") }}
+                    {% endif %}
+                    {{ form.email.label() }}
+                  </div>
+                </div>
+
+
+                <div class="form-group text-light p-1">
+                  <div class="form-floating mx-5">
+                    {{ form.phone(class="form-control", type="tel", placeholder="302 000 0000") }}
+                    {{ form.phone.label() }}
+                  </div>
+                </div>
+
+
+
+
+
+
+
+              </fieldset>
+              <div class="form-group p-1  mx-5">
+                <div class="d-flex justify-content-between">
+                  <button type="button" class="btn btn-primary btn-lg" data-bs-dismiss="modal">Go Back</button>
+                  {{ form.submit(class="btn btn-lg btn-outline-info") }}
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="modal fade " id="checkInPaymentModal" aria-hidden="true" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-lg  modal-fullscreen modal-dialog-scrollable ">
+      <div class="modal-content bg-dark text-light">
+
+        <div class="modal-header">
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+
+        <div class="modal-body">
+          <div class="modal-body d-flex justify-content-center" id="checkInPaymentModalBody">
+
+
+            <div class="d-flex flex-column ">
+              <div class="justify-content-center text-center">
+                {% if todaysEvents|length > 0 %}
+                {% for event in todaysEvents %}
+                <div class="card m-4">
+                  <div class="card-body">
+                    <div class="position-relative">
+                      <div class="position-absolute top-0 start-0">
+                        <div class="form-check checkbox-xl">
+                          <input class="form-check-input" type="checkbox" value="" id="event{{event.id}}" checked>
+                        </div>
+                      </div>
+                    </div>
+                    <h2>{{event.title}}</h2>
+                    {% if event.start | timestamp_to_date_min_time == event.end | timestamp_to_date_min_time %}
+                    <h5 class="card-subtitle mb-2 text-body-secondary">{{event.start | timestamp_to_date_str}}
+                      {{event.start |
+                      timestamp_to_time_str_ampm}} - {{event.end | timestamp_to_time_str_ampm}}</h5>
+                    {% else %}
+                    <h5 class="card-subtitle mb-2 text-body-secondary">{{event.start | timestamp_to_str_ampm}} -
+                      {{event.end |
+                      timestamp_to_str_ampm}}</h5>
+                    {% endif %}
+                    {% if event.eventCost %}
+                    <p class="card-text">${{event.eventCost}}</p>
+                    {% endif %}
+
+                    {% if event.addons %}
+                    <ul class="list-group list-group-flush">
+                      {% for addon in event.addons %}
+                      <li class="list-group-item w-100">
+                        <div class="d-flex justify-content-center">
+
+                          {{addon.title}} By: {{addon.guests|guests_to_str}} for ${{addon.cost}}
+
+
+                        </div>
+
+
+
+                      </li>
+                      {% endfor %}
+                    </ul>
+
+
+
+                    {% endif %}
+
+
+
+
+                  </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+
+              </div>
+
+
+              <nav>
+                <div class="nav nav-pills justify-content-center text-center" id="nav-tab" role="tablist">
+                  <div class="btn-group btn-group-lg d-flex" role="group" aria-label="Basic radio toggle button group">
+
+                    {% if setting.show_cashapp %}
+                    <input type="radio" class="btn-check " data-bs-toggle="tab" data-bs-target="#nav-cashapp" role="tab"
+                      name="btnradio" id="btnradio" autocomplete="off">
+                    <label class="btn btn-outline-success" for="btnradio">
+                      <img width="48" height="48" src="../static/icons8-cashapp-48.png" alt="cash-app" />
+                      CashApp
+                    </label>
+                    {% endif %}
+                    {% if setting.show_paypal %}
+                    <input type="radio" class="btn-check" data-bs-toggle="tab" data-bs-target="#nav-paypal" role="tab"
+                      name="btnradio" id="btnradio1" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="btnradio1">
+                      <img width="48" height="48" src="../static/icons8-paypal-48.png" alt="paypal" />
+                      Paypal
+                    </label>
+                    {% endif %}
+                    {% if setting.show_venmo %}
+                    <input type="radio" class="btn-check" data-bs-toggle="tab" data-bs-target="#nav-venmo" role="tab"
+                      name="btnradio" id="btnradio2" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="btnradio2">
+                      <img width="48" height="48" src="../static/venmo.webp" alt="venmo" />
+                      Venmo
+                    </label>
+                    {% endif %}
+                    {% if setting.show_credit %}
+                    <input type="radio" class="btn-check" data-bs-toggle="tab" data-bs-target="#nav-credit" role="tab"
+                      name="btnradio" id="btnradio4" autocomplete="off">
+                    <label class="btn btn-outline-warning" for="btnradio4">
+                      <img width="48" height="48" src="../static/icons8-cash-48.png" alt="credit" />
+                      Credit(s)
+                      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                        id="generalCreditAmount">
+                        0
+                        <span class="visually-hidden"></span>
+                      </span>
+                    </label>
+                    {% endif %}
+                    <input type="radio" class="btn-check active" data-bs-toggle="tab" data-bs-target="#nav-cash"
+                      role="tab" name="btnradio" id="btnradio3" autocomplete="off" checked>
+                    <label class="btn btn-outline-success" for="btnradio3">
+                      <img width="48" height="48" src="../static/icons8-money-48.png" alt="cash" />
+                      Cash
+                    </label>
+                  </div>
+                </div>
+              </nav>
+
+              <div class="tab-content" id="nav-tabContent">
+                {% if setting.show_cashapp %}
+                <div class="tab-pane show text-center m-4 " id="nav-cashapp" role="tabpanel" tabindex="0">
+                  <div class="d-inline-flex flex-column mb-1 text-center">
+                    <div class="p-2">
+                      <img class="mb-4 text-center" width="350" height="350" src="../static/cashappQR.svg"
+                        alt="CashApp" />
+                    </div>
+                    <div class="pt-1">
+                      <button type="button" id="payWithCashappBtn" data-payment-method="cashapp" data-bs-dismiss="modal"
+                        class="btn btn-success btn-lg">Paid Using CashApp, Check-In Now</button>
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
+                {% if setting.show_paypal %}
+                <div class="tab-pane text-center m-4" id="nav-paypal" role="tabpanel" tabindex="0">
+                  <div class="d-inline-flex flex-column mb-1 text-center">
+                    <div class="p-2">
+                      <img class="mb-4 text-center" width="350" height="350" src="../static/paypalQR.svg"
+                        alt="Paypal" />
+                    </div>
+                    <div class="pt-1">
+                      <button type="button" id="payWithPaypalBtn" data-payment-method="paypal" data-bs-dismiss="modal"
+                        class="btn btn-primary btn-lg">Paid Using Paypal, Check-In Now</button>
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
+                {% if setting.show_venmo %}
+                <div class="tab-pane text-center m-4" id="nav-venmo" role="tabpanel" tabindex="0">
+                  <div class="d-inline-flex flex-column mb-1 text-center">
+                    <div class="p-2">
+                      <img class="mb-4 text-center" width="350" height="350" src="../static/venmoQR.svg" alt="Venmo" />
+                    </div>
+                    <div class="pt-1">
+                      <button type="button" id="payWithVenmoBtn" data-payment-method="venmo" data-bs-dismiss="modal"
+                        class="btn btn-primary btn-lg">Paid Using Venmo, Check-In Now</button>
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
+                <div class="tab-pane text-center m-4 active" id="nav-cash" role="tabpanel" tabindex="0">
+                  <div class="d-inline-flex flex-column mb-1 text-center">
+                    <div class="p-2">
+                      <h2>Please Provide Payment to VC Staff Shortly After Check-In</h2>
+                    </div>
+                    <div class="pt-1">
+                      <button type="button" id="payWithCashBtn" data-payment-method="cash" data-bs-dismiss="modal"
+                        class="btn btn-primary btn-lg m-1"> Check-In Now</button>
+                    </div>
+                  </div>
+                </div>
+                {% if setting.show_credit %}
+                <div class="tab-pane text-center m-4 " id="nav-credit" role="tabpanel" tabindex="0">
+                  <div class="d-inline-flex flex-column mb-3 text-center">
+                    <div class="pt-1">
+                      <button type="button" id="payWithCreditBtn" data-payment-method="credit" data-bs-dismiss="modal"
+                        class="btn btn-primary btn-lg m-1"> Check-In Now</button>
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+    crossorigin="anonymous"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@coreui/coreui@5.1.2/dist/js/coreui.bundle.min.js"
+    integrity="sha384-yoEOGIfJg9mO8eOS9dgSYBXwb2hCCE+AMiJYavhAofzm8AoyVE241kjON695K1v5"
+    crossorigin="anonymous"></script>
+
+  <script>
+
+
+
+
+
+
+    // var triggerTabList = [].slice.call(document.querySelectorAll('#myTab a'))
+    // triggerTabList.forEach(function (triggerEl) {
+    //   var tabTrigger = new bootstrap.Tab(triggerEl)
+
+    //   triggerEl.addEventListener('click', function (event) {
+    //     event.preventDefault()
+    //     tabTrigger.show()
+    //   })
+    // })
+
+    if (typeof (Storage) !== "undefined") {
+      // Code for localStorage/sessionStorage.
+      console.log('WebStorage Support!');
+
+    } else {
+      // Sorry! No Web Storage support..
+      console.log('No WebStorage Support');
+      document.getElementById('settingBtn').style.display = 'none';
+
+    }
+
+
+    console.log('Guest View Loading...');
+
+
+
+    var themeSwitch = document.getElementById('themeSwitch');
+    var fullScreenToggle = document.getElementById('fullScreenToggle');
+    var image = document.getElementById('image');
+    var code = document.getElementById('code');
+    var idInput = document.getElementById('idInput');
+    idInput.style.backgroundColor = 'rgba(255,255,255,1)';
+
+    focusOnCodeTimer = setTimeout(focusOnCode, 1000);
+
+    fullScreenToggle.addEventListener('click', toggleFullScreen);
+
+
+
+    var payWithCashappBtn = document.getElementById('payWithCashappBtn')
+    var payWithPaypalBtn = document.getElementById('payWithPaypalBtn')
+    var payWithVenmoBtn = document.getElementById('payWithVenmoBtn')
+    var payWithCreditBtn = document.getElementById('payWithCreditBtn')
+    var payWithCashBtn = document.getElementById('payWithCashBtn')
+
+    if (payWithCashappBtn) {
+      payWithCashappBtn.addEventListener('click', {
+        handleEvent(event) {
+          CheckInQrCode(event.target.dataset.qrCode, event.target.dataset.paymentMethod);
+        }
+      })
+    }
+    if (payWithPaypalBtn) {
+      payWithPaypalBtn.addEventListener('click', {
+        handleEvent(event) {
+          CheckInQrCode(event.target.dataset.qrCode, event.target.dataset.paymentMethod);
+        }
+      })
+    }
+    if (payWithVenmoBtn) {
+      payWithVenmoBtn.addEventListener('click', {
+        handleEvent(event) {
+          CheckInQrCode(event.target.dataset.qrCode, event.target.dataset.paymentMethod);
+        }
+      })
+    }
+    if (payWithCashBtn) {
+      payWithCashBtn.addEventListener('click', {
+        handleEvent(event) {
+          CheckInQrCode(event.target.dataset.qrCode, event.target.dataset.paymentMethod);
+        }
+      })
+    }
+    if (payWithCreditBtn) {
+      payWithCreditBtn.addEventListener('click', {
+        handleEvent(event) {
+          CheckInQrCode(event.target.dataset.qrCode, event.target.dataset.paymentMethod);
+        }
+      })
+    }
+
+    const settingsModalEl = document.getElementById('settingsModal')
+    const idScanModalEl = document.getElementById('idScanModal')
+    const registerModalEl = document.getElementById('registerModal')
+    const checkInPaymentModalEl = document.getElementById('checkInPaymentModal')
+
+
+    const settingsModal = new bootstrap.Modal(settingsModalEl, {
+      keyboard: false
+    })
+    const idScanModal = new bootstrap.Modal(idScanModalEl, {
+      keyboard: false
+    })
+    const registerModal = new bootstrap.Modal(registerModalEl, {
+      keyboard: false
+    })
+    const checkInPaymentModal = new bootstrap.Modal(checkInPaymentModalEl, {
+      keyboard: false
+    })
+
+    settingsModalEl.addEventListener('show.bs.modal', event => {
+      //console.log('SettingsModal Show');
+      allowQrCodeInput = false
+    })
+    settingsModalEl.addEventListener('hide.bs.modal', event => {
+      //console.log('SettingsModal Hide');
+      allowQrCodeInput = true
+      focusOnCodeTimer = setTimeout(focusOnCode, 1000);
+    })
+    idScanModalEl.addEventListener('show.bs.modal', event => {
+      //console.log('SettingsModal Show');
+      allowQrCodeInput = false
+    })
+
+    idScanModalEl.addEventListener('shown.bs.modal', event => {
+      //console.log('SettingsModal Show');
+      allowQrCodeInput = false
+      idInput.readOnly = true;
+      idInput.focus();
+      setTimeout(function () { idInput.readOnly = false; }, 50);
+    })
+
+    idScanModalEl.addEventListener('hide.bs.modal', event => {
+      //console.log('SettingsModal Hide');
+      allowQrCodeInput = true
+      focusOnCodeTimer = setTimeout(focusOnCode, 1000);
+    })
+
+    registerModalEl.addEventListener('show.bs.modal', event => {
+      //console.log('RegisterModal Show');    
+      allowQrCodeInput = false
+
+      const button = event.relatedTarget
+      const option = button.getAttribute('data-bs-option')
+      if (option) {
+        const optionBool = Boolean(option)
+        console.log('Option:', optionBool)
+        document.getElementById('termsCheck').checked = optionBool
+      }
+
+    })
+
+    registerModalEl.addEventListener('shown.bs.modal', event => {
+      //console.log('RegisterModal Show');    
+      document.getElementById('fetUsername').focus();
+    })
+    registerModalEl.addEventListener('hide.bs.modal', event => {
+      //console.log('RegisterModal Hide');
+      allowQrCodeInput = true
+      focusOnCodeTimer = setTimeout(focusOnCode, 1000);
+    })
+
+
+
+    checkInPaymentModalEl.addEventListener('hidden.bs.modal', event => {
+      // do something...
+    })
+
+
+
+
+    if (document.documentElement.getAttribute('data-bs-theme') == 'dark') {
+      themeSwitch.innerHTML = '<i class="bi bi-brightness-high-fill text-warning"></i>'
+    }
+    else {
+      themeSwitch.innerHTML = '<i class="bi bi-moon-fill text-light-emphasis"></i>'
+    }
+
+
+    themeSwitch.addEventListener('click', () => {
+      if (document.documentElement.getAttribute('data-bs-theme') == 'dark') {
+        document.documentElement.setAttribute('data-bs-theme', 'light')
+        themeSwitch.classList.replace('btn-outline-dark', 'btn-outline-light')
+        fullScreenToggle.classList.replace('btn-outline-dark', 'btn-outline-light')
+        themeSwitch.innerHTML = '<i class="bi bi-moon-fill text-light-emphasis"></i>'
+        fullScreenToggle.innerHTML = '<i class="bi bi-arrows-fullscreen text-dark"></i>'
+        image.src = '../static/VC_logo_light.png'
+      }
+      else {
+        document.documentElement.setAttribute('data-bs-theme', 'dark')
+        themeSwitch.classList.replace('btn-outline-light', 'btn-outline-dark')
+        fullScreenToggle.classList.replace('btn-outline-light', 'btn-outline-dark')
+        themeSwitch.innerHTML = '<i class="bi bi-brightness-high-fill text-warning"></i>'
+        fullScreenToggle.innerHTML = '<i class="bi bi-arrows-fullscreen text-light"></i>'
+        image.src = '../static/VC_logo_dark.png'
+      }
+      focusOnCode();
+    })
+
+
+    function focusOnCode() {
+      //console.log('Focus On Code', allowQrCodeInput);
+      if (allowQrCodeInput) {
+        code.readOnly = true;
+        code.focus();
+        setTimeout(function () { code.readOnly = false; }, 50);
+      }
+    }
+
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement &&    // alternative standard method
+        !document.mozFullScreenElement && !document.webkitFullscreenElement) {  // current working methods
+        if (document.documentElement.requestFullscreen) {
+          document.documentElement.requestFullscreen();
+        } else if (document.documentElement.mozRequestFullScreen) {
+          document.documentElement.mozRequestFullScreen();
+        } else if (document.documentElement.webkitRequestFullscreen) {
+          document.documentElement.webkitRequestFullscreen(Element.ALLOW_KEYBOARD_INPUT);
+        }
+      } else {
+        if (document.cancelFullScreen) {
+          document.cancelFullScreen();
+        } else if (document.mozCancelFullScreen) {
+          document.mozCancelFullScreen();
+        } else if (document.webkitCancelFullScreen) {
+          document.webkitCancelFullScreen();
+        }
+      }
+      focusOnCode();
+
+    }
+
+    //code.focus();
+    //document.getElementById("code").
+
+    code.onkeyup = function (e) {
+
+      if (allowQrCodeInput) {
+
+        if (e.key === 'Enter' || e.key === 'Tab' || e.keyCode === 13) {
+
+          SubmitQrCode();
+        }
+
+      }
+    };
+
+    idInput.onkeyup = function (e) {
+
+      if (!allowQrCodeInput) {
+
+        if (e.key === 'Enter') {
+
+
+          data = parse(document.getElementById('idInput').value)
+          if (data)
+            if (data != idInputData) {
+              idInputData = data;
+              console.log("IDCodeInput:", idInputData);
+              
+            }
+        }
+
+      }
+    };
+
+    var qrCodeInput = "";
+    var idInputData = "";
+    var allowQrCodeInput = true;
+
+    var myToastEl = document.getElementById('infoToast')
+
+    var myToastElHeader = document.getElementById('infoToastHeader')
+    var myToastElBody = document.getElementById('infoToastBody')
+    var myToast = bootstrap.Toast.getOrCreateInstance(myToastEl) // Returns a Bootstrap toast instance
+
+
+
+
+    function SubmitQrCode() {
+      qrCodeInput = document.getElementById('code').value
+      console.log('Submitting QR Code:', qrCodeInput);
+
+
+      if (qrCodeInput) {
+        //qrCodeInput = qrCodeInput.replace(/[^a-zA-Z0-9]/g, '');
+        //qrCodeInput = qrCodeInput.replace(/[^\w\s]/gi, '');
+        //qrCodeInput = qrCodeInput.replace(/[^ -~]+/g, "");
+
+
+
+        url = '{{ url_for("preCheckIn" ) }}' + encodeURI(qrCodeInput)
+        //alert(url)
+
+
+        fetch(url)
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(data => {
+            document.getElementById('code').value = ""
+            if (!data.error) {
+              console.log('Data received:', data);
+              skipPaymentView = false
+              skipPaymentView = data.skip_payment
+              if (skipPaymentView === true) {
+                CheckInQrCode(data.uuid, 'Skipped Payment Screen Via Role Set:' + data.roles);
+                return
+              }
+              generalCreditAmountPill = document.getElementById('generalCreditAmount')
+              if (generalCreditAmountPill) { // Check if Credit method is shown
+                //console.log('Credit Account:', data);
+                if (data.generalCredits) {
+                  document.getElementById('btnradio4').disabled = false
+                  generalCreditAmountPill.classList.remove('d-none')
+                  generalCreditAmountPill.innerText = data.generalCredits
+                  if (data.generalCredits > 0) {
+                    payWithCreditBtn.disabled = false
+                    payWithCreditBtn.innerText = 'Pay Using 1 of ' + data.generalCredits + ' available Credits, Checkin Now'
+                  } else {
+                    payWithCreditBtn.innerText = '0 available Credits'
+                    payWithCreditBtn.disabled = true
+                  }
+                } else {
+                  document.getElementById('btnradio4').disabled = true
+                  generalCreditAmountPill.classList.add('d-none')
+                }
+
+              } else {
+                console.log('Skipping, No Credit Account', data);
+                //CheckInQrCode(qrCodeInput, data);
+              }
+
+
+              if (payWithCashappBtn) { payWithCashappBtn.dataset.qrCode = data.uuid }
+              if (payWithPaypalBtn) { payWithPaypalBtn.dataset.qrCode = data.uuid }
+              if (payWithVenmoBtn) { payWithVenmoBtn.dataset.qrCode = data.uuid }
+              if (payWithCashBtn) { payWithCashBtn.dataset.qrCode = data.uuid }
+              if (payWithCreditBtn) { payWithCreditBtn.dataset.qrCode = data.uuid }
+
+              checkInPaymentModal.show(checkInPaymentModalEl)
+
+
+            } else {
+              myToastElHeader.innerText = 'Notice'
+              myToastElBody.innerText = data.error
+              myToast.show()
+            }
+
+
+
+            //myToastElHeader.innerText = 'Error'
+            //myToastElBody.innerText = 'Welcome ' + data
+            //myToast.show()
+          })
+          .catch(error => {
+            document.getElementById('code').value = ""
+            console.error('There was a problem with the fetch operation:', error);
+            myToastElHeader.innerText = 'Error'
+            myToastElBody.innerText = 'Network Error'
+            myToast.show()
+          });
+
+
+
+        //alert('QR Code Submitted');
+      } else {
+        //alert('Error');
+      }
+      qrCodeInput = "";
+    }
+
+
+
+    function CheckInQrCode(qrCode = null, paymentMethod = null) {
+
+      console.log('Checking In QR Code:', qrCode, paymentMethod);
+
+      if (qrCode && paymentMethod) {
+        url = '{{ url_for("checkIn" ) }}' + encodeURI(qrCode) + '/' + encodeURI(paymentMethod)
+
+
+        body = JSON.stringify({
+          'qrCode': qrCode,
+          'paymentMethod': paymentMethod
+        })
+
+        //fetch(url)
+        fetch(url, {
+          //method: "POST",
+          //body: body
+        })
+
+
+          .then(response => {
+            if (!response.ok) {
+              throw new Error('Network response was not ok');
+            }
+            return response.json();
+          })
+          .then(data => {
+            document.getElementById('code').value = ""
+            console.log('Data received:', data);
+
+            myToastElHeader.innerText = 'Checked In'
+            myToastElBody.innerText = 'Welcome ' + data.guest
+            myToast.show()
+          })
+          .catch(error => {
+            document.getElementById('code').value = ""
+            //console.error('There was a problem with the fetch operation:', error);
+
+          });
+
+
+
+        //alert('QR Code Submitted');
+      } else {
+        //alert('Error');
+      }
+      qrCodeInput = "";
+    }
+
+    var qrCodeInputTimer = null;
+
+    document.ontouchend = function (e) {
+      //e.preventDefault();
+      focusOnCode();
+    };
+    document.onclick = function (e) {
+      //e.preventDefault();
+      focusOnCode();
+    };
+
+    document.ondragend = function (e) {
+      //e.preventDefault();
+      focusOnCode();
+    };
+
+
+
+    document.onkeyup = function (e) {
+      if (allowQrCodeInput) {
+
+        clearTimeout(qrCodeInputTimer);
+        qrCodeInputTimer = setTimeout(SubmitQrCode, 1000);
+        if (e.key === 'Enter') {
+          //   qrCodeInput += `${e.key}`; //String.fromCharCode(e.keyCode || e.which);          
+          // } else {
+          clearTimeout(qrCodeInputTimer);
+          //SubmitQrCode();
+        }
+      }
+    };
+
+
+
+
+
+
+
+    function parse(data) {
+      data = data.replace(/\n/, "");
+      // replace spaces with regular space
+      data = data.replace(/\s/g, " ");
+
+      if (/^@/.test(data) === true) {
+        return pdf417(data);
+      } else if (/^%/.test(data) === true) {
+        return stripe(data);
+      } else {
+        console.log('couldnt identify format');
+      }
+    };
+
+    function parseDate(date) {
+      var start = parseInt(date[0] + date[1]);
+      if (start < 13) {
+        return date[4] + date[5] + date[6] + date[7] + date[0] + date[1] + date[2] + date[3];
+      }
+      return date;
+    };
+
+    function stripe(data) {
+      data = data.replace(/\n/, "");
+      // replace spaces with regular space
+      data = data.replace(/\s/g, " ");
+      var track = data.match(/(.*?\?)(.*?\?)(.*?\?)/);
+      var res1 = track[1].match(/(\%)([A-Z]{2})([^\^]{0,13})\^?([^\^]{0,35})\^?([^\^]{0,29})\^?\s*?\?/);
+      var res2 = track[2].match(/(;)(\d{6})(\d{0,13})(\=)(\d{4})(\d{8})(\d{0,5})\=?\?/);
+      var res3 = track[3].match(/(\#|\%|\+)(\d|\!|\")(\d|\s)([0-9A-Z ]{11})([0-9A-Z ]{2})([0-9A-Z ]{10})([0-9A-Z ]{4})([12 ]{1})([0-9A-Z ]{3})([0-9A-Z ]{3})([0-9A-Z ]{3})([0-9A-Z ]{3})(.*?)\?/);
+      var state = res1[2];
+      return {
+        "state": state,
+        "city": res1[3],
+        "name": function () {
+          var res = res1[4].match(/([^\$]{0,35})\$?([^\$]{0,35})?\$?([^\$]{0,35})?/);
+          if (!res) return;
+          return {
+            last: res[1],
+            first: res[2],
+            middle: res[3]
+          }
+        }(),
+        "address": res1[5],
+        "iso_iin": res2[2],
+        "dl": res2[3],
+        "expiration_date": parseDate(res2[5]),
+        "birthday": function () {
+          var dob = res2[6].match(/(\d{4})(\d{2})(\d{2})/);
+          if (!dob) return;
+
+          if (dob[2] === '99') {
+            /* FL decided to reverse 2012 aamva spec, 99 means here
+                that dob month === to expiration month, it should be
+                opposite
+                */
+            var exp_dt = res2[5].match(/(\d{2})(\d{2})/);
+            dob[2] = exp_dt[2];
+          }
+          //dob[2]--; what was this for?
+          return dob[1] + dob[2] + dob[3];
+        }(),
+        "dl_overflow": res2[7],
+        "cds_version": res3[1],
+        "jurisdiction_version": res3[2],
+        "postal_code": res3[4],
+        "klass": res3[5],
+        "class": res3[5],
+        "restrictions": res3[6],
+        "endorsments": res3[7],
+        "sex": function () {
+          switch (Number(res3[8])) {
+            case 1:
+              return "MALE";
+              break;
+            case 2:
+              return "FEMALE";
+              break;
+            default:
+              return "MISSING/INVALID";
+              break;
+          }
+        }(),
+        "height": res3[9],
+        "weight": res3[10],
+        "hair_color": res3[11],
+        "eye_color": res3[12],
+        "misc": res3[13],
+        "id": function () {
+          var id;
+          switch (state) {
+            case "FL":
+              var res = res2[3].match(/(\d{2})(.*)/);
+              if (!res) return;
+              id = (String.fromCharCode(Number(res[1]) + 64) + res[2] + res2[7]);
+              break;
+            default:
+              id = res2[3];
+              break;
+          }
+          return id;
+        }()
+      };
+    };
+
+    function pdf417(data) {
+      data = data.replace(/\n/, "");
+      // replace spaces with regular space
+      data = data.replace(/\s/g, " ");
+
+      // get version of aamva (before 2000 or after)
+      var version = data.match(/[A-Z ]{5}\d{6}(\d{2})/);
+
+
+      if (!version) {
+        //console.log('Could not determine version of AAMVA');
+        return;
+      }
+
+      var parseRegex;
+
+      //console.log('Version:', version[1]);
+
+      /* version 01 year 2000 */
+      switch (Number(version[1])) {
+        case 1: {
+          parseRegex = new RegExp(
+            '(DAQ.*?)?' + // Drivers license number
+            '(DAA.*?)?' + // Driver License Name
+            '(DAG.*?)?' + // Driver Mailing Street Address
+            '(DAI.*?)?' + // Driver Mailing City
+            '(DAJ.*?)?' + // Driver Mailing Jurisdiction Code
+            '(DAK.*?)?' + // Driver Mailing Postal Code
+            '(DAQ.*?)?' + // Driver License/ID Number
+            '(DAR.*?)?' + // Driver License Classification Code
+            '(DAS.*?)?' + // Driver License Restriction Code
+            '(DAT.*?)?' + // Driver License Endorsements Code
+            '(DBA.*?)?' + // Driver License Expiration Date
+            '(DBB.*?)?' + // Date of Birth
+            '(DBC.*?)?' + // Driver Sex
+            '(DBD.*?)?' + // Driver License or ID Document Issue Date
+            /* optional
+            '(DAU.*?)?' + // Height (FT/IN)
+            '(DAW.*?)?' + // Weight (LBS)
+            '(DAY.*?)?' + // Eye Color
+            '(DAZ.*?)?' + // Hair Color
+            '(DBK.*?)?' + // Social Security Number
+            '(PAA.*?)?' + // Driver Permit Classification Code
+            '(PAB.*?)?' + // Driver Permit Expiration Date
+            '(PAC.*?)?' + // Permit Identifier
+            '(PAD.*?)?' + // Driver Permit Issue Date
+            '(PAE.*?)?' + // Driver Permit Restriction Code
+            '(PAF.*?)?' + // Driver Permit Endorsement Code
+            '(DAB.*?)?' + // Driver Last Name
+            '(DAC.*?)?' + // Driver First Name
+            '(DAD.*?)?' + // Driver Middle Name or Initial
+            '(DAE.*?)?' + // Driver Name Suffix
+            '(DAF.*?)?' + // Driver Name Prefix
+            '(DAH.*?)?' + // Driver Mailing Street Address 2
+            '(DAL.*?)?' + // Driver Residence Street Address 1
+            '(DAM.*?)?' + // Driver Residence Street Address 2
+            '(DAN.*?)?' + // Driver Residence City
+            '(DAO.*?)?' + // Driver Residence Jurisdiction Code
+            '(DAP.*?)?' + // Driver Residence Postal Code
+            '(DAV.*?)?' + // Height (CM)
+            '(DAX.*?)?' + // Weight (KG)
+            '(DBE.*?)?' + // Issue Timestamp
+            '(DBF.*?)?' + // Number of Duplicates
+            '(DBG.*?)?' + // Medical Indicator/Codes
+            '(DBH.*?)?' + // Organ Donor
+            '(DBI.*?)?' + // Non-Resident Indicator
+            '(DBJ.*?)?' + // Unique Customer Identifier
+            '(DBL.*?)?' + // Driver "AKA" Date Of Birth
+            '(DBM.*?)?' + // Driver "AKA" Social Security Number
+            '(DBN.*?)?' + // Driver "AKA" Name
+            '(DBO.*?)?' + // Driver "AKA" Last Name
+            '(DBP.*?)?' + // Driver "AKA" First Name
+            '(DBQ.*?)?' + // Driver "AKA" Middle Name
+            '(DBR.*?)?' + // Driver "AKA" Suffix
+            '(DBS.*?)?'   // Driver "AKA" Prefix
+            */
+            '$'
+          );
+          break;
+        }
+        /* version 02 year 2003 */
+        case 2: {
+          parseRegex = new RegExp(
+            '(DCA.*?)?' + // Jurisdiction-specific vehicle class
+            '(DCB.*?)?' + // Jurisdiction-specific restriction codes
+            '(DCD.*?)?' + // Jurisdiction-specific endorsement codes
+            '(DBA.*?)?' + // Document Expiration Date
+            '(DCS.*?)?' + // Customer Family Name
+
+            '(DCT.*?)?' + // Customer Given Names
+
+            '(DCU.*?)?' + // Name Suffix
+            '(DBD.*?)?' + // Document Issue Date
+            '(DBB.*?)?' + // Date of Birth
+
+            '(DBC.*?)?' + // Physical Description – Sex
+            '(DAY.*?)?' + // Physical Description – Eye Color
+            '(DAU.*?)?' + // Physical Description – Height
+            '(DCE.*?)?' + // Physical Description – Weight Range
+
+            '(DAG.*?)?' + // Address – Street 1
+            '(DAI.*?)?' + // Address – City
+            '(DAJ.*?)?' + // Address – Jurisdiction Code
+            '(DAK.*?)?' + // Address – Postal Code
+            '(DAQ.*?)?' + // Customer ID Number
+            '(DCF.*?)?' + // Document Discriminator
+            '(DCG.*?)?' + // Country Identification
+            '(DCH.*?)?' + // Federal Commercial Vehicle Codes
+
+            /* optional elements
+            '(DAH.*?)?' + // Address – Street 2
+            '(DAZ.*?)?' + // Hair color
+            '(DCI.*?)?' + // Place of birth
+            '(DCJ.*?)?' + // Audit information
+            '(DCK.*?)?' + // Inventory control number
+            '(DBN.*?)?' + // Alias / AKA Family Name
+            '(DCL.*?)?' + // Race / ethnicity
+
+            '(DCM.*?)?' + // Standard vehicle classification
+            '(DCN.*?)?' + // Standard endorsement code
+            '(DCO.*?)?' + // Standard restriction code
+            '(DCP.*?)?' + // Jurisdiction- specific vehicle classification description
+            '(DCQ.*?)?' + // Jurisdiction- specific endorsement code description
+            '(DCR.*?)?'  // Jurisdiction- specific restriction code description
+            */
+            '$'
+          );
+          break;
+        }
+        /* version 03 year 2005 */
+        case 3: {
+          parseRegex = new RegExp(
+            '(DCA.*?)?' + // Jurisdiction-specific vehicle class
+            '(DCB.*?)?' + // Jurisdiction-specific restriction codes
+            '(DCD.*?)?' + // Jurisdiction-specific endorsement codes
+            '(DBA.*?)?' + // Document Expiration Date
+            '(DCS.*?)?' + // Customer Family Name
+            '(DCT.*?)?' + // Customer Given Names
+            '(DBD.*?)?' + // Document Issue Date
+            '(DBB.*?)?' + // Date of Birth
+            '(DBC.*?)?' + // Physical Description – Sex
+            '(DAY.*?)?' + // Physical Description – Eye Color
+            '(DAU.*?)?' + // Physical Description – Height
+            '(DAG.*?)?' + // Address – Street 1
+            '(DAI.*?)?' + // Address – City
+            '(DAJ.*?)?' + // Address – Jurisdiction Code
+            '(DAK.*?)?' + // Address – Postal Code
+            '(DAQ.*?)?' + // Customer ID Number
+            '(DCF.*?)?' + // Document Discriminator
+            '(DCG.*?)?' + // Country Identification
+            '(DCH.*?)?' + // Federal Commercial Vehicle Codes
+            /* optional elements
+            + '(DAH.*?)?' + // Address – Street 2
+            '(DAZ.*?)?' + // Hair color
+            '(DCI.*?)?' + // Place of birth
+            '(DCJ.*?)?' + // Audit information
+            '(DCK.*?)?' + // Inventory control number
+            '(DBN.*?)?' + // Alias / AKA Family Name
+            '(DBG.*?)?' + // Alias / AKA Given Name
+            '(DBS.*?)?' + // Alias / AKA Suffix Name
+            '(DCU.*?)?' + // Name Suffix
+            '(DCE.*?)?' + // Physical Description – Weight Range
+            '(DCL.*?)?' + // Race / ethnicity
+            '(DCM.*?)?' + // Standard vehicle classification
+            '(DCN.*?)?' + // Standard endorsement code
+            '(DCO.*?)?' + // Standard restriction code
+            '(DCP.*?)?' + // Jurisdiction- specific vehicle classification description
+            '(DCQ.*?)?' + // Jurisdiction- specific endorsement code description
+            '(DCR.*?)?'  // Jurisdiction- specific restriction code description
+            */
+            '$'
+          );
+          break;
+        }
+        case 6: {
+          parseRegex = new RegExp(
+            '(DAQ.*?)?' +
+            '(DCS.*?)?' +
+            '(DDE.*?)?' +
+            '(DAC.*?)?' +
+            '(DDF.*?)?' +
+            '(DAD.*?)?' +
+            '(DDG.*?)?' +
+            '(DCA.*?)?' +
+            '(DCB.*?)?' +
+            '(DCD.*?)?' +
+            '(DBD.*?)?' +
+            '(DBB.*?)?' +
+            '(DBA.*?)?' +
+            '(DBC.*?)?' +
+            '(DAU.*?)?' +
+            '(DAY.*?)?' +
+            '(DAG.*?)?' +
+            '(DAI.*?)?' +
+            '(DAJ.*?)?' +
+            '(DAK.*?)?' +
+            '(DCF.*?)?' +
+            /* optional */
+            '$'
+          );
+          break;
+        }
+        /* version 07 year 2012 */
+        case 7: {
+          parseRegex = new RegExp(
+            '(DCA.*?)?' + // Jurisdiction-specific vehicle class
+            '(DCB.*?)?' + // Jurisdiction-specific restriction codes
+            '(DCD.*?)?' + // Jurisdiction-specific endorsement codes
+            '(DBA.*?)?' + // Document Expiration Date
+            '(DCS.*?)?' + // Customer Family Name
+            '(DAC.*?)?' + // Customer First Name
+            '(DAD.*?)?' + // Customer Middle Name(s)
+            '(DBD.*?)?' + // Document Issue Date
+            '(DBB.*?)?' + // Date of Birth
+            '(DBC.*?)?' + // Physical Description – Sex
+            '(DAY.*?)?' + // Physical Description – Eye Color
+            '(DAU.*?)?' + // Physical Description – Height
+            '(DAG.*?)?' + // Address – Street 1
+            '(DAI.*?)?' + // Address – City
+            '(DAJ.*?)?' + // Address – Jurisdiction Code
+            '(DAK.*?)?' + // Address – Postal Code
+            '(DAQ.*?)?' + // Customer ID Number
+            '(DCF.*?)?' + // Document Discriminator
+            '(DCG.*?)?' + // Country Identification
+            '(DDE.*?)?' + // Family name truncation
+            '(DDF.*?)?' + // First name truncation
+            '(DDG.*?)?' + // Middle name truncation
+            /* optional elements
+            '(DAH.*?)?' + // Address – Street 2
+            '(DAZ.*?)?' + // Hair color
+            '(DCI.*?)?' + // Place of birth
+            '(DCJ.*?)?' + // Audit information
+            '(DCK.*?)?' + // Inventory control number
+            '(DBN.*?)?' + // Alias / AKA Family Name
+            '(DBG.*?)?' + // Alias / AKA Given Name
+            '(DBS.*?)?' + // Alias / AKA Suffix Name
+            '(DCU.*?)?' + // Name Suffix
+            '(DCE.*?)?' + // Physical Description – Weight Range
+            '(DCL.*?)?' + // Race / ethnicity
+            '(DCM.*?)?' + // Standard vehicle classification
+            '(DCN.*?)?' + // Standard endorsement code
+            '(DCO.*?)?' + // Standard restriction code
+            '(DCP.*?)?' + // Jurisdiction- specific vehicle classification description
+            '(DCQ.*?)?' + // Jurisdiction- specific endorsement code description
+            '(DCR.*?)?' + // Jurisdiction- specific restriction code description
+            '(DDA.*?)?' + // Compliance Type
+            '(DDB.*?)?' + // Card Revision Date
+            '(DDC.*?)?' + // HAZMAT Endorsement Expiration Date
+            '(DDD.*?)?' + // Limited Duration Document Indicator
+            '(DAW.*?)?' + // Weight (pounds)
+            '(DAX.*?)?' + // Weight (kilograms)
+            '(DDH.*?)?' + // Under 18 Until
+            '(DDI.*?)?' + // Under 19 Until
+            '(DDJ.*?)?' + // Under 21 Until
+            '(DDK.*?)?' + // Organ Donor Indicator
+            '(DDL.*?)?'   // Veteran Indicator
+            */
+            '$'
+          );
+          break;
+        }
+        case 8:
+        case 9: {
+          var prefixes = [
+            'DCA', // jurisdiction vehicle class
+            'DCB', // jurisdiction restriction codes
+            'DCD', // jurisdiction endorsement codes
+            'DBA', // doc. expiration date
+            'DCS', // customer family name
+            'DAC', // first name
+            'DAD', // middle names (comma seperated)
+            'DBD', // doc. issue date
+            'DBB', // date of birth (MMDDCCYY for U.S., CCYYMMDD for Canada)
+            'DBC', // gender (1-name, 2-female, 9-not specified)
+            'DAY', // eye color (ansi d-20 codes)
+            'DAU', // height
+            'DAG', // street 1
+            'DAI', // city
+            'DAJ', // state
+            'DAK', // zip
+            'DAQ', // customer id number
+            'DCF', // doc. distriminator
+            'DCG', // country identification (USA/CAN)
+            'DDE', // last name truncated (T-trucated, N-not, U-unknown)
+            'DDF', // first name truncated (T-trucated, N-not, U-unknown)
+            'DDG', // middle name truncated (T-trucated, N-not, U-unknown)
+            // optionals
+            'DAH', // street address line 2
+            'DAZ', // hair color
+            'DCI', // place of birth
+            'DCJ', // audit info
+            'DCK', // inventory control number
+            'DBN', // alias last name
+            'DBG', // alias first name
+            'DBS', // aliast suffix name
+            'DCU', // name suffix . (JR, SR, 1ST, 2ND...)
+            'DCE', // weight range
+            'DCL', // race / ethnicity (AAMVA D20 code)
+            'DCM', // vehicle classification
+            'DCN', // standard endorsement code
+            'DCO', // standard restriction code
+            'DCP', // vehicle classification description
+            'DCQ', // endorsement code description
+            'DCR', // restriction code description
+            'DDA', // compliance type
+            'DDB', // card revision date
+            'DDC', // hazmat endorsement exp. date
+            'DDD', // limited duration doc. indicator
+            'DAW', // weight lbs
+            'DAX', // weight kg
+            'DDH', // under 18 until, date turns 18 (MMDDCCYY for U.S., CCYYMMDD for Canada)
+            'DDI', // under 19 until, date turns 19 (MMDDCCYY for U.S., CCYYMMDD for Canada)
+            'DDJ', // under 21 until, date turns 21 (MMDDCCYY for U.S., CCYYMMDD for Canada)
+            'DDK', // organ donor (1-yes)
+            'DDL' // veteran indicator (1-yes)
+          ];
+          var regExStr = '';
+          var prefixIdxs = [];
+          for (var i = 0; i < prefixes.length; i++) {
+            var idx = data.indexOf(prefixes[i]);
+            if (idx !== -1) {
+              prefixIdxs.push({
+                prefix: prefixes[i],
+                index: idx
+              });
+            }
+          }
+          // if prefixes are not in order as found in the string, the regex will not perform as expected
+          prefixIdxs.sort((a, b) => (a.index > b.index) ? 1 : -1);
+          prefixIdxs.forEach(obj => regExStr += `(${obj.prefix}.*?)?`);
+          regExStr += '$';
+
+          parseRegex = new RegExp(regExStr);
+          break;
+        }
+        default: {
+          //console.log('unable to get version', version);
+          // probably not a right parse...
+        }
+      }
+
+      var parsedData = {};
+      var res = data.match(parseRegex);
+
+      for (var i = 1; i < res.length; i++) {
+        if (res[i] !== undefined) {
+          parsedData[String(res[i]).substring(0, 3)] = res[i].substring(3).trim();
+        }
+      }
+
+      switch (Number(version[1])) {
+        case 1: {
+          // version one joining all of the names in one string
+          var name = parsedData.DAA.split(',');
+          parsedData.DCS = name[0];
+          parsedData.DAC = name[1];
+          parsedData.DAD = name[2];
+
+          // drivers license class
+          parsedData.DCA = parsedData.DAR;
+
+          // date on 01 is CCYYMMDD while on 07 MMDDCCYY
+          parsedData.DBB = (
+            parsedData.DBB.substring(4, 6) +  // month
+            parsedData.DBB.substring(6, 8) +  // day
+            parsedData.DBB.substring(0, 4)    // year
+          );
+          break;
+        }
+        case 3: {
+          // version 3 putting middle and first names in the same field
+          var name = parsedData.DCT.split(',');
+          parsedData.DAC = name[0]; // first name
+          parsedData.DAD = name[1]; // middle name
+          break;
+        }
+        default: {
+          //console.log("no version matched");
+          break;
+        }
+      };
+
+      var rawData = {
+        "state": parsedData.DAJ,
+        "city": parsedData.DAI,
+        "name": function () {
+          return {
+            last: parsedData.DCS,
+            first: parsedData.DAC,
+            middle: parsedData.DAD
+          }
+        }(),
+        "address": parsedData.DAG,
+        "dl": parsedData.DAQ,
+        "issuse_date": parseDate(parsedData.DBD),
+        "expiration_date": parseDate(parsedData.DBA),
+        "birthday": function () {
+          if (!parsedData.DBB) return;
+          var match = parsedData.DBB.match(/(\d{2})(\d{2})(\d{4})/);
+          if (!match) return;
+          return match[3] + match[1] + match[2];
+        }(),
+        "postal_code": parsedData.DAK ? (parsedData.DAK.match(/\d{-}\d+/) ? parsedData.DAK : parsedData.DAK.substring(0, 5)) : undefined,
+        "klass": parsedData.DCA,
+        "class": parsedData.DCA,
+        "sex": function () {
+          switch (Number(parsedData.DBC)) {
+            case 1:
+              return "MALE";
+              break;
+            case 2:
+              return "FEMALE";
+              break;
+            default:
+              if (parsedData.DBC[0] === 'M') {
+                return 'MALE';
+              } else if (parsedData.DBC[0] === 'F') {
+                return 'FEMALE';
+              }
+              return "MISSING/INVALID";
+              break;
+          }
+        }(),
+        "height": parsedData.DAU,
+        "weight": parsedData.DCE,
+        "hair_color": parsedData.DAZ,
+        "eye_color": parsedData.DAY,
+        "id": function () {
+          if (!parsedData.DAQ) return;
+          return parsedData.DAQ.replace(/[^A-ZA-Z0-9]/g, "");
+        }()
+      };
+
+      //console.log("Output",rawData);
+
+      return rawData;
+    };
+
+
+
+
+
+
+
+
+
+
+  </script>
+</body>
+
+</html>

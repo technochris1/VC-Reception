@@ -49,8 +49,8 @@
                                     <tr>
                                         <td>{{ moment(logItem.checked_in_at).format("h:mm a") }}</td>
                                         <td scope="row" class='d-none d-lg-table-cell'>{{ logItem.paymentMethod }}</td>
-                                        <td scope="row">{{guests[logItem.userID-1].fetUsername}}</td>
-                                        <td scope="row" class='d-none d-md-table-cell'>{{guests[logItem.userID-1].name}}</td>
+                                        <td scope="row">{{guests[logItem.userID].fetUsername}}</td>
+                                        <td scope="row" class='d-none d-md-table-cell'>{{guests[logItem.userID].name}}</td>
                                     </tr>
                                     {% endfor %}
         
@@ -96,8 +96,8 @@
                                     <tr>
                                         <td>{{ moment(logItem.checked_in_at).format("h:mm a") }}</td>
                                         <td scope="row" class='d-none d-lg-table-cell'>{{ logItem.paymentMethod }}</td>
-                                        <td scope="row">{{guests[logItem.userID-1].fetUsername}}</td>
-                                        <td scope="row" class='d-none d-md-table-cell'>{{guests[logItem.userID-1].name}}</td>
+                                        <td scope="row">{{guests[logItem.userID].fetUsername}}</td>
+                                        <td scope="row" class='d-none d-md-table-cell'>{{guests[logItem.userID].name}}</td>
                                     </tr>
                                     {% endfor %}
         
@@ -126,8 +126,8 @@
                     <tr>
                         <td>{{ moment(logItem.checked_in_at).format("dddd, MMMM Do YYYY, h:mm a") }}</td>
                         <td scope="row">{{ logItem.paymentMethod }}</td>
-                        <td scope="row">{{guests[logItem.userID-1].fetUsername}}</td>
-                        <td scope="row">{{guests[logItem.userID-1].name}}</td>
+                        <td scope="row">{{guests[logItem.userID].fetUsername}}</td>
+                        <td scope="row">{{guests[logItem.userID].name}}</td>
                     </tr>
                     {% endfor %}
         

@@ -48,6 +48,106 @@
   .checkbox-xl .form-check-label {
     padding-top: 19px;
   }
+
+
+  /* https://getbutterfly.com/fast-and-accessible-css-only-client-logo-carousel/ */
+
+
+  .slider {
+
+    height: 75pt;
+    margin: 0 auto;
+    overflow: hidden;
+    position: relative;
+    cursor: default;
+    user-select: none;
+    touch-action: none;
+  }
+
+  .slider:before {
+    left: 0;
+    top: 0;
+  }
+
+  .slider:after,
+  .slider:before {
+    background: linear-gradient(to right,
+        #000 0%,
+        hsla(0, 0%, 100%, 0) 100%);
+    content: "";
+    height: 75pt;
+    position: absolute;
+    width: 200px;
+    z-index: 2;
+  }
+
+  .slider:after {
+    right: 0;
+    top: 0;
+    transform: rotateZ(180deg);
+  }
+
+  .slider:after,
+  .slider:before {
+    background: linear-gradient(to right,
+        #000 0%,
+        hsla(0, 0%, 100%, 0) 100%);
+    content: "";
+    height: 75pt;
+    position: absolute;
+    width: 200px;
+    z-index: 2;
+  }
+
+  .slider .slide-track-1 {
+    animation: scroll-l 30s linear infinite;
+    display: flex;
+    width: 1750px;
+  }
+
+  .slider .slide-track-2 {
+    animation: scroll-r 30s linear infinite;
+    display: flex;
+    width: 3500px;
+  }
+
+  .slider .slide {
+    height: 75pt;
+    width: 250px;
+    display: flex;
+    align-items: center;
+    text-align: center;
+  }
+
+  .slider .slide img {
+    width: 180px;
+    padding: 1pc;
+    vertical-align: middle;
+    margin: 0 auto;
+    display: inline-block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  @keyframes scroll-l {
+    0% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(calc(-250px * 7));
+    }
+  }
+
+  @keyframes scroll-r {
+    100% {
+      transform: translateX(0);
+    }
+
+    0% {
+      transform: translateX(calc(-250px * 7));
+    }
+  }
 </style>
 
 <body>
@@ -65,59 +165,14 @@
   <div class="container h-100">
     <div class="row h-100">
       <div class="col h-100 ">
-        <div class="row h-50 align-items-center">
+        <div class="row h-100 align-items-center">
           <img src="../static/VC_logo_dark.png" height="100%" width="100%" style="object-fit: contain;" alt="...">
         </div>
-        <div class="row h-50 align-items-center">
-          <!-- <p class=" pt-1"><small>Sponsors</small></p>
-          <div class="container text-center">
-            <div class="row g-2">
-              <div class="col p-2">
-                <img src="../static/Tremor.jpg" width="75%" class="d-block " alt="...">
-              </div>
-              <div class="col p-2">
-                <img src="../static/TPA.jpg"  width="75%" class="d-block " alt="...">
-              </div>
-            </div>
-            <div class="row g-2">
-             
-              <div class="col p-2">
-                <img src="../static/SPUNK_logo.png" width="75%" class="d-block" alt="...">
-              </div>
-              <div class="col p-2">
-                <h3 class="text-center">Desires</h3>
-                <h5 class="text-center">DVD❤️LINGERIE❤️NOVELTIES</h5>
-                <p class="text-center">4200 N Dupont Hwy #2, Dover DE</p>
-              </div>
-            </div>
-          </div> -->
-          <div id="carouselExampleSlidesOnly" class="carousel slide carousel-fade" data-bs-ride="carousel">
-            <div class="carousel-inner ">
-
-              <div class="carousel-item active align-items-center ">
-                <img src="../static/SPUNK_logo.png" class=" d-block" height="100%" width="100%"
-                  style="object-fit: contain;" alt="...">
-              </div>
-              <div class="carousel-item align-items-center">
-                <img src="../static/TPA.jpg" class=" d-block" height="100%" width="100%" style="object-fit: contain; "
-                  alt="...">
-              </div>
-              <div class="carousel-item align-items-center">
-                <img src="../static/Tremor.jpg" class=" d-block" height="100%" width="100%" style="object-fit: cover;"
-                  alt="...">
-              </div>
-              <div class="carousel-item align-items-center">
-                <h2 class="text-center">Desires</h2>
-                <h3 class="text-center">DVD❤️LINGERIE❤️NOVELTIES</h3>
-                <h5 class="text-center">4200 N Dupont Hwy #2, Dover DE</h5>
-              </div>
-            </div>
-          </div>
-        </div>
+        
 
       </div>
-      <div class="col h-100 ">
-        <div class="row h-50">
+      <div class="col h-100">
+        <div class="row h-50  align-items-center">
           <div class="col">
             <div>
               <!-- This is the Event Section -->
@@ -191,7 +246,7 @@
           <div class="col">
             <h1>Please Scan your QR Code</h1>
             <div class="form-group">
-              <input type="text" class="form-control"  inputmode="none" id="code" placeholder="QR CODE ENTRY"></input>
+              <input type="text" class="form-control" inputmode="none" id="code" placeholder="QR CODE ENTRY"></input>
             </div>
           </div>
         </div>
@@ -221,8 +276,11 @@
   </div>
 
   <div class="modal fade " id="checkInPaymentModal" aria-hidden="true" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable ">
+    <div class="modal-dialog modal-fullscreen ">
       <div class="modal-content bg-dark text-light">
+        <div class="modal-header">
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
 
         <div class="modal-body">
           <div class="modal-body d-flex justify-content-center" id="checkInPaymentModalBody">
@@ -346,8 +404,10 @@
                       <img class="mb-4 text-center" width="250" height="250" src="../static/cashappQR.svg"
                         alt="CashApp" />
                     </div>
-                    <div class="p-2">
-                      <button type="button" id="payWithCashappBtn" data-payment-method="cashapp" data-bs-dismiss="modal"
+                    <div class="">
+                      <button type="button" id="payWithCashappBtn" data-bs-toggle="modal" data-bs-target="#barTipModal"
+                        class="btn btn-success btn-lg">Bar Tips</button>
+                      <button type="button" id="barTipsCashappBtn"  data-payment-method="cashapp" data-bs-dismiss="modal"
                         class="btn btn-success btn-lg">Paid Using CashApp, Check-In Now</button>
                     </div>
                   </div>
@@ -360,7 +420,7 @@
                       <img class="mb-4 text-center" width="250" height="250" src="../static/paypalQR.svg"
                         alt="Paypal" />
                     </div>
-                    <div class="p-2">
+                    <div class="">
                       <button type="button" id="payWithPaypalBtn" data-payment-method="paypal" data-bs-dismiss="modal"
                         class="btn btn-primary btn-lg">Paid Using Paypal, Check-In Now</button>
                     </div>
@@ -373,7 +433,7 @@
                     <div class="p-2">
                       <img class="mb-4 text-center" width="250" height="250" src="../static/venmoQR.svg" alt="Venmo" />
                     </div>
-                    <div class="p-2">
+                    <div class="">
                       <button type="button" id="payWithVenmoBtn" data-payment-method="venmo" data-bs-dismiss="modal"
                         class="btn btn-primary btn-lg">Paid Using Venmo, Check-In Now</button>
                     </div>
@@ -385,7 +445,7 @@
                     <div class="p-2">
                       <h2>Please Provide Payment to VC Staff Shortly After Check-In</h2>
                     </div>
-                    <div class="p-2">
+                    <div class="">
                       <button type="button" id="payWithCashBtn" data-payment-method="cash" data-bs-dismiss="modal"
                         class="btn btn-primary btn-lg m-4"> Check-In Now</button>
                     </div>
@@ -394,7 +454,7 @@
                 {% if setting.show_credit %}
                 <div class="tab-pane text-center m-4 " id="nav-credit" role="tabpanel" tabindex="0">
                   <div class="d-inline-flex flex-column mb-3 text-center">
-                    <div class="p-2">
+                    <div class="">
                       <button type="button" id="payWithCreditBtn" data-payment-method="credit" data-bs-dismiss="modal"
                         class="btn btn-primary btn-lg m-4"> Check-In Now</button>
                     </div>
@@ -410,6 +470,23 @@
     </div>
   </div>
 
+  <div class="modal fade " id="barTipModal" aria-hidden="true" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-fullscreen ">
+      <div class="modal-content bg-dark text-light">
+        <div class="modal-header">
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+
+        <div class="modal-body">
+          <div class="modal-body d-flex justify-content-center" id="checkInPaymentModalBody">
+
+
+            
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
 
 

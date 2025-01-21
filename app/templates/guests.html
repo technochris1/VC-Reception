@@ -88,8 +88,8 @@
                     data-bs-target="#registerModal" data-bs-mode="edit" data-bs-uuid="{{guest.id}}"><i
                         class="bi bi-pencil-square"></i></button>
 
-                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-target="#qrModal"
-                    data-bs-qr="{{guest.uuid}}"><i class="bi bi-qr-code"></i></button>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
+                    data-bs-target="#qrModal" data-bs-qr="{{guest.uuid}}"><i class="bi bi-qr-code"></i></button>
 
             </td>
         </tr>
@@ -102,6 +102,31 @@
 
 
 <!-- Modals -->
+
+
+
+<div class="modal fade" id="qrModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="exampleModalLabel">QR Code</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body ">
+                <div class="vstack gap-3 ">
+                    <div class="d-flex justify-content-center">
+                        <div id="qrcode" class=" text-center justify-content-center"></div>
+                    </div>
+                    <p id="qrcodeRaw" class="text-center"></p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 <div class="modal fade " id="registerModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="registerModalLabel"
     aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable ">
@@ -199,27 +224,6 @@
     </div>
 </div>
 
-
-<div class="modal fade" id="qrModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h1 class="modal-title fs-5" id="exampleModalLabel">QR Code</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body ">
-                <div class="vstack gap-3 ">
-                    <div class="d-flex justify-content-center">
-                        <div id="qrcode" class=" text-center justify-content-center"></div>
-                    </div>
-                    <p id="qrcodeRaw" class="text-center"></p>
-                </div>
-
-            </div>
-        </div>
-    </div>
-</div>
-
 {% endblock content %}
 
 
@@ -227,119 +231,126 @@
 <script>
 
 
-    // const generateUuidURL = '{{ url_for("generateUUID") }}'
-    // var registerModal = document.getElementById('registerModal')
-    // var qrCodeModal = document.getElementById('qrModal')
-    // var refreshQrCode = document.getElementById('refreshQrCode')
+    const generateUuidURL = '{{ url_for("generateUUID") }}'
+    var registerModal = document.getElementById('registerModal')
+    var qrCodeModal = document.getElementById('qrModal')
+    var refreshQrCode = document.getElementById('refreshQrCode')
 
-    // function fetchUUID() {
-    //     fetch(generateUuidURL)
-    //         .then(response => {
-    //             if (!response.ok) {
-    //                 throw new Error('Network response was not ok');
-    //             }
-    //             return response.json();
-    //         })
-    //         .then(data => {
-    //             console.log('Data received:', data);
-    //             document.getElementById('uuid').value = data
-    //             //document.getElementById('showQrCode').dataset.bsQr = data
-    //         })
-    //         .catch(error => {
-    //             console.error('There was a problem with the fetch operation:', error);
-    //         });
-    // }
+    function fetchUUID() {
+        fetch(generateUuidURL)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Data received:', data);
+                document.getElementById('uuid').value = data
+                //document.getElementById('showQrCode').dataset.bsQr = data
+            })
+            .catch(error => {
+                console.error('There was a problem with the fetch operation:', error);
+            });
+    }
 
-    // var qrcode = new QRCode(document.getElementById("qrcode"), {
-    //     text: "http://jindo.dev.naver.com/collie",
-    //     width: 256,
-    //     height: 256,
-    //     colorDark: "#000000",
-    //     colorLight: "#ffffff",
-    //     correctLevel: QRCode.CorrectLevel.H
-    // });
+    var qrcode = new QRCode(document.getElementById("qrcode"), {
+        text: "http://jindo.dev.naver.com/collie",
+        width: 256,
+        height: 256,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    });
 
-    // qrCodeModal.addEventListener('show.bs.modal', function (event) {
-    //     // Button that triggered the modal
-    //     var button = event.relatedTarget
-    //     // Extract info from data-bs-* attributes
-    //     var data = button.getAttribute('data-bs-qr')
+    qrCodeModal.addEventListener('show.bs.modal', function (event) {
+        // Button that triggered the modal
+        var button = event.relatedTarget
+        // Extract info from data-bs-* attributes
+        var data = button.getAttribute('data-bs-qr')
+        console.log('Data:', data);
 
-    //     if (data != null) {
-    //         document.getElementById("qrcodeRaw").innerHTML = data;
-    //         qrcode.clear(); // clear the code.
-    //         qrcode.makeCode(data); // make another code.
-    //     }
-    // })
+        if (data != null) {
+            document.getElementById("qrcodeRaw").innerHTML = data;
+            qrcode.clear(); // clear the code.
+            qrcode.makeCode(data); // make another code.
+        }
+    })
 
-    // registerModal.addEventListener('show.bs.modal', function (event) {
-    //     var button = event.relatedTarget
-    //     // Extract info from data-bs-* attributes
-    //     var uuidData = button.getAttribute('data-bs-uuid')
-    //     var mode = button.getAttribute('data-bs-mode')
-    //     console.log('Mode:', mode);
-
-
-
-    //     if (uuidData == null) {
-    //         fetchUUID()
-    //         document.getElementById('fetUsername').value = ""
-    //         document.getElementById('name').value = ""
-    //         document.getElementById('emailAddress').value = ""
-    //         document.getElementById('phoneNumber').value = ""
-    //         document.getElementById('termsCheck').checked = false
-    //     } else {
-    //         console.log('Data:', uuidData);
-    //         const url = '{{ url_for("getGuest")}}' + uuidData
-    //         console.log('URL:', url);
-    //         fetch(url)
-    //             .then(response => {
-    //                 if (!response.ok) {
-    //                     throw new Error('Network response was not ok');
-    //                 }
-    //                 return response.json();
-    //             })
-    //             .then(data => {
-    //                 console.log('Data received:', data);
-
-    //                 if (data != null) {
+    registerModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget
+        // Extract info from data-bs-* attributes
+        var uuidData = button.getAttribute('data-bs-uuid')
+        var mode = button.getAttribute('data-bs-mode')
+        console.log('Mode:', mode);
 
 
 
-    //                     document.getElementById('id').value = data.id
-    //                     document.getElementById('uuid').value = data.uuid
-    //                     document.getElementById('fetUsername').value = data.fetUsername
-    //                     document.getElementById('name').value = data.name
-    //                     document.getElementById('emailAddress').value = data.email
-    //                     document.getElementById('phoneNumber').value = data.phone
-    //                     document.getElementById('termsCheck').checked = data.termsCheck
+        if (uuidData == null) {
+            fetchUUID()
+            document.getElementById('fetUsername').value = ""
+            document.getElementById('name').value = ""
+            document.getElementById('emailAddress').value = ""
+            document.getElementById('phoneNumber').value = ""
+            document.getElementById('termsCheck').checked = false
+        } else {
+            console.log('Data:', uuidData);
+            const url = '{{ url_for("getGuest")}}' + uuidData
+            console.log('URL:', url);
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Data received:', data);
 
-    //                     if (data.allow_qrcode_refresh != null) {
-    //                         document.getElementById('uuid').setAttribute('readonly', true)
-    //                         document.getElementById('uuidLabel').value = 'Unique QR Code (Locked)'
-    //                         document.getElementById('refreshQrCode').disabled = true
-    //                     } else {
-
-    //                         document.getElementById('uuid').removeAttribute('readonly')
-    //                         document.getElementById('uuidLabel').value = 'Unique QR Code'
-    //                         document.getElementById('refreshQrCode').disabled = false
-    //                     }
-    //                 }
-
-
-    //             })
-    //             .catch(error => {
-    //                 console.error('There was a problem with the fetch operation:', error);
-    //             });
-    //     }
+                    if (data != null) {
 
 
 
+                        document.getElementById('id').value = data.id
+                        document.getElementById('uuid').value = data.uuid
+                        document.getElementById('fetUsername').value = data.fetUsername
+                        document.getElementById('name').value = data.name
+                        document.getElementById('emailAddress').value = data.email
+                        document.getElementById('phoneNumber').value = data.phone
+                        document.getElementById('termsCheck').checked = data.termsCheck
 
-    // })
+                        if (data.allow_qrcode_refresh != null) {
+                            document.getElementById('uuid').setAttribute('readonly', true)
+                            document.getElementById('uuidLabel').value = 'Unique QR Code (Locked)'
+                            document.getElementById('refreshQrCode').disabled = true
 
-    // refreshQrCode.addEventListener('click', function (event) {
-    //     fetchUUID()
-    // })
+                            if (data.allow_qrcode_refresh == true) {
+                                document.getElementById('refreshQrCode').disabled = false
+                                document.getElementById('uuid').removeAttribute('readonly')
+                                document.getElementById('uuidLabel').value = 'Unique QR Code'
+                            }
+                        } else {
+
+                            document.getElementById('uuid').removeAttribute('readonly')
+                            document.getElementById('uuidLabel').value = 'Unique QR Code'
+                            document.getElementById('refreshQrCode').disabled = false
+                        }
+                    }
+
+
+                })
+                .catch(error => {
+                    console.error('There was a problem with the fetch operation:', error);
+                });
+        }
+
+
+
+
+    })
+
+    refreshQrCode.addEventListener('click', function (event) {
+        fetchUUID()
+    })
 </script>
 {% endblock script %}
