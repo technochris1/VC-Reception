@@ -211,8 +211,13 @@
   <!-- This is the New Guest Button -->
   <div class="position-absolute bottom-0 end-0 p-2">
     <!-- <a href="/guestView/registerGuest"> -->
-    <button type="button" class="btn btn-danger btn-lg" data-bs-toggle="modal" data-bs-target="#tosModal">New
-      Member Sign Up</button>
+    <button type="button" class="btn btn-danger btn-lg" data-bs-toggle="modal"     
+    {% if setting.req_dl %}
+    data-bs-target="#tosModal" 
+    {% else %}
+    data-bs-target="#registerModal"
+    {% endif %}
+    >New Member Sign Up</button>
     <!-- </a> -->
   </div>
 
@@ -260,9 +265,8 @@
         <div class="modal-header">
           <h5 class="modal-title" id="exampleModalToggleLabel2">Terms and Conditions</h5>
         </div>
-        <div class="modal-body" id="tosModalBody">
-
-          <div class="container bg-dark text-light ">
+        <div class="modal-body">
+          <div class="container bg-dark text-light " id="tosModalBody">
             {{setting.tos|safe}}
           </div>
         </div>
@@ -289,6 +293,9 @@
               <fieldset class="form-group bg-dark text-light">
 
 
+                {{ form.dldata(type='hidden',class='form-control') }}
+                
+                <!-- 
                 <div class="form-group p-2">
                   <div class="d-flex justify-content-between w-auto m-5">
                     <div class="d-inline-flex ">
@@ -311,7 +318,7 @@
                     </div>
 
                   </div>
-                </div>
+                </div> -->
 
 
                 <div class="form-group text-light p-1">
@@ -625,6 +632,8 @@
     idInput.style.backgroundColor = 'rgba(255,255,255,1)';
 
     focusOnCodeTimer = setTimeout(focusOnCode, 1000);
+    submitIDTimer = null
+    idDATA = null
 
     fullScreenToggle.addEventListener('click', toggleFullScreen);
 
@@ -673,12 +682,16 @@
     }
 
     const settingsModalEl = document.getElementById('settingsModal')
+    const tosModalEL = document.getElementById('tosModal')
     const idScanModalEl = document.getElementById('idScanModal')
     const registerModalEl = document.getElementById('registerModal')
     const checkInPaymentModalEl = document.getElementById('checkInPaymentModal')
 
 
     const settingsModal = new bootstrap.Modal(settingsModalEl, {
+      keyboard: false
+    })
+    const tosModal = new bootstrap.Modal(tosModalEL, {
       keyboard: false
     })
     const idScanModal = new bootstrap.Modal(idScanModalEl, {
@@ -700,6 +713,37 @@
       allowQrCodeInput = true
       focusOnCodeTimer = setTimeout(focusOnCode, 1000);
     })
+
+    
+    var tosElement = document.getElementById('tosModalBody')
+    var tempTosGuestName = ""
+    var tempTosDate
+
+    
+
+    tosModalEL.addEventListener('show.bs.modal', function (event) {
+      allowQrCodeInput = false; // Disable QrCodeInput
+      if (tempTosGuestName == "") {
+        tempTosGuestName = "You"
+      }
+      const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      //console.log(months[currentMonth.getMonth()]);
+      tosElement.innerHTML = tosElement.innerHTML.replaceAll("~~GUEST_NAME~~", tempTosGuestName)
+      tosElement.innerHTML = tosElement.innerHTML.replaceAll('~~CURRENT_DATE~~', new Date().getDate())
+      tosElement.innerHTML = tosElement.innerHTML.replaceAll('~~CURRENT_MONTH~~', months[new Date().getMonth()])
+      tosElement.innerHTML = tosElement.innerHTML.replaceAll('~~CURRENT_YEAR~~', new Date().getFullYear())
+
+
+    })
+    tosModalEL.addEventListener('hidden.bs.modal', function (event) {
+      allowQrCodeInput = true; // Allow QrCodeInput
+      qrCodeInput = "";
+      //setTimeout(focusOnCode, 1000);
+      //focusOnCode();
+    })
+
+
+
     idScanModalEl.addEventListener('show.bs.modal', event => {
       //console.log('SettingsModal Show');
       allowQrCodeInput = false
@@ -723,6 +767,8 @@
       //console.log('RegisterModal Show');    
       allowQrCodeInput = false
 
+      
+
       const button = event.relatedTarget
       const option = button.getAttribute('data-bs-option')
       if (option) {
@@ -737,6 +783,7 @@
       //console.log('RegisterModal Show');    
       document.getElementById('fetUsername').focus();
     })
+
     registerModalEl.addEventListener('hide.bs.modal', event => {
       //console.log('RegisterModal Hide');
       allowQrCodeInput = true
@@ -834,15 +881,15 @@
       if (!allowQrCodeInput) {
 
         if (e.key === 'Enter') {
+          if (!submitIDTimer) {
+            submitIDTimer = setTimeout(SubmitID, 2000);
+          }
 
 
-          data = parse(document.getElementById('idInput').value)
-          if (data)
-            if (data != idInputData) {
-              idInputData = data;
-              console.log("IDCodeInput:", idInputData);
-              
-            }
+
+
+
+
         }
 
       }
@@ -859,7 +906,31 @@
     var myToast = bootstrap.Toast.getOrCreateInstance(myToastEl) // Returns a Bootstrap toast instance
 
 
-
+    function SubmitID() {
+      submitIDTimer = null
+      idInputData = document.getElementById('idInput').value
+      console.log('Submitting ID:', idInputData);
+      data = parse(document.getElementById('idInput').value)
+      if (data)
+        if (data['id']) {
+          data['RAW'] = idInputData
+          console.log("IDCodeInput:", data);
+          idDATA = data
+          idScanModal.hide()
+          registerModal.show()
+        } else {
+          myToastElHeader.innerText = 'Notice'
+          myToastElBody.innerText = 'Invalid ID'
+          myToast.show()
+          document.getElementById('idInput').value = ""
+        }
+      else {
+        myToastElHeader.innerText = 'Notice'
+        myToastElBody.innerText = 'Invalid ID'
+        myToast.show()
+        document.getElementById('idInput').value = ""
+      }
+    }
 
     function SubmitQrCode() {
       qrCodeInput = document.getElementById('code').value

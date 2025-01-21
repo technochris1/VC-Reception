@@ -32,6 +32,9 @@ class ChangePasswordForm(FlaskForm):
    
 
 class GuestRegistrationForm(FlaskForm):
+
+    dldata= StringField('DL Data')
+
     fetUsername = StringField('Fet/Fetlife Username')
     name = StringField('Name', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])

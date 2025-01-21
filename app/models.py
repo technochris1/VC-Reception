@@ -173,6 +173,8 @@ class Setting(db.Model):
     checkOutTime:datetime = db.Column(db.DateTime(timezone=True), server_default=None)
     checkOutBasedOnEventEndTime:bool = db.Column(db.Boolean(), default=False)
 
+    req_dl:bool = db.Column(db.Boolean(), default=False)
+
 
     show_cashapp:bool = db.Column(db.Boolean(), default=True)
     show_paypal:bool = db.Column(db.Boolean(), default=True)

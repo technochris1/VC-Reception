@@ -724,12 +724,15 @@ def sendEmailRoute():
 def settings():
     if request.method == 'POST':
 
+        req_dl = False
 
         pay_cashappBool = False
         pay_venmoBool = False
         pay_paypalBool = False
         pay_creditBool = False
 
+        if request.form.get('req_dl') is not None:
+            req_dl = True    
 
         if request.form.get('pay_cashapp') is not None:
             pay_cashappBool = True
@@ -753,6 +756,8 @@ def settings():
         if setting is None:
             setting = Setting(
                 tos=tos,
+                
+                req_dl=req_dl,
 
                 show_credit=pay_creditBool,
                 show_cashapp=pay_cashappBool,
@@ -763,6 +768,7 @@ def settings():
             db.session.add(setting)
         else:
             setting.tos = tos
+            setting.req_dl = req_dl
             setting.show_credit=pay_creditBool
             setting.show_cashapp=pay_cashappBool
             setting.show_paypal=pay_paypalBool
@@ -827,9 +833,9 @@ def sendQRCodeEmailFromUser(user):
         msg.body = 'Hello '+user.name+',\nYou or someone else has requested that a new password be generated for your account. If you made this request, then please follow this link:'
         msg.html = render_template('qrEmail.html' )
         #msg.attach('header.gif','image/gif',open(join(mail_blueprint.static_folder, 'header.gif'), 'rb').read(), 'inline', headers=[['Content-ID','<Myimage>'],])
-        
-        msg.attach('qrcode.gif','image/gif',temp.getvalue(), 'inline', headers=[['Content-ID','<qrcode>'],])
-        #msg.attach('qrcode.gif','image/gif',temp.getvalue())
+        attachmentHeaders = { "Content-ID": "<qrcode>" }
+        msg.attach('qrcode.png','image/png',temp.getvalue(), 'inline', headers=attachmentHeaders)
+        msg.attach('qrcode.png','image/png',temp.getvalue())
 
 
         mail.send(msg)
