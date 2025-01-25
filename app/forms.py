@@ -40,13 +40,13 @@ class GuestRegistrationForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     phone = StringField('Phone Number')
 
-    termsCheck = BooleanField('I agree to the terms and conditions', validators=[DataRequired()])    
+    
     submit = SubmitField('Sign Up')
 
-    def validate_email(self, email):
-        user = Guest.query.filter_by(email=email.data).first()
-        if user:
-            raise ValidationError('Email already in use. Please choose another email address.')
+    # def validate_email(self, email):
+    #     user = Guest.query.filter_by(email=email.data).first()
+    #     if user:
+    #         raise ValidationError('Email already in use. Please choose another email address.')
 
 
 

@@ -60,7 +60,7 @@ class Guest(db.Model, UserMixin):
 
     fetUsername:str  = db.Column(db.String(100) )
     name:str  = db.Column(db.String(100), nullable=False)
-    email:str  = db.Column(db.String(200), unique=True, nullable=False)
+    email:str  = db.Column(db.String(200), nullable=False)
     phone:str  = db.Column(db.String(20))
 
     checkin_blocked:bool = db.Column(db.Boolean(), default=False)
@@ -74,7 +74,7 @@ class Guest(db.Model, UserMixin):
 
 
     termsCheck:bool = db.Column(db.Boolean(), default=False)
-    termsDate = db.Column(db.DateTime(timezone=True), server_default=None)
+    termsDate = db.Column(db.DateTime(timezone=True), server_default=func.now())
     
     credit = db.relationship('GuestCredit',backref='guest')
 
@@ -103,7 +103,7 @@ class Guestlog(db.Model):
     #checked_out_at_time = db.Column(db.Time)
     check_out_method:str  = db.Column(db.String(100))
     userID = db.Column(db.Integer, db.ForeignKey('guest.id'))
-    #eventID = db.Column(db.Integer, db.ForeignKey('event.id'))
+    event_ID = db.Column(db.Integer, db.ForeignKey('event.id'))
     paymentMethod:str  = db.Column(db.String(100))
     paymentAmount:int  = db.Column(db.Integer)
 
@@ -149,8 +149,9 @@ class Event(db.Model):
     specialEvent:bool = db.Column(db.Boolean(), default=False)
     display:bool = db.Column(db.Boolean(), default=False)
     locked:bool = db.Column(db.Boolean(), default=False)
+    image:str = db.Column(db.String(100))
     addons = db.relationship('Addon', backref='events', secondary='event_addons')
-    #guestlogs = db.relationship('Guestlog', backref='event')
+    guestlogs = db.relationship('Guestlog', backref='event')
     #created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
 @dataclass
@@ -176,6 +177,7 @@ class Setting(db.Model):
     req_dl:bool = db.Column(db.Boolean(), default=False)
 
 
+    show_bartip:bool = db.Column(db.Boolean(), default=False)
     show_cashapp:bool = db.Column(db.Boolean(), default=True)
     show_paypal:bool = db.Column(db.Boolean(), default=True)
     show_venmo:bool = db.Column(db.Boolean(), default=True)

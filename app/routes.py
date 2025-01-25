@@ -1,6 +1,7 @@
 import traceback
-import os
-from flask import render_template, jsonify, abort, url_for, redirect, request, flash, render_template_string
+import os, sys
+from PIL import Image
+from flask import render_template, jsonify, abort, url_for, redirect, request, flash, render_template_string, send_from_directory, make_response
 from app import app, db, bcrypt, mail, login_manager, socketio
 from app.models import Guest, Guestlog, Event, Setting, func, GuestCredit, CreditTransactionLog   
 from app.forms import AdminRegistrationForm, AdminLoginForm, GuestRegistrationForm, AddCreditForm, ChangePasswordForm
@@ -82,20 +83,7 @@ def guestView():
 
 @app.route('/guestView2/', methods=['GET', 'POST'])
 def guestView2():
-    form = GuestRegistrationForm()
-    if form.validate_on_submit():        
-        newGuest = Guest(
-            fetUsername=form.fetUsername.data,
-            name=form.name.data,
-            email=form.email.data,
-            phone=form.phone.data,
-            termsCheck=form.termsCheck.data,            
-        )
-        db.session.add(newGuest)
-        db.session.commit()
-        sendQRCodeEmail([newGuest.email], newGuest.uuid)
-        flash('Guest added successfully', 'success')
-        return redirect(url_for('guestView', setting=Setting.query.first(), form=form))
+
     
     date = datetime.now()
     dateMin = datetime.combine(date, time.min)
@@ -117,9 +105,34 @@ def guestView2():
     for event in query:
         if event.start > date.timestamp() and event.display == True and event.specialEvent == False:
             upComingEvents.append(event)
+
+
+
+
+
+
+    form = GuestRegistrationForm(request.form)
+    print("request",request.method)
+    if  form.validate_on_submit():        
+        print("dlData",form.dldata.data)
+        newGuest = Guest(
+            fetUsername=form.fetUsername.data,
+            name=form.name.data,
+            email=form.email.data,
+            phone=form.phone.data,
+            termsCheck=True,            
+            termsDate=datetime.now(timezone.utc)
+        )
+        db.session.add(newGuest)
+        db.session.commit()
+        sendQRCodeEmail([newGuest.email], newGuest.uuid)
+        flash('Guest added successfully', 'success')
+        return redirect(url_for('guestView2',todaysEvents=Event.query.filter(and_(Event.start <= date.timestamp(), date.timestamp() <= Event.end, Event.display == True)).order_by(Event.start).all(),                        
+                            upComingEvents=upComingEvents, setting=Setting.query.first(), form=form))
+    
    
     return render_template('guestView2.html',
-                           todaysEvents=Event.query.filter(and_(Event.start <= date.timestamp(), date.timestamp() <= Event.end)).order_by(Event.start).all(),                        
+                           todaysEvents=Event.query.filter(and_(Event.start <= date.timestamp(), date.timestamp() <= Event.end, Event.display == True)).order_by(Event.start).all(),                        
                             upComingEvents=upComingEvents,
                             setting=Setting.query.first(),
                             form= form)
@@ -258,7 +271,7 @@ def preCheckIn(uuid = None):
 @app.route('/checkIn/')
 @app.route('/checkIn/<uuid>')
 @app.route('/checkIn/<uuid>/<method>')
-def checkIn( uuid = None, method = None):
+def checkIn( uuid = None,method = None):
     if(uuid is None or method is None):
         return abort(404)
     settings = Setting.query.first()
@@ -443,6 +456,7 @@ def events(id = None):
         print("PrePay:",  False if request.values.get('prepay') == None else True)
         print("Display:",  False if request.values.get('display')== None else True)
         print("Special Event:",  False if request.values.get('specialevent')== None else True)
+        print("Banner Image:",request.values.get('bannerImage'))
 
         if(request.values.get('eventId')):
             event = Event.query.filter_by(id=request.values.get('eventId')).first()
@@ -459,6 +473,7 @@ def events(id = None):
             event.end=DateEnd.timestamp()
             event.eventLocation=request.values.get('eventLocation')
             event.eventCost=request.values.get('eventCost')
+            event.image=request.values.get('bannerImage')
 
             db.session.commit()
             return redirect(url_for('events'))
@@ -476,7 +491,8 @@ def events(id = None):
                 # start = request.values.get('eventStart'),
                 # end = request.values.get('eventEnd'),
                 eventLocation = request.values.get('eventLocation'),
-                eventCost = request.values.get('eventCost')
+                eventCost = request.values.get('eventCost'),
+                image = request.values.get('bannerImage')
             )
             db.session.add(newEvent)
             db.session.commit()
@@ -523,6 +539,9 @@ def registerAdmin():
         flash('Admin added successfully', 'success')
         return redirect(url_for('guests'))
     return render_template('admin_registration.html', title='Register Admin', form=form)
+
+
+
 
 @app.route('/getGuest/')
 @app.route('/getGuest/<id>')
@@ -725,7 +744,7 @@ def settings():
     if request.method == 'POST':
 
         req_dl = False
-
+        opt_bartip = False
         pay_cashappBool = False
         pay_venmoBool = False
         pay_paypalBool = False
@@ -734,6 +753,8 @@ def settings():
         if request.form.get('req_dl') is not None:
             req_dl = True    
 
+        if request.form.get('opt_bartip') is not None:
+            opt_bartip = True
         if request.form.get('pay_cashapp') is not None:
             pay_cashappBool = True
         if request.form.get('pay_venmo') is not None:
@@ -758,7 +779,7 @@ def settings():
                 tos=tos,
                 
                 req_dl=req_dl,
-
+                show_bartip=opt_bartip,
                 show_credit=pay_creditBool,
                 show_cashapp=pay_cashappBool,
                 show_paypal=pay_paypalBool,
@@ -769,6 +790,7 @@ def settings():
         else:
             setting.tos = tos
             setting.req_dl = req_dl
+            setting.show_bartip = opt_bartip
             setting.show_credit=pay_creditBool
             setting.show_cashapp=pay_cashappBool
             setting.show_paypal=pay_paypalBool
@@ -833,8 +855,14 @@ def sendQRCodeEmailFromUser(user):
         msg.body = 'Hello '+user.name+',\nYou or someone else has requested that a new password be generated for your account. If you made this request, then please follow this link:'
         msg.html = render_template('qrEmail.html' )
         #msg.attach('header.gif','image/gif',open(join(mail_blueprint.static_folder, 'header.gif'), 'rb').read(), 'inline', headers=[['Content-ID','<Myimage>'],])
-        attachmentHeaders = { "Content-ID": "<qrcode>" }
-        msg.attach('qrcode.png','image/png',temp.getvalue(), 'inline', headers=attachmentHeaders)
+        script_directory = os.path.dirname(os.path.abspath(sys.argv[0])) 
+        #print(script_directory)
+        #print("LOGO",open(os.path.join(script_directory, 'app\\static\\VC_logo_dark.png')).read())
+
+        attachmentHeadersA = { "Content-ID": "<vclogo>" }
+        msg.attach('vclogo.png','image/png',open(os.path.join(script_directory, 'app\\static\\VC_logo_dark.png'), 'rb').read(), 'inline', headers=attachmentHeadersA)
+        attachmentHeadersB = { "Content-ID": "<qrcode>" }
+        msg.attach('qrcode.png','image/png',temp.getvalue(), 'inline', headers=attachmentHeadersB)
         msg.attach('qrcode.png','image/png',temp.getvalue())
 
 
@@ -891,4 +919,4 @@ def sendEmail(recipients, subject, message, attachment=None):
     except:
         print("send_mail exception:\n{}".format(traceback.format_exc()))
     return
-
+ 

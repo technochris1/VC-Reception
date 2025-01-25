@@ -26,9 +26,10 @@
             cost: window.vcEvents[i].eventCost,
             prepay: window.vcEvents[i].prepay,
             display: window.vcEvents[i].display,
-            specialEvent: window.vcEvents[i].specialEvent
+            specialEvent: window.vcEvents[i].specialEvent,
+            bannerImage: window.vcEvents[i].image
         }
-        console.log(window.vcEvents[i]);
+        console.log("Event(" + i + "):", window.vcEvents[i]);
     }
 
 
@@ -78,6 +79,23 @@
                             <label class="form-check-label" for="specialevent">
                                 Special Event
                             </label>
+                        </div>
+                    </div>
+
+
+
+                    <div class="col-12">
+                        <label for="bannerImage" class="form-label">Image Event Banners
+                        </label>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="bannerImage" id="inlineRadio1" value=""
+                                checked>
+                            <label class="form-check-label" for="inlineRadio1">None</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="bannerImage" id="inlineRadio2"
+                                value="../static/event_banners/BNO_VC_logo_dark.png">
+                            <label class="form-check-label" for="inlineRadio2">BNO</label>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -209,6 +227,9 @@
         eventEndEl.value = mediumTime.format(new Date(Date.parse(event.relatedTarget.end)));
         eventStartFP.setDate(new Date(Date.parse(event.relatedTarget.start)));
         eventEndFP.setDate(new Date(Date.parse(event.relatedTarget.end)));
+
+        //console.log(event.relatedTarget.extendedProps.specialEvent);
+
         document.getElementById("specialevent").checked = event.relatedTarget.extendedProps.specialEvent;
         document.getElementById("display").checked = event.relatedTarget.extendedProps.display;
         document.getElementById("prepay").checked = event.relatedTarget.extendedProps.prepay;
@@ -217,6 +238,17 @@
         document.getElementById("eventDescription").value = event.relatedTarget.extendedProps.description;
         document.getElementById("eventLocation").value = event.relatedTarget.extendedProps.location;
         document.getElementById("eventCost").value = event.relatedTarget.extendedProps.cost;
+        console.log(event.relatedTarget.extendedProps.bannerImage);
+        const radioButtons = document.querySelectorAll('input[name="bannerImage"]');
+
+        radioButtons.forEach(radioButton => {
+            if (radioButton.value == event.relatedTarget.extendedProps.bannerImage) {
+                radioButton.checked = true;
+            
+                //console.log(radioButton.value); // Prints the value of the selected radio button
+            }
+            
+        });
 
 
     })

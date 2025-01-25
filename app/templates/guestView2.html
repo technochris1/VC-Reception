@@ -163,11 +163,103 @@
 <body>
 
 
-  <div class="row h-100 align-items-center">
-    <img class=" bg-image" src="../static/VC_logo_dark.png" height="100%" width="100%" style="object-fit: contain;"
-      alt="...">
-    <div class="position-absolute start-0 p-2">
-      <img src="../static/BNO_VC_logo_dark.png" height="50%" width="25%" style="object-fit: contain;" alt="...">
+
+
+
+
+
+
+
+
+  <div class="row h-100  align-items-center">
+    <img {% if todaysEvents|length> 0 %}
+    class="bg-image"
+    {% endif %}
+
+
+
+    src="../static/VC_logo_dark.png" height="100%" width="100%" style="object-fit: contain;"
+    alt="...">
+    <div class="position-absolute start-0 text-white p-2">
+
+      <div>
+        <!-- This is the Event Section -->
+        {% if todaysEvents|length > 0 %}
+        {% if todaysEvents|length == 1 %}
+        <h4>Current Event:</h4>
+        {% else %}
+        <h4>Current Events:</h4>
+        {% endif %}
+        {% for event in todaysEvents %}
+
+        <div class="card m-2 text-white" style="width: 25%; background-color: #00000070;">
+          <div class="card-body">
+
+            {% if event.image %}
+            <img src='{{event.image}}' height="50%" width="100%" class="p-3" style="object-fit: contain;" alt="...">
+            {% else %}
+            <h1>{{event.title}}</h1>
+            {% endif %}
+
+
+            {% if event.start | timestamp_to_date_min_time == event.end | timestamp_to_date_min_time %}
+            <h4 class="card-text mb-2">{{event.start | timestamp_to_date_str}}
+              {{event.start |
+              timestamp_to_time_str_ampm}} - {{event.end | timestamp_to_time_str_ampm}}</h4>
+            {% else %}
+            <h4 class="card-text mb-2 ">{{event.start | timestamp_to_str_ampm}} -
+              {{event.end |
+              timestamp_to_str_ampm}}</h4>
+            {% endif %}
+            <!-- <h4 class="card-subtitle mb-2 text-body-secondary">{{event.start | timestamp_to_date_str}} - {{event.end |
+                timestamp_to_str_ampm}}</h4> -->
+            {% if event.eventCost %}
+            <p class="card-text">${{event.eventCost}} </p>
+            {% endif %}
+
+            {% if event.addons %}
+            <ul class="list-group list-group-flush">
+              {% for addon in event.addons %}
+              <li class="list-group-item">{{addon.title}} By: {{addon.guests|guests_to_str}} for ${{addon.cost}}
+              </li>
+              {% endfor %}
+            </ul>
+            {% endif %}
+
+
+
+          </div>
+        </div>
+
+        {% endfor %}
+        {% endif %}
+
+        {% if upComingEvents|length > 0 %}
+        <h4 class="pt-4">Upcoming Events:</h4>
+        <div id="carouselExampleSlidesOnly" class="carousel slide" data-bs-ride="carousel">
+          <div class="carousel-inner">
+            {% for event in upComingEvents %}
+            <div class="carousel-item {% if loop.first %}active{% endif %} p-2">
+              <div class="card">
+                <div class="card-body">
+                  <h1 class="card-title">{{event.title}}</h1>
+                  <h4 class="card-subtitle mb-2 text-body-secondary">{{event.start | timestamp_to_str_ampm}} -
+                    {{event.end |
+                    timestamp_to_str_ampm}}</h4>
+                  <p class="card-text">{% if event.eventCost %}${{event.eventCost}} {% else
+                    %}{{event.eventDescription}}{% endif %}</p>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+
+
+
     </div>
 
   </div>
@@ -176,9 +268,9 @@
   <!-- This is the Floating Buttons on the page -->
   <div class="position-absolute top-0 end-0 m-4">
     <div class="btn-group m-1" role="group" aria-label="Basic example">
-      <button type="button" class="btn btn-outline-dark btn-sm" id="settingBtn" data-bs-toggle="modal"
+      <button type="button" class="btn btn-outline-dark btn-sm" id="settingBtn" hidden data-bs-toggle="modal"
         data-bs-target="#settingsModal"><i class="bi bi-gear-fill text-light"></i></button>
-      <button type="button" class="btn btn-outline-dark btn-sm" id="themeSwitch"><i
+      <button type="button" class="btn btn-outline-dark btn-sm" id="themeSwitch" hidden><i
           class="bi bi-brightness-high-fill"></i></button>
       <button type="button" class="btn btn-outline-dark btn-sm" id="fullScreenToggle"><i
           class="bi bi-arrows-fullscreen text-light"></i></button>
@@ -211,13 +303,8 @@
   <!-- This is the New Guest Button -->
   <div class="position-absolute bottom-0 end-0 p-2">
     <!-- <a href="/guestView/registerGuest"> -->
-    <button type="button" class="btn btn-danger btn-lg" data-bs-toggle="modal"     
-    {% if setting.req_dl %}
-    data-bs-target="#tosModal" 
-    {% else %}
-    data-bs-target="#registerModal"
-    {% endif %}
-    >New Member Sign Up</button>
+    <button type="button" class="btn btn-danger btn-lg" data-bs-toggle="modal" data-bs-target="#tosModal">New Member
+      Sign Up</button>
     <!-- </a> -->
   </div>
 
@@ -240,18 +327,17 @@
   </div>
 
   <div class="modal fade " id="idScanModal" aria-hidden="true" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-xl modal-fullscreen modal-dialog-scrollable ">
+    <div class="modal-dialog modal-dialog-scrollable ">
       <div class="modal-content bg-dark text-light">
         <div class="modal-header">
-          <h5 class="modal-title" id="exampleModalToggleLabel2">Terms and Conditions</h5>
+          <h5 class="modal-title" id="exampleModalToggleLabel2">Scan Valid Drivers License</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="container bg-dark text-light ">
             <p>Scan Back of ID</p>
             <div class="form-group">
-              <input type="text" class="form-control" inputmode="none" id="idInput" placeholder=""
-                style="width: 100px;"></input>
+              <input type="text" class="form-control" inputmode="none" id="idInput" placeholder=""></input>
             </div>
           </div>
         </div>
@@ -272,8 +358,9 @@
         </div>
         <div class="modal-footer">
           <button class="btn btn-danger btn-lg" id="disagreeBtn" data-bs-dismiss="modal">Disagree</button>
-          <button class="btn btn-success btn-lg" data-bs-target="#idScanModal" id="agreeBtn" data-bs-option="true"
-            data-bs-toggle="modal" data-bs-dismiss="modal">Agree</button>
+          <button class="btn btn-success btn-lg" {% if setting.req_dl %} data-bs-target="#idScanModal" {% else %}
+            data-bs-target="#registerModal" {% endif %} id="agreeBtn" data-bs-option="true" data-bs-toggle="modal"
+            data-bs-dismiss="modal">Agree</button>
         </div>
       </div>
     </div>
@@ -287,38 +374,26 @@
         </div>
         <div class="modal-body bg-dark text-light">
           <div class="container bg-dark text-light ">
-            <form method="POST" action="" class="bg-dark text-light">
+            <form method="POST" action="" class="bg-dark text-light needs-validation" novalidate>
               {{ form.hidden_tag() }}
 
               <fieldset class="form-group bg-dark text-light">
 
 
                 {{ form.dldata(type='hidden',class='form-control') }}
-                
-                <!-- 
-                <div class="form-group p-2">
-                  <div class="d-flex justify-content-between w-auto m-5">
-                    <div class="d-inline-flex ">
-                      {% if form.termsCheck.errors %}
-                      {{ form.termsCheck(class="form-check-input is-invalid m-md-2 m-lg-3 ") }}
-                      <div class="invalid-feedback">
-                        {% for error in form.termsCheck.errors %}
-                        <span>{{ error }}</span>
-                        {% endfor %}
-                      </div>
-                      {% else %}
-                      {{ form.termsCheck(class="form-check-input m-md-2 m-lg-3") }}
-                      {% endif %}
-                      {{ form.termsCheck.label(class="form-check-label align-self-stretch mx-3" ) }}
-                    </div>
-                    <div class="">
-                      <button class="btn btn-lg btn-outline-primary" type="button" data-bs-target="#tosModal"
-                        data-bs-toggle="modal" id="tosBtn">Current Terms and
-                        Conditions</button>
-                    </div>
 
-                  </div>
-                </div> -->
+
+                {% if setting.req_dl %}
+                <p id="idData">FUTURE ID DATA</p>
+                {% endif %}
+
+
+
+
+
+
+
+
 
 
                 <div class="form-group text-light p-1">
@@ -341,14 +416,14 @@
                 <div class="form-group text-light p-1">
                   <div class="form-floating mx-5">
                     {% if form.email.errors %}
-                    {{ form.email(class="form-control is-invalid", placeholder="example@gmail.com") }}
+                    {{ form.email(class="form-control is-invalid", placeholder="example@gmail.com", type="email") }}
                     <div class="invalid-feedback">
                       {% for error in form.email.errors %}
                       <span>{{ error }}</span>
                       {% endfor %}
                     </div>
                     {% else %}
-                    {{ form.email(class="form-control", placeholder="example@gmail.com") }}
+                    {{ form.email(class="form-control", placeholder="example@gmail.com", type="email") }}
                     {% endif %}
                     {{ form.email.label() }}
                   </div>
@@ -373,6 +448,7 @@
                 <div class="d-flex justify-content-between">
                   <button type="button" class="btn btn-primary btn-lg" data-bs-dismiss="modal">Go Back</button>
                   {{ form.submit(class="btn btn-lg btn-outline-info") }}
+
                 </div>
               </div>
             </form>
@@ -397,10 +473,10 @@
 
 
             <div class="d-flex flex-column ">
-              <div class="justify-content-center text-center">
+              <div id="eventList" class="justify-content-center text-center">
                 {% if todaysEvents|length > 0 %}
                 {% for event in todaysEvents %}
-                <div class="card m-4">
+                <div name="eventCard" class="card m-4">
                   <div class="card-body">
                     <div class="position-relative">
                       <div class="position-absolute top-0 start-0">
@@ -459,26 +535,34 @@
                 <div class="nav nav-pills justify-content-center text-center" id="nav-tab" role="tablist">
                   <div class="btn-group btn-group-lg d-flex" role="group" aria-label="Basic radio toggle button group">
 
+                    {% if setting.show_bartip %}
+                    <input type="radio" class="btn-check " data-bs-toggle="tab" data-bs-target="#nav-bartip" role="tab"
+                      name="btnradio" id="btnradio0" autocomplete="off">
+                    <label class="btn btn-outline-success" for="btnradio0">
+                      <img width="48" height="48" src="../static/icons8-tips-48.png" alt="bar-tip" />
+                      Bar Tips
+                    </label>
+                    {% endif %}
                     {% if setting.show_cashapp %}
                     <input type="radio" class="btn-check " data-bs-toggle="tab" data-bs-target="#nav-cashapp" role="tab"
-                      name="btnradio" id="btnradio" autocomplete="off">
-                    <label class="btn btn-outline-success" for="btnradio">
+                      name="btnradio" id="btnradio1" autocomplete="off">
+                    <label class="btn btn-outline-success" for="btnradio1">
                       <img width="48" height="48" src="../static/icons8-cashapp-48.png" alt="cash-app" />
                       CashApp
                     </label>
                     {% endif %}
                     {% if setting.show_paypal %}
                     <input type="radio" class="btn-check" data-bs-toggle="tab" data-bs-target="#nav-paypal" role="tab"
-                      name="btnradio" id="btnradio1" autocomplete="off">
-                    <label class="btn btn-outline-primary" for="btnradio1">
+                      name="btnradio" id="btnradio2" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="btnradio2">
                       <img width="48" height="48" src="../static/icons8-paypal-48.png" alt="paypal" />
                       Paypal
                     </label>
                     {% endif %}
                     {% if setting.show_venmo %}
                     <input type="radio" class="btn-check" data-bs-toggle="tab" data-bs-target="#nav-venmo" role="tab"
-                      name="btnradio" id="btnradio2" autocomplete="off">
-                    <label class="btn btn-outline-primary" for="btnradio2">
+                      name="btnradio" id="btnradio3" autocomplete="off">
+                    <label class="btn btn-outline-primary" for="btnradio3">
                       <img width="48" height="48" src="../static/venmo.webp" alt="venmo" />
                       Venmo
                     </label>
@@ -497,8 +581,8 @@
                     </label>
                     {% endif %}
                     <input type="radio" class="btn-check active" data-bs-toggle="tab" data-bs-target="#nav-cash"
-                      role="tab" name="btnradio" id="btnradio3" autocomplete="off" checked>
-                    <label class="btn btn-outline-success" for="btnradio3">
+                      role="tab" name="btnradio" id="btnradio5" autocomplete="off" checked>
+                    <label class="btn btn-outline-success" for="btnradio5">
                       <img width="48" height="48" src="../static/icons8-money-48.png" alt="cash" />
                       Cash
                     </label>
@@ -507,6 +591,18 @@
               </nav>
 
               <div class="tab-content" id="nav-tabContent">
+                {% if setting.show_bartip %}
+                <div class="tab-pane show text-center m-4 " id="nav-bartip" role="tabpanel" tabindex="0">
+                  <div class="d-inline-flex flex-column mb-1 text-center">
+                    <div class="p-2">
+                      <img class="mb-4 text-center" width="350" height="350" src="../static/bartipQR1.svg"
+                        alt="BarTip - Cashapp" />
+                      <img class="mb-4 text-center" width="350" height="350" src="../static/bartipQR2.svg"
+                        alt="BarTip - Venmo" />
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
                 {% if setting.show_cashapp %}
                 <div class="tab-pane show text-center m-4 " id="nav-cashapp" role="tabpanel" tabindex="0">
                   <div class="d-inline-flex flex-column mb-1 text-center">
@@ -582,7 +678,6 @@
 
 
 
-
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
     integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
     crossorigin="anonymous"></script>
@@ -594,7 +689,26 @@
   <script>
 
 
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function () {
+      'use strict'
 
+      // Fetch all the forms we want to apply custom Bootstrap validation styles to
+      var forms = document.querySelectorAll('.needs-validation')
+
+      // Loop over them and prevent submission
+      Array.prototype.slice.call(forms)
+        .forEach(function (form) {
+          form.addEventListener('submit', function (event) {
+            if (!form.checkValidity()) {
+              event.preventDefault()
+              event.stopPropagation()
+            }
+
+            form.classList.add('was-validated')
+          }, false)
+        })
+    })()
 
 
 
@@ -629,7 +743,7 @@
     var image = document.getElementById('image');
     var code = document.getElementById('code');
     var idInput = document.getElementById('idInput');
-    idInput.style.backgroundColor = 'rgba(255,255,255,1)';
+    //idInput.style.backgroundColor = 'rgba(255,255,255,1)';
 
     focusOnCodeTimer = setTimeout(focusOnCode, 1000);
     submitIDTimer = null
@@ -669,6 +783,7 @@
     if (payWithCashBtn) {
       payWithCashBtn.addEventListener('click', {
         handleEvent(event) {
+          console.log("event", event.target.dataset)
           CheckInQrCode(event.target.dataset.qrCode, event.target.dataset.paymentMethod);
         }
       })
@@ -714,12 +829,12 @@
       focusOnCodeTimer = setTimeout(focusOnCode, 1000);
     })
 
-    
+
     var tosElement = document.getElementById('tosModalBody')
     var tempTosGuestName = ""
     var tempTosDate
 
-    
+
 
     tosModalEL.addEventListener('show.bs.modal', function (event) {
       allowQrCodeInput = false; // Disable QrCodeInput
@@ -730,6 +845,7 @@
       //console.log(months[currentMonth.getMonth()]);
       tosElement.innerHTML = tosElement.innerHTML.replaceAll("~~GUEST_NAME~~", tempTosGuestName)
       tosElement.innerHTML = tosElement.innerHTML.replaceAll('~~CURRENT_DATE~~', new Date().getDate())
+      //console.log(tosElement.innerHTML.search('~~CURRENT_MONTH~~'))
       tosElement.innerHTML = tosElement.innerHTML.replaceAll('~~CURRENT_MONTH~~', months[new Date().getMonth()])
       tosElement.innerHTML = tosElement.innerHTML.replaceAll('~~CURRENT_YEAR~~', new Date().getFullYear())
 
@@ -767,15 +883,18 @@
       //console.log('RegisterModal Show');    
       allowQrCodeInput = false
 
-      
-
-      const button = event.relatedTarget
-      const option = button.getAttribute('data-bs-option')
-      if (option) {
-        const optionBool = Boolean(option)
-        console.log('Option:', optionBool)
-        document.getElementById('termsCheck').checked = optionBool
+      if (idDATA) {
+        console.log('IDDATA:', idDATA)
+        document.getElementById('idData').innerHTML = idDATA['dl']
       }
+
+      //const button = event.relatedTarget
+      //const option = button.getAttribute('data-bs-option')
+      // if (option) {
+      //   const optionBool = Boolean(option)
+      //   console.log('Option:', optionBool)
+      //   document.getElementById('termsCheck').checked = optionBool        
+      // }
 
     })
 
@@ -880,17 +999,17 @@
 
       if (!allowQrCodeInput) {
 
-        if (e.key === 'Enter') {
-          if (!submitIDTimer) {
-            submitIDTimer = setTimeout(SubmitID, 2000);
-          }
 
-
-
-
-
-
+        if (!submitIDTimer) {
+          submitIDTimer = setTimeout(SubmitID, 3000);
         }
+
+
+
+
+
+
+
 
       }
     };
@@ -990,11 +1109,27 @@
               }
 
 
-              if (payWithCashappBtn) { payWithCashappBtn.dataset.qrCode = data.uuid }
-              if (payWithPaypalBtn) { payWithPaypalBtn.dataset.qrCode = data.uuid }
-              if (payWithVenmoBtn) { payWithVenmoBtn.dataset.qrCode = data.uuid }
-              if (payWithCashBtn) { payWithCashBtn.dataset.qrCode = data.uuid }
-              if (payWithCreditBtn) { payWithCreditBtn.dataset.qrCode = data.uuid }
+              if (payWithCashappBtn) { 
+                payWithCashappBtn.dataset.qrCode = data.uuid
+                
+                
+              }
+              if (payWithPaypalBtn) { 
+                payWithPaypalBtn.dataset.qrCode = data.uuid
+
+               }
+              if (payWithVenmoBtn) { 
+                payWithVenmoBtn.dataset.qrCode = data.uuid
+
+               }
+              if (payWithCashBtn) { 
+                payWithCashBtn.dataset.qrCode = data.uuid
+
+               }
+              if (payWithCreditBtn) { 
+                payWithCreditBtn.dataset.qrCode = data.uuid
+
+               }
 
               checkInPaymentModal.show(checkInPaymentModalEl)
 
@@ -1031,6 +1166,24 @@
 
 
     function CheckInQrCode(qrCode = null, paymentMethod = null) {
+
+      const eventCards = document.querySelectorAll('div[name="eventCard"]');
+
+      eventCards.forEach(eventCard => {
+          console.log("EventCards",eventCard);
+          cardbody = eventCard.getElementsByClassName('card-body')
+          checkBoxHolder = cardbody[0].getElementsByClassName('position-absolute top-0 start-0') 
+          checkBox = checkBoxHolder[0].getElementsByClassName('form-check-input')[0]
+          console.log("CheckBox", checkBox.value, checkBox.checked); 
+            //if (radioButton.value == event.relatedTarget.extendedProps.bannerImage) {
+                //radioButton.checked = true;
+            
+                //console.log(radioButton.value); // Prints the value of the selected radio button
+            //}
+            
+        });
+
+
 
       console.log('Checking In QR Code:', qrCode, paymentMethod);
 

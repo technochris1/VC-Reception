@@ -62,13 +62,18 @@
     <div class="form-check form-switch">
         <input class="form-check-input" type="checkbox" role="switch" id="req_dl" name="req_dl" {% if setting.req_dl %}
             checked {% endif %}>
-        <label class="form-check-label" for="req_dl">Require Valid Drivers License</label>
+        <label class="form-check-label" for="req_dl">Require Drivers License Barcode Scan</label>
     </div>
 
 
     <hr>
+    <h3>Guest Optional Screen(s)</h3>
+    <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" role="switch" id="opt_bartip" name="opt_bartip" {% if
+            setting.show_bartip %} checked {% endif %}>
+        <label class="form-check-label" for="opt_bartip">Show Bar Tip QR Code</label>
+    </div>
     <h3>Guest Payment Options</h3>
-
     <div class="form-check form-switch">
         <input class="form-check-input" type="checkbox" role="switch" id="pay_cashapp" name="pay_cashapp" {% if
             setting.show_cashapp %} checked {% endif %}>

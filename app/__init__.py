@@ -89,7 +89,7 @@ socketio = SocketIO(app)
 from app import routes, models
 
 class guestView(ModelView):    
-    can_delete = False
+    can_delete = True
     column_hide_backrefs = False
     #column_sortable_list = ('fetUsername', 'email','name','phone','checkedIn','roles')
     column_list = ('checkin_blocked','fetUsername', 'uuid', 'email', 'name', 'phone', 'roles', 'checkedIn')
