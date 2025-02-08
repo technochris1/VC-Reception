@@ -15,7 +15,15 @@
             <div class="col">
                 <div class="card text-center bg-dark text-light">
                     <div class="card-body">
-                        <h1 class="card-title">{{ creds.generalAmount }}</h1>
+                        <div class="card-title">                            
+                            <h1>
+                                {{- creds.points -}}
+                                <small class="text-body-secondary">p</small>
+                                &nbsp
+                                {{- creds.generalAmount -}}
+                                <small class="text-body-secondary">c</small>
+                            </h1>
+                        </div>
                         <p class="card-text">{{ creds.guest.fetUsername }}</p>
                         <a href="/guestCredit/{{creds.guest.id}}" class="m-2 p-3"><i class="bi bi-plus-square"></i></a>
                     </div>

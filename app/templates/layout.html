@@ -47,6 +47,12 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="/notificationEmailer"
+                                class="nav-link px-0 align-middle {% if request.endpoint == 'emailer' %}text-danger{% endif %}">
+                                <i class="fs-4  bi-envelope-at"></i> <span class="ms-1 d-none d-sm-inline">Email Notification</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="/logbook"
                                 class="nav-link px-0 align-middle {% if request.endpoint == 'logbook' %}text-danger{% endif %}">
                                 <i class="fs-4 bi-table "></i> <span class="ms-1 d-none d-sm-inline">Logbook</span></a>
@@ -54,8 +60,7 @@
                         <li class="nav-item"></li>
                         <a href="/credits"
                             class="nav-link px-0 align-middle {% if request.endpoint == 'credits' %}text-danger{% endif %}">
-                            <i class="fs-4 bi-cash-coin "></i> <span class="ms-1 d-none d-sm-inline">Credit
-                                System</span></a>
+                            <i class="fs-4 bi-cash-coin "></i> <span class="ms-1 d-none d-sm-inline">Point & Credit System</span></a>
                         </li>
                         <li class="nav-item"></li>
                         <a href="/events"
@@ -78,6 +83,11 @@
                         <a target="_blank" rel="noopener noreferrer" href="/guestView"
                             class="nav-link px-0 align-middle">
                             <i class="fs-4 bi-tablet-landscape "></i> <span class="ms-1 d-none d-sm-inline">Guest Facing View</span></a>
+                        </li>
+                        <li class="nav-item"></li>
+                        <a target="_blank" rel="noopener noreferrer" href="/guestView2"
+                            class="nav-link px-0 align-middle">
+                            <i class="fs-4 bi-tablet-landscape "></i> <span class="ms-1 d-none d-sm-inline">Guest Facing View 2</span></a>
                         </li>
                     </ul>
                     <hr>

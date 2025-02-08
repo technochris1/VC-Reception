@@ -39,7 +39,7 @@
 <script>
     tinymce.init({
         selector: 'textarea#tos',
-    });
+    }); 
 </script>
 
 
@@ -94,6 +94,15 @@
             setting.show_credit %} checked {% endif %}>
         <label class="form-check-label" for="pay_credit">Show Credit System</label>
     </div>
+
+    <hr>
+    <h3>Credit System Options</h3>
+    <div class="input-group mb-3">
+        <span class="input-group-text">Point Per Credit</span>
+        <input type="number" id="pointpercredit" name="pointpercredit" class="form-control" min="1" max="100" value="{{setting.points_per_credit}}">
+    </div>
+
+
 
     <hr>
     <h3>TOS</h3>

@@ -1,0 +1,90 @@
+{% extends 'layout.html' %}
+{% block content %}
+<h1>Guest Points for : {{guest.name}}</h1>
+{% if guest.points %}
+<h2>Current Points: {{ guest.points }}</h2>
+{% endif %}
+
+<form method="POST" action="">
+    {{ form.hidden_tag() }}
+
+    <fieldset class="form-group">
+
+        <div class="form-group p-3">
+            <div class="form-floating m-1 text-light">
+                {% if form.authorizedSource.errors %}
+                {{ form.authorizedSource(class="form-control is-invalid", placeholder="Authorized Source") }}
+                <div class="invalid-feedback">
+                    {% for error in form.authorizedSource.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.authorizedSource(class="form-control", placeholder="Authorized Source") }}
+                {% endif %}
+                {{ form.authorizedSource.label() }}
+            </div>
+        </div>
+
+        <div class="form-group p-3">
+            <div class="form-floating m-1 text-light">
+                {% if form.description.errors %}
+                {{ form.description(class="form-control is-invalid", placeholder="Description") }}
+                <div class="invalid-feedback">
+                    {% for error in form.description.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.description(class="form-control", placeholder="Description") }}
+                {% endif %}
+                {{ form.description.label() }}
+            </div>
+        </div>
+
+        <div class="form-group p-3">
+            <div class="form-floating m-1 text-light">
+                {% if form.pointChange.errors %}
+                {{ form.pointChange(class="form-control is-invalid", placeholder="Cash, Card, Venmo, CashApp,
+                Paypal,
+                ETC...") }}
+                <div class="invalid-feedback">
+                    {% for error in form.pointChange.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% else %}
+                {{ form.pointChange(class="form-control", placeholder="example@gmail.com") }}
+                {% endif %}
+                {{ form.pointChange.label() }}
+            </div>
+        </div>
+
+       
+
+
+
+
+    </fieldset>
+    <div class="form-group p-3">
+        <div class="d-flex justify-content-between">
+            <a href="/guestCredit/{{guest.id}}">
+                <button type="button" class="btn btn-primary btn-lg">Go Back</button>
+            </a>
+            {{ form.submit(class="btn btn-lg btn-outline-info") }}
+        </div>
+    </div>
+</form>
+
+
+
+
+
+
+
+
+
+
+
+
+{% endblock content %}

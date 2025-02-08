@@ -820,11 +820,11 @@
     })
 
     settingsModalEl.addEventListener('show.bs.modal', event => {
-      //console.log('SettingsModal Show');
+      console.log('SettingsModal Show');
       allowQrCodeInput = false
     })
     settingsModalEl.addEventListener('hide.bs.modal', event => {
-      //console.log('SettingsModal Hide');
+      console.log('SettingsModal Hide');
       allowQrCodeInput = true
       focusOnCodeTimer = setTimeout(focusOnCode, 1000);
     })
@@ -837,6 +837,7 @@
 
 
     tosModalEL.addEventListener('show.bs.modal', function (event) {
+      console.log('TosModal show');
       allowQrCodeInput = false; // Disable QrCodeInput
       if (tempTosGuestName == "") {
         tempTosGuestName = "You"
@@ -852,6 +853,7 @@
 
     })
     tosModalEL.addEventListener('hidden.bs.modal', function (event) {
+      console.log('TosModal Hidden');
       allowQrCodeInput = true; // Allow QrCodeInput
       qrCodeInput = "";
       //setTimeout(focusOnCode, 1000);
@@ -861,12 +863,12 @@
 
 
     idScanModalEl.addEventListener('show.bs.modal', event => {
-      //console.log('SettingsModal Show');
+      console.log('idModal Show');
       allowQrCodeInput = false
     })
 
     idScanModalEl.addEventListener('shown.bs.modal', event => {
-      //console.log('SettingsModal Show');
+      console.log('idModal Shown');
       allowQrCodeInput = false
       idInput.readOnly = true;
       idInput.focus();
@@ -874,13 +876,13 @@
     })
 
     idScanModalEl.addEventListener('hide.bs.modal', event => {
-      //console.log('SettingsModal Hide');
+      console.log('idModal Hide');
       allowQrCodeInput = true
       focusOnCodeTimer = setTimeout(focusOnCode, 1000);
     })
 
     registerModalEl.addEventListener('show.bs.modal', event => {
-      //console.log('RegisterModal Show');    
+      console.log('RegisterModal Show');    
       allowQrCodeInput = false
 
       if (idDATA) {
@@ -899,12 +901,13 @@
     })
 
     registerModalEl.addEventListener('shown.bs.modal', event => {
-      //console.log('RegisterModal Show');    
+      console.log('RegisterModal Shown'); 
+      allowQrCodeInput = false   
       document.getElementById('fetUsername').focus();
     })
 
     registerModalEl.addEventListener('hide.bs.modal', event => {
-      //console.log('RegisterModal Hide');
+      console.log('RegisterModal Hide');
       allowQrCodeInput = true
       focusOnCodeTimer = setTimeout(focusOnCode, 1000);
     })
@@ -948,7 +951,7 @@
 
 
     function focusOnCode() {
-      //console.log('Focus On Code', allowQrCodeInput);
+      console.log('Focus On Code', allowQrCodeInput);
       if (allowQrCodeInput) {
         code.readOnly = true;
         code.focus();
@@ -1242,7 +1245,6 @@
       //e.preventDefault();
       focusOnCode();
     };
-
     document.ondragend = function (e) {
       //e.preventDefault();
       focusOnCode();

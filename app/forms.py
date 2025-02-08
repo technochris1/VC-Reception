@@ -67,6 +67,12 @@ class AdminRegistrationForm(FlaskForm):
         if user:
             raise ValidationError('Email already in use. Please choose another email address.')
 
+class AddPointsForm(FlaskForm):
+    authorizedSource:str  = StringField('Authorized Source', validators=[DataRequired()]) 
+    description = StringField('Description', validators=[DataRequired()])
+    pointChange = IntegerField('Points', default=1)
+    submit = SubmitField('Add Points')
+
 class AddCreditForm(FlaskForm):
     authorizedSource:str  = StringField('Authorized Source', validators=[DataRequired()]) 
     description = StringField('Description', validators=[DataRequired()])

@@ -1,13 +1,27 @@
 {% extends 'layout.html' %}
 {% block content %}
-<h1>Guest Credit for : {{guest.name}}</h1>
+<h1>Guest Points & Credit for : {{guest.name}}</h1>
+
+
+
+
+
 
 {% if guest.credit %}
+
+{% if guestCredit.points >= settings.points_per_credit %}   
+<h2>Current Points: {{ guestCredit.points }}</h2><a href="/guestCredit/{{ guest.id }}/addPoints" class="btn btn-primary m-1">Add Point(s)</a> <a href="/guestCredit/{{ guest.id }}/upgradePoints" class="btn btn-primary m-1">Upgrade To Credit</a>
+{% else %}
+<h2>Current Points: {{ guestCredit.points }}</h2><a href="/guestCredit/{{ guest.id }}/addPoints" class="btn btn-primary m-1">Add Point(s)</a>
+{% endif %}
+
+
+
 <h2>Current Credits: {{ guestCredit.generalAmount }}</h2>
-<a href="/guestCredit/{{ guest.id }}/addCredits" class="btn btn-primary">Add Credit(s)</a>
+<a href="/guestCredit/{{ guest.id }}/addCredits" class="btn btn-primary m-1">Add Credit(s)</a>
 <hr>
 
-<h3>Guest Credit History:</h3>
+<h3>Guest Point & Credit History:</h3>
 <table class="table-dark rounded-3 overflow-hidden " data-toggle="table" >
     <thead>
         <tr>
@@ -15,6 +29,7 @@
             <th data-sortable="true" scope="col">Source</th>
             <th data-sortable="true" scope="col">Description</th>
             <th data-sortable="true" scope="col">Auth By</th>
+            <th data-sortable="true" scope="col">Points</th>
             <th data-sortable="true" scope="col">General</th>            
             <th data-sortable="true" scope="col">Special Event</th>
             <th data-sortable="true" scope="col">Private Session</th>
@@ -27,6 +42,7 @@
             <td scope="row">{{ logItem.authorizedSource }}</td>
             <td scope="row">{{ logItem.description }}</td>
             <td scope="row">{{ logItem.authorizedBy }}</td>
+            <td scope="row">{{ logItem.pointChange }}</td>
             <td scope="row">{{ logItem.generalAmountChange }}</td>
             <td scope="row">{{ logItem.specialEventAmountChange }}</td>            
             <td scope="row">{{ logItem.privateSessionAmountChange }}</td>

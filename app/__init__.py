@@ -1,6 +1,7 @@
 
 import os
 import sys
+import atexit
 from os import environ as env
 # from dotenv import load_dotenv
 
@@ -10,6 +11,9 @@ import pytz
 
 import re
 import logging
+import gevent
+from gevent import monkey
+monkey.patch_all()
 
 
 from flask import Flask, render_template, request, abort, jsonify
@@ -23,6 +27,9 @@ from flask_login import LoginManager
 from flask_socketio import SocketIO
 from flask_moment import Moment
 from flask_mail import Mail, Message
+from flask_apscheduler import APScheduler
+from apscheduler.schedulers.background import BackgroundScheduler
+
 
 from sqlalchemy.sql import func
 from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass
@@ -66,6 +73,8 @@ else:
 print(app.config['MAIL_USERNAME'])
 
 
+app.config['SCHEDULER_API_ENABLED'] = True
+
 admin = Admin(app, name='VC-Admin')
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
@@ -78,12 +87,20 @@ mail = Mail(app)
 socketio = SocketIO(app)
 
 
-# initialize scheduler
-#scheduler = APScheduler()
-# if you don't wanna use a config, you can set options here:
-# scheduler.api_enabled = True
-#scheduler.init_app(app)
-#scheduler.start()
+
+if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':  
+    # initialize scheduler
+    scheduler = APScheduler()
+    # if you don't wanna use a config, you can set options here:
+    # scheduler.api_enabled = True
+
+    @scheduler.task('cron', id='do_job_2', minute='*', misfire_grace_time=3600)
+    def job2():
+        print('Job 2 (Every Min) executed')
+
+    scheduler.init_app(app)
+    scheduler.start()
+    #atexit.register(lambda: scheduler.shutdown())
 
 
 from app import routes, models
@@ -109,19 +126,19 @@ class guestLogView(ModelView):
 
 class guestCreditsView(ModelView):
     can_create = False
-    can_edit = False
-    can_delete = False
+    #can_edit = False
+    #can_delete = False
     column_hide_backrefs = False
-    column_list = ('guest', 'generalAmount')
-    column_sortable_list = ('guest', 'generalAmount')
+    column_list = ('guest', 'points', 'generalAmount', 'specialEventAmount', 'privateSessionAmount')
+    column_sortable_list = ('guest',)
 
 class creditTransactionLogView(ModelView):
     can_create = False
-    can_edit = False
-    can_delete = False
+    #can_edit = False
+    #can_delete = False
     column_hide_backrefs = False
-    column_list = ('timestamp', 'guest', 'authorizedBy', 'authorizedSource', 'generalAmountChange', 'description')
-    column_sortable_list = ('timestamp', 'guest', 'authorizedBy', 'authorizedSource', 'generalAmountChange', 'description')
+    column_list = ('timestamp', 'guest', 'authorizedBy', 'authorizedSource', 'pointChange', 'generalAmountChange', 'description')
+    column_sortable_list = ('timestamp', 'guest', 'authorizedBy', 'authorizedSource', 'pointChange', 'generalAmountChange', 'description')
 
 #class eventsView(ModelView):   
     #column_hide_backrefs = False

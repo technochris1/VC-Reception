@@ -3,8 +3,8 @@ import os, sys
 from PIL import Image
 from flask import render_template, jsonify, abort, url_for, redirect, request, flash, render_template_string, send_from_directory, make_response
 from app import app, db, bcrypt, mail, login_manager, socketio
-from app.models import Guest, Guestlog, Event, Setting, func, GuestCredit, CreditTransactionLog   
-from app.forms import AdminRegistrationForm, AdminLoginForm, GuestRegistrationForm, AddCreditForm, ChangePasswordForm
+from app.models import Role, Guest, Guestlog, Event, Setting, func, GuestCredit, CreditTransactionLog   
+from app.forms import AdminRegistrationForm, AdminLoginForm, GuestRegistrationForm, AddPointsForm, AddCreditForm, ChangePasswordForm
 from flask_mail import  Message
 from flask_login import login_user, current_user, logout_user, login_required
 from sqlalchemy import cast, Date,and_, func, or_
@@ -182,7 +182,7 @@ def registerGuest():
 @app.route('/preCheckIn/')
 @app.route('/preCheckIn/<uuid>')
 def preCheckIn(uuid = None):
-    print("UUID",uuid)
+    #print("UUID",uuid)
     settings = Setting.query.first()
     guest = Guest.query.filter_by(uuid = uuid).first()
     response = {}
@@ -194,7 +194,8 @@ def preCheckIn(uuid = None):
 
     _todaysEvents=Event.query.filter(and_(Event.start >= date.timestamp(), Event.start <= tommorowDate)).order_by(Event.start).all()  
     for event in _todaysEvents:
-        print("Event",event)
+        #print("Event",event)
+        pass
 
 
 
@@ -218,7 +219,7 @@ def preCheckIn(uuid = None):
     
     
     if(guest):
-        print("Guest",guest)        
+        print("Guest",guest)
         visitTime = datetime.now(timezone.utc)
         response['guest'] = guest.name       
         response['uuid'] = guest.uuid       
@@ -229,10 +230,13 @@ def preCheckIn(uuid = None):
             
         if(guest.checkin_blocked):
             response['error'] = "See Staff for Check In"
-
             socketio.emit('user precheckin', response)
-            return json.dumps(response)
+            return json.dumps(response)        
 
+        if(guest.checkedIn):
+            response['error'] = guest.fetUsername+" Already Checked In"
+            socketio.emit('user precheckin', response)
+            return json.dumps(response)      
 
         print("Guest Roles",guest.roles)
         if(guest.roles):
@@ -240,23 +244,23 @@ def preCheckIn(uuid = None):
             response['skip_payment'] = any(x.skip_payment_at_checkin == True for x in guest.roles)
             response['skip_tos_update'] = any(x.skip_tos_update_at_checkin == True for x in guest.roles)
 
-        if(guest.lastVisit):
-            response['lastCheckin'] = guest.lastVisit.timestamp()
-            lastVisit = guest.lastVisit
-            lastVisit = lastVisit.replace(tzinfo=timezone.utc)   
-            #checkOutBasedOnTime = settings.checkOutBasedOnTime
-            checkInCooldownSeconds = settings.checkInCooldownSeconds     
-            if (visitTime - lastVisit).total_seconds() < checkInCooldownSeconds:
-                response['checked_in'] = False
-                print('Already Checked In')
-                response['error'] = "Already Checked In"
-                socketio.emit('user precheckin', response)
-                return json.dumps(response)
-
+        # if(guest.lastVisit):
+        #     response['lastCheckin'] = guest.lastVisit.timestamp()
+        #     lastVisit = guest.lastVisit
+        #     lastVisit = lastVisit.replace(tzinfo=timezone.utc)   
+        #     #checkOutBasedOnTime = settings.checkOutBasedOnTime
+        #     checkInCooldownSeconds = settings.checkInCooldownSeconds     
+        #     if (visitTime - lastVisit).total_seconds() < checkInCooldownSeconds:
+        #         response['checked_in'] = False
+        #         print('Already Checked In')
+        #         response['error'] = "Already Checked In"
+        #         socketio.emit('user precheckin', response)
+        #         return json.dumps(response)
 
         guestCredit = GuestCredit.query.filter_by(guest_id=guest.id).first()
         if(guestCredit):
             print("GuestCredit",guestCredit)
+            response['points'] = guestCredit.points
             response['generalCredits'] = guestCredit.generalAmount
             response['specialEventCredits'] = guestCredit.specialEventAmount
             response['privateSessionCredits'] = guestCredit.privateSessionAmount
@@ -630,7 +634,43 @@ def guestCredit(id):
         db.session.add(newCredit)
         db.session.commit()
     
-    return render_template('guestCredit.html', guest=_guest, guestCredit=GuestCredit.query.filter_by(guest=_guest).first(), guestCreditLog=CreditTransactionLog.query.filter_by(guest=_guest.id).all())
+    return render_template('guestCredit.html',settings=Setting.query.first(), guest=_guest, guestCredit=GuestCredit.query.filter_by(guest=_guest).first(), guestCreditLog=CreditTransactionLog.query.filter_by(guest=_guest.id).all())
+
+
+@app.route('/guestCredit/<id>/addPoints', methods=['GET', 'POST'])
+#@login_required
+def addPoints(id):
+    form = AddPointsForm()
+    _guest = Guest.query.filter_by(id=id).first()
+
+    if form.validate_on_submit():
+        newCreditLogEntry = CreditTransactionLog(
+            guest=_guest.id,
+            authorizedBy=0,
+            authorizedSource=form.authorizedSource.data,
+            description=form.description.data,
+            pointChange=form.pointChange.data,
+        )
+
+        if(newCreditLogEntry.pointChange > 0 ):
+            guestCredit = GuestCredit.query.filter_by(guest_id=_guest.id).first()
+            if(guestCredit):
+                guestCredit.points += newCreditLogEntry.pointChange
+                guestCredit.lastUpdate = datetime.now(timezone.utc)
+                
+            db.session.add(newCreditLogEntry)
+            db.session.commit()
+
+        
+
+
+            flash('Points added successfully', 'success')
+        else:
+            flash('Points must be greater than 0', 'danger')
+        return redirect(url_for('guestCredit',form = form, guest=_guest, id=id))
+    #return render_template('admin_registration.html', title='Register Admin', form=form)
+    return render_template('addPoints.html', form = form, guest=_guest)
+
 
 @app.route('/guestCredit/<id>/addCredits', methods=['GET', 'POST'])
 #@login_required
@@ -667,6 +707,47 @@ def addCredits(id):
         return redirect(url_for('guestCredit',form = form, guest=_guest, id=id))
     #return render_template('admin_registration.html', title='Register Admin', form=form)
     return render_template('addCredits.html', form = form, guest=_guest)
+
+@app.route('/guestCredit/<id>/upgradePoints', methods=['GET', 'POST'])
+#@login_required
+def upgradePoints(id):
+    _guest = Guest.query.filter_by(id=id).first()
+    guestCredit = GuestCredit.query.filter_by(guest_id=_guest.id).first()
+
+    if(guestCredit):
+        newCreditLogEntry = CreditTransactionLog(
+            guest=_guest.id,
+            authorizedBy=0,
+            description="Upgrade Points To Credit",
+            authorizedSource="Upgrade Points To Credit",
+            pointChange=  -Setting.query.first().points_per_credit,
+            generalAmountChange=1,
+        )
+
+        if(guestCredit.points >= Setting.query.first().points_per_credit):      
+        
+            guestCredit.points -= Setting.query.first().points_per_credit
+            guestCredit.generalAmount += 1
+            guestCredit.lastUpdate = datetime.now(timezone.utc)
+
+                
+            db.session.add(newCreditLogEntry)
+            db.session.commit()
+
+
+    
+
+
+            flash('Points Upgraded to Credit successfully', 'success')
+        else:
+            flash('Points must be at least '+str(Setting.query.first().points_per_credit)+' or greater.', 'danger')
+    return redirect(url_for('guestCredit', guest=_guest, id=id))
+
+
+
+
+
+
 
 @app.route('/logbook/')
 #@login_required
@@ -728,6 +809,40 @@ def credits():
     return render_template('credits.html', guests=Guest.query.all(), guestCreds=GuestCredit.query.all(), guestCreditLog=CreditTransactionLog.query.all())
     #return render_template('logbook.html')
 
+
+
+@app.route('/notificationEmailer/', methods=['GET', 'POST'])
+#@login_required
+def emailer():
+
+
+    if request.method == 'POST':
+        #print("Request",request.values)       
+        #print("Emails:",request.values.getlist('emails'))
+        #print("Subject:",request.values.get('subject'))
+        #print("Message:",request.values.get('message'))
+        #print("Recipients:",request.values.get('recipients').split(','))
+        try:
+            msg = Message(request.values.get('subject'),
+                        sender=("VC Front Desk", "VC-Desk@whoknows.com"),
+                        cc=request.values.getlist('emails'))
+            #msg.body = request.values.get('message')        
+            msg.html = request.values.get('message')
+            mail.send(msg)
+            #return render_template('email.html', guests=Guest.query.all(), roles = Role.query.all())
+            flash('Email Send to: '+str(request.values.getlist('emails')), 'success')
+            return redirect(url_for('emailer'))
+        except:
+            print("send_mail exception:\n{}".format(traceback.format_exc()))
+        #return
+ 
+
+        
+    return render_template('email.html', guests=Guest.query.all(), roles = Role.query.all())
+
+
+
+
 #https://flask-mail.readthedocs.io/en/latest/#
 @app.route('/sendEmail/')
 def sendEmailRoute():
@@ -783,7 +898,8 @@ def settings():
                 show_credit=pay_creditBool,
                 show_cashapp=pay_cashappBool,
                 show_paypal=pay_paypalBool,
-                show_venmo=pay_venmoBool
+                show_venmo=pay_venmoBool,
+                points_per_credit=request.form.get('pointpercredit')
                 
             )
             db.session.add(setting)
@@ -795,6 +911,7 @@ def settings():
             setting.show_cashapp=pay_cashappBool
             setting.show_paypal=pay_paypalBool
             setting.show_venmo=pay_venmoBool
+            setting.points_per_credit=request.form.get('pointpercredit')
             
 
         db.session.commit()

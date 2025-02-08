@@ -115,7 +115,8 @@ class GuestCredit(db.Model):
     lastUpdate = db.Column(db.DateTime(timezone=True), server_default=None)
 
     guest_id = db.Column(db.Integer, db.ForeignKey('guest.id'), nullable=False)    
-    #guest = db.relationship('Guest' ,back_populates='credit')
+    
+    points:int  = db.Column(db.Integer, nullable=False, default=0)
 
     generalAmount:int  = db.Column(db.Integer, nullable=False, default=0)
     specialEventAmount:int  = db.Column(db.Integer, nullable=False, default=0)
@@ -130,9 +131,10 @@ class CreditTransactionLog(db.Model):
     guest = db.Column(db.Integer,  db.ForeignKey('guest.id'), nullable=False)
     authorizedSource:str  = db.Column(db.String(100), nullable=False)    
     authorizedBy  = db.Column(db.Integer, db.ForeignKey('guest.id'))
-    generalAmountChange:int  = db.Column(db.Integer, nullable=False)
-    specialEventAmountChange:int  = db.Column(db.Integer, nullable=False)
-    privateSessionAmountChange:int  = db.Column(db.Integer, nullable=False)
+    pointChange:int  = db.Column(db.Integer, nullable=False, default=0)
+    generalAmountChange:int  = db.Column(db.Integer, nullable=False, default=0)
+    specialEventAmountChange:int  = db.Column(db.Integer, nullable=False, default=0)
+    privateSessionAmountChange:int  = db.Column(db.Integer, nullable=False, default=0)
     description:str  = db.Column(db.String(200), nullable=False)
     
 
@@ -175,6 +177,8 @@ class Setting(db.Model):
     checkOutBasedOnEventEndTime:bool = db.Column(db.Boolean(), default=False)
 
     req_dl:bool = db.Column(db.Boolean(), default=False)
+
+    points_per_credit:int = db.Column(db.Integer, default=20)
 
 
     show_bartip:bool = db.Column(db.Boolean(), default=False)
