@@ -94,9 +94,17 @@ if not app.debug or os.environ.get('WERKZEUG_RUN_MAIN') == 'true':
     # if you don't wanna use a config, you can set options here:
     # scheduler.api_enabled = True
 
-    @scheduler.task('cron', id='do_job_2', minute='*', misfire_grace_time=3600)
-    def job2():
-        print('Job 2 (Every Min) executed')
+    @scheduler.task('cron', id='list_jobs_every_min', minute='*', misfire_grace_time=3600)
+    def list_jobs():
+        #print('Job 2 (Every Min) executed')
+        print("ALL Jobs:",scheduler.get_jobs())
+
+
+    @scheduler.task('cron', id='checkin_cleanup', minute='*', misfire_grace_time=3600)
+    def checkin_cleanup():
+        with app.app_context():
+            from app import routes
+            routes.checkin_cleanup()
 
     scheduler.init_app(app)
     scheduler.start()

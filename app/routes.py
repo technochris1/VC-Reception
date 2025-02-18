@@ -380,6 +380,21 @@ def checkOut(id = None, method = None):
     else:
         return abort(404)
 
+@app.route('/checkInCleanup/')
+def checkin_cleanup():
+    print("Check In Cleanup")
+    todays_events = Event.query.filter(and_(Event.start <= datetime.now().timestamp(), datetime.now().timestamp() <= (Event.end  + 10800))).order_by(Event.start).all()
+    for event in todays_events:
+        print("Event",event)
+
+    guests = Guest.query.filter_by(checkedIn = True).all()
+    for guest in guests:
+        if guest.checkedIn:
+            guest.checkedIn = False
+            db.session.commit()
+
+
+
 @app.route('/generateUUID/')
 def generateUUID():
     return jsonify(generate_uuid())
