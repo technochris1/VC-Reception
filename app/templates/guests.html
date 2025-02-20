@@ -77,10 +77,10 @@
             <td>
 
                 {% if current_user.roles and current_user | check_role_allow_password_reset %}
-                <a href="/resetPassword/{{guest.id}}"><button type="button" class="btn btn-sm btn-outline-danger"><i
+                <a  href="/resetPassword/{{guest.id}}"><button type="button" data-bs-toggle="tooltip" data-bs-title="Reset Guest Password" class="btn btn-sm btn-outline-danger"><i
                             class="bi bi-arrow-clockwise"></i></button></a>
                 {% endif %}
-                <a href="/guestCredit/{{guest.id}}"><button type="button" class="btn btn-sm btn-outline-danger"><i
+                <a  href="/guestCredit/{{guest.id}}"><button type="button" data-bs-toggle="tooltip" data-bs-title="Credit Page" class="btn btn-sm btn-outline-danger"><i
                             class="bi bi-cash-coin"></i></button></a>
 
 

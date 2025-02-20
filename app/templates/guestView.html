@@ -168,7 +168,7 @@
         <div class="row h-100 align-items-center">
           <img src="../static/VC_logo_dark.png" height="100%" width="100%" style="object-fit: contain;" alt="...">
         </div>
-        
+
 
       </div>
       <div class="col h-100">
@@ -257,13 +257,17 @@
 
 
   <!-- This is the Toast Notification -->
-  <div class="position-fixed bottom-0 start-50 translate-middle-x p-3" style="z-index: 11">
+  <div class="position-fixed bottom-0 start-50 translate-middle-x p-3" 
+  style="z-index: 11">
     <div id="infoToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-      <div class="toast-header">
+      <div class="toast-header" hidden>
         <strong id="infoToastHeader" class="me-auto fs-2">Guest Signed IN</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
       </div>
-      <div class="toast-body fs-2" id="infoToastBody">
-        Welcome Guest!
+      <div class="d-flex">
+        <div class="toast-body fs-1" id="infoToastBody">
+          Welcome Guest!
+        </div>
       </div>
     </div>
   </div>
@@ -407,7 +411,7 @@
                     <div class="">
                       <button type="button" id="payWithCashappBtn" data-bs-toggle="modal" data-bs-target="#barTipModal"
                         class="btn btn-success btn-lg">Bar Tips</button>
-                      <button type="button" id="barTipsCashappBtn"  data-payment-method="cashapp" data-bs-dismiss="modal"
+                      <button type="button" id="barTipsCashappBtn" data-payment-method="cashapp" data-bs-dismiss="modal"
                         class="btn btn-success btn-lg">Paid Using CashApp, Check-In Now</button>
                     </div>
                   </div>
@@ -481,7 +485,7 @@
           <div class="modal-body d-flex justify-content-center" id="checkInPaymentModalBody">
 
 
-            
+
           </div>
         </div>
       </div>
@@ -747,6 +751,8 @@
 
 
             } else {
+              myToastEl.classList.remove('text-bg-primary', 'text-bg-success', 'text-bg-danger')
+              myToastEl.classList.add('text-bg-warning')
               myToastElHeader.innerText = 'Notice'
               myToastElBody.innerText = data.error
               myToast.show()
@@ -761,6 +767,8 @@
           .catch(error => {
             document.getElementById('code').value = ""
             console.error('There was a problem with the fetch operation:', error);
+            myToastEl.classList.remove('text-bg-primary', 'text-bg-success', 'text-bg-warning')
+            myToastEl.classList.add('text-bg-danger')
             myToastElHeader.innerText = 'Error'
             myToastElBody.innerText = 'Network Error'
             myToast.show()
@@ -807,6 +815,8 @@
             document.getElementById('code').value = ""
             console.log('Data received:', data);
 
+            myToastEl.classList.remove('text-bg-primary', 'text-bg-danger', 'text-bg-warning')
+            myToastEl.classList.add('text-bg-success')
             myToastElHeader.innerText = 'Checked In'
             myToastElBody.innerText = 'Welcome ' + data.guest
             myToast.show()

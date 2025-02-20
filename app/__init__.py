@@ -73,6 +73,8 @@ else:
 print(app.config['MAIL_USERNAME'])
 
 
+print("http://127.0.0.1:5000/dashboard")
+
 app.config['SCHEDULER_API_ENABLED'] = True
 
 admin = Admin(app, name='VC-Admin')
@@ -164,7 +166,7 @@ admin.add_view(creditTransactionLogView(models.CreditTransactionLog, db.session)
 admin.add_view(roleView(models.Role, db.session))
 admin.add_view(ModelView(models.Event, db.session))
 admin.add_view(addonView(models.Addon, db.session))
-#admin.add_view(ModelView(models.Setting, db.session))
+admin.add_view(ModelView(models.Setting, db.session))
 
 
 

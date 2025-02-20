@@ -278,8 +278,8 @@ def preCheckIn(uuid = None):
 def checkIn( uuid = None,method = None):
     if(uuid is None or method is None):
         return abort(404)
-    settings = Setting.query.first()
-    print("Settings,",settings)
+    #settings = Setting.query.first()
+    
       
     if(uuid is not None):
         guest = Guest.query.filter_by(id = uuid).first()
@@ -301,57 +301,54 @@ def checkIn( uuid = None,method = None):
             lastVisit = guest.lastVisit
             lastVisit = lastVisit.replace(tzinfo=timezone.utc)         
 
-            checkInCooldownSeconds = settings.checkInCooldownSeconds             
-            if (visitTime - lastVisit).total_seconds() < checkInCooldownSeconds:
-                response['checked_in'] = False
-                print('Already Checked In')
-                return json.dumps(response)
+            # checkInCooldownSeconds = settings.checkInCooldownSeconds             
+            # if (visitTime - lastVisit).total_seconds() < checkInCooldownSeconds:
+            #     response['checked_in'] = False
+            #     print('Already Checked In')
+            #     #return json.dumps(response)
+            #     return redirect(request.args.get('next') )
         
-        guest.lastVisit = visitTime
-        guest.checkedIn = True
+        if(guest.checkedIn):
+            response['error'] = guest.fetUsername+" Already Checked In"   
+            socketio.emit('user already checked in', response)         
+        else:
+            guest.lastVisit = visitTime
+            guest.checkedIn = True
 
-
-
-        est = tz.gettz('Europe / Berlin')
-        
-        newCheckIn = Guestlog(
-            checked_in_at = visitTime,         
-            
-            
-            #checked_in_at_date = visitTime.replace(tzinfo=est).date(),
-            #checked_in_at_time = visitTime.replace(tzinfo=est).time(),
-            userID = guest.id,
-            paymentMethod = method
-        )
-
-        if(todaysEvent[0]):
-            newCheckIn.event = todaysEvent[0]
-        else:       
-            newCheckIn.event = None
-
-        print("New Check In",newCheckIn.userID,newCheckIn)
-        db.session.add(newCheckIn)
-        db.session.commit()
-
-        if(method == "credit"):     
-            newTransaction = CreditTransactionLog(
-                guest=guest.id,
-                authorizedSource="Check In via "+method,
-                description="Check In via "+method+" - Removed 1 General Credit",
-                generalAmountChange=-1,
-                specialEventAmountChange=0,
-                privateSessionAmountChange=0
+            newCheckIn = Guestlog(
+                checked_in_at = visitTime,    
+                userID = guest.id,
+                paymentMethod = method
             )
-            db.session.add(newTransaction)
+
+            if(todaysEvent[0]):
+                newCheckIn.event = todaysEvent[0]
+            else:       
+                newCheckIn.event = None
+
+            print("New Check In",newCheckIn.userID,newCheckIn)
+            db.session.add(newCheckIn)
             db.session.commit()
 
-            guestCredit = GuestCredit.query.filter_by(guest_id=guest.id).first()
-            if(guestCredit):
-                guestCredit.generalAmount -= 1
-                guestCredit.lastUpdate = datetime.datetime.now(datetime.timezone.utc)
+            if(method == "credit"):     
+                newTransaction = CreditTransactionLog(
+                    guest=guest.id,
+                    authorizedSource="Check In via "+method,
+                    description="Check In via "+method+" - Removed 1 General Credit",
+                    generalAmountChange=-1,
+                    specialEventAmountChange=0,
+                    privateSessionAmountChange=0
+                )
+                db.session.add(newTransaction)
                 db.session.commit()
 
-        socketio.emit('user checked in', response)
+                guestCredit = GuestCredit.query.filter_by(guest_id=guest.id).first()
+                if(guestCredit):
+                    guestCredit.generalAmount -= 1
+                    guestCredit.lastUpdate = datetime.datetime.now(datetime.timezone.utc)
+                    db.session.commit()
+
+            socketio.emit('user checked in', response)
 	
         next_page = request.args.get('next') 
         return redirect(next_page) if next_page else json.dumps(response)
@@ -370,8 +367,25 @@ def checkOut(id = None, method = None):
                            
     if(guest):
         
-        guest.checkedIn = False     
-   
+        
+        
+        if(guest.checkedIn):
+            guest.checkedIn = False
+            guest.logbook[-1].checked_out_at = datetime.now(timezone.utc)
+            guest.logbook[-1].check_out_method = "Manual"
+
+            #log.checked_out_at = datetime.now(timezone.utc)
+            #log.check_out_method = "Automatic By Timer" 
+            response = {
+                'guest': guest.fetUsername,
+                'checked_in': guest.checkedIn,
+                'checked_in_at_timestamp': datetime.now(timezone.utc).timestamp(),
+                'checked_out_at': guest.logbook[-1].checked_out_at,
+                'check_out_method': guest.logbook[-1].check_out_method
+            }
+            socketio.emit('user checked out', response)
+
+        
         db.session.commit()      
 
         next_page = request.args.get('next') 
@@ -382,16 +396,35 @@ def checkOut(id = None, method = None):
 
 @app.route('/checkInCleanup/')
 def checkin_cleanup():
-    print("Check In Cleanup")
-    todays_events = Event.query.filter(and_(Event.start <= datetime.now().timestamp(), datetime.now().timestamp() <= (Event.end  + 10800))).order_by(Event.start).all()
+    print("Check In Cleanup @ " + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    todays_events = Event.query.filter(and_(Event.end <= datetime.now().timestamp(), datetime.now().timestamp() <= (Event.end  + 600))).order_by(Event.start).all()
     for event in todays_events:
         print("Event",event)
+        for log in event.guestlogs:
+            #print("Guest Log:",log.userID)
+            if log.checked_out_at is None:
+                log.checked_out_at = datetime.now(timezone.utc)
+                log.check_out_method = "Automatic By Timer"
+                guest = Guest.query.filter_by(id = log.userID).first()   
+                print("Guest:",guest,"CheckedIn?", guest.checkedIn)             
+                if guest.checkedIn:
+                    guest.checkedIn = False
+                    response = {
+                        'guest': guest.fetUsername,
+                        'checked_in': guest.checkedIn,
+                        'checked_in_at_timestamp': datetime.now(timezone.utc).timestamp(),
+                        'checked_out_at': guest.logbook[-1].checked_out_at,
+                        'check_out_method': guest.logbook[-1].check_out_method
+                    }
+                    socketio.emit('user checked out', response)
+                db.session.commit()
+            
 
-    guests = Guest.query.filter_by(checkedIn = True).all()
-    for guest in guests:
-        if guest.checkedIn:
-            guest.checkedIn = False
-            db.session.commit()
+    #guests = Guest.query.filter_by(checkedIn = True).all()
+    #for guest in guests:
+        #if guest.checkedIn:
+            #guest.checkedIn = False
+            #db.session.commit() 
 
 
 
@@ -815,7 +848,7 @@ def logbook():
         response.append({"date": localDates[i], "events": events })
         i += 1
 
-    return render_template('logbook.html', distinct=response ,guests=Guest.query.all(), log=Guestlog.query.all())
+    return render_template('logbook.html', distinct=response ,guests=Guest.query.all(), log=Guestlog.query.all(), events=Event.query.all())
     #return render_template('logbook.html')
 
 @app.route('/credits/', methods=['GET', 'POST'])
