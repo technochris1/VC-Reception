@@ -14,7 +14,8 @@
 
     {{ moment.include_moment() }}
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">  
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-table@1.23.2/dist/bootstrap-table.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.js"></script>
@@ -48,7 +49,8 @@
                         <li class="nav-item">
                             <a href="/notificationEmailer"
                                 class="nav-link px-0 align-middle {% if request.endpoint == 'emailer' %}text-danger{% endif %}">
-                                <i class="fs-4  bi-envelope-at"></i> <span class="ms-1 d-none d-sm-inline">Email Notification</span>
+                                <i class="fs-4  bi-envelope-at"></i> <span class="ms-1 d-none d-sm-inline">Email
+                                    Notification</span>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -59,7 +61,8 @@
                         <li class="nav-item"></li>
                         <a href="/credits"
                             class="nav-link px-0 align-middle {% if request.endpoint == 'credits' %}text-danger{% endif %}">
-                            <i class="fs-4 bi-cash-coin "></i> <span class="ms-1 d-none d-sm-inline">Point & Credit System</span></a>
+                            <i class="fs-4 bi-cash-coin "></i> <span class="ms-1 d-none d-sm-inline">Point & Credit
+                                System</span></a>
                         </li>
                         <li class="nav-item"></li>
                         <a href="/events"
@@ -73,20 +76,21 @@
                                     class="ms-1 d-none d-sm-inline">Settings</span></a>
                         </li>
                         <li class="nav-item"></li>
-                        <a target="_blank" rel="noopener noreferrer" href="/admin"
-                            class="nav-link px-0 align-middle">
+                        <a target="_blank" rel="noopener noreferrer" href="/admin" class="nav-link px-0 align-middle">
                             <i class="fs-4 bi-gear-fill "></i> <span class="ms-1 d-none d-sm-inline">Admin
                                 Control</span></a>
                         </li>
                         <li class="nav-item"></li>
                         <a target="_blank" rel="noopener noreferrer" href="/guestView"
                             class="nav-link px-0 align-middle">
-                            <i class="fs-4 bi-tablet-landscape "></i> <span class="ms-1 d-none d-sm-inline">Guest Facing View</span></a>
+                            <i class="fs-4 bi-tablet-landscape "></i> <span class="ms-1 d-none d-sm-inline">Guest Facing
+                                View</span></a>
                         </li>
                         <li class="nav-item"></li>
                         <a target="_blank" rel="noopener noreferrer" href="/guestView2"
                             class="nav-link px-0 align-middle">
-                            <i class="fs-4 bi-tablet-landscape "></i> <span class="ms-1 d-none d-sm-inline">Guest Facing View 2</span></a>
+                            <i class="fs-4 bi-tablet-landscape "></i> <span class="ms-1 d-none d-sm-inline">Guest Facing
+                                View 2</span></a>
                         </li>
                     </ul>
                     <hr>
@@ -108,9 +112,11 @@
         </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/jquery/dist/jquery.min.js"></script>
-    
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>  
-    
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.23.2/dist/bootstrap-table.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
 
@@ -118,8 +124,18 @@
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
         const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
         console.log("Loaded Tooltips", tooltipList)
+
+
+        const tooltipTriggerList2 = document.querySelectorAll('.tooltipper')
+        const tooltipList2 = [...tooltipTriggerList2].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl, {
+            selector: '.tooltipper'
+        }))
+        console.log("Loaded Tooltips2", tooltipList2)
+
+
+
     </script>
-    
+
 
 
     {% block script %}{% endblock %}

@@ -220,7 +220,7 @@
 
         const toastHeaderText = document.createElement('strong');
         toastHeaderText.classList.add('me-auto');
-        toastHeaderText.innerText = "Guest Checkin Event";
+        toastHeaderText.innerText = "Guest Pre-Checkin Event";
 
         toastHeader.appendChild(toastHeaderText);
 
@@ -234,7 +234,7 @@
 
         const toastBody = document.createElement('div');
         toastBody.classList.add('toast-body');
-        toastBody.innerText = arg.error;
+        toastBody.innerText = arg.guest;
 
         toastContainer.appendChild(toastHeader);
         toastContainer.appendChild(toastBody);

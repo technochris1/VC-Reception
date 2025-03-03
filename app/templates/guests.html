@@ -2,29 +2,42 @@
 
 
 {% block content %}
+
+<script>
+    const settings = {
+        member_role_to_show: '{{settings.member_role_to_show}}'
+    }
+</script>
+
 <div>
-    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registerModal"
-        data-bs-mode="new">
-        Add Guest Manually
-    </button>
-    <a href="/registerAdmin"><button type="button" class="btn btn-primary">Register Admin</button></a>
+    <!-- <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registerModal" data-bs-mode="new">Add Guest Manually</button>
+    <a href="/registerAdmin"><button type="button" class="btn btn-primary">Register Admin</button></a> -->
 
 
 </div>
 
 
+<div id="toolbar">
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registerModal"
+        data-bs-mode="new">Add Guest Manually</button>
+    <a href="/registerAdmin"><button type="button" class="btn btn-primary">Register Admin</button></a>
+</div>
 
-<table class="table-dark rounded-3 overflow-hidden" data-toggle="table">
+
+
+<table class="table-dark rounded-3 overflow-hidden" data-toolbar="#toolbar" data-toggle="table"
+    data-show-columns="true">
     <thead>
         <tr>
-            <th scope="col"></th>
-            <th data-sortable="true" scope="col">Handle</th>
-            <th data-sortable="true" scope="col" class='d-none d-md-table-cell'>Name</th>
-            <th data-sortable="true" scope="col" class='d-none d-lg-table-cell'>Roles</th>
-            <th data-sortable="true" scope="col" class='d-none d-xl-table-cell'>Credits</th>
-            <th data-sortable="true" scope="col">Checked In</th>
-            <th data-sortable="true" scope="col">Last Visit</th>
-            <th data-align="right" scope="col"></th>
+            <th scope="col" data-switchable="true"></th>
+            <th data-sortable="true" scope="col" data-switchable="false">Handle</th>
+            <th data-sortable="true" scope="col" data-field="name" data-visible="false" class='d-none d-md-table-cell'>
+                Name</th>
+            <th data-sortable="true" scope="col" class='d-none d-lg-table-cell' data-switchable="false">Roles</th>
+            <th data-sortable="true" scope="col" class='d-none d-xl-table-cell' data-switchable="false">Credits</th>
+            <th data-sortable="true" scope="col" data-switchable="false">Checked In</th>
+            <th data-sortable="true" scope="col" data-switchable="false">Last Visit</th>
+            <th data-align="right" scope="col" data-switchable="false"></th>
 
         </tr>
     </thead>
@@ -49,7 +62,17 @@
                 </button>
             </td>
             <!-- <td scope="row">{{guest.checkin_blocked}} </td> -->
-            <td>{{guest.fetUsername}}</td>
+            <td>
+                {% if guest.fetUsername %}
+                {{guest.fetUsername}}
+                {% else %}
+                {{guest.name}}
+                {% endif %}
+            </td>
+
+
+
+
             <td class='d-none d-md-table-cell'>{{guest.name}}</td>
             {% if guest.roles %}
             <td class='d-none d-lg-table-cell'>{{guest.roles}}</td>
@@ -58,7 +81,18 @@
                 {% endif %}
 
 
-            <td class='d-none d-xl-table-cell'>{{guest.credit | get_general_credits }}</td>
+            <td class=''>
+                <div class="d-flex flex-row justify-content-between align-items-center">
+                    <div class="px-1">{{guest.credit | get_general_credits }}</div>
+                    <div class="px-1"><a href="/guestCredit/{{guest.id}}"><button type="button"
+                                class="btn btn-sm btn-outline-danger"><i class="bi bi-cash-coin"></i>
+                                Credits</button></a></div>
+                </div>
+            </td>
+
+            <!-- <td class='d-none d-xl-table-cell'>{{guest.credit | get_general_credits }} &nbsp; <a
+                    href="/guestCredit/{{guest.id}}"><button type="button" class="btn btn-sm btn-outline-danger"><i
+                            class="bi bi-cash-coin"></i> Credits</button></a></td> -->
 
 
             {% if guest.checkedIn %}
@@ -77,19 +111,18 @@
             <td>
 
                 {% if current_user.roles and current_user | check_role_allow_password_reset %}
-                <a  href="/resetPassword/{{guest.id}}"><button type="button" data-bs-toggle="tooltip" data-bs-title="Reset Guest Password" class="btn btn-sm btn-outline-danger"><i
-                            class="bi bi-arrow-clockwise"></i></button></a>
+                <a href="/resetPassword/{{guest.id}}"><button type="button" class="btn btn-sm btn-outline-danger"><i
+                            data-bs-toggle="tooltip" data-bs-title="Reset Guest Password"
+                            class="bi bi-arrow-clockwise"></i> Reset Pass</button></a>
                 {% endif %}
-                <a  href="/guestCredit/{{guest.id}}"><button type="button" data-bs-toggle="tooltip" data-bs-title="Credit Page" class="btn btn-sm btn-outline-danger"><i
-                            class="bi bi-cash-coin"></i></button></a>
 
 
                 <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
-                    data-bs-target="#registerModal" data-bs-mode="edit" data-bs-uuid="{{guest.id}}"><i
-                        class="bi bi-pencil-square"></i></button>
+                    data-bs-target="#registerModal" data-bs-mode="edit" data-bs-uuid="{{guest.id}}"
+                    data-bs-roles="{{guest.roles}}"><i class="bi bi-pencil-square"></i> Edit</button>
 
                 <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
-                    data-bs-target="#qrModal" data-bs-qr="{{guest.uuid}}"><i class="bi bi-qr-code"></i></button>
+                    data-bs-target="#qrModal" data-bs-qr="{{guest.uuid}}"><i class="bi bi-qr-code"></i> QR</button>
 
             </td>
         </tr>
@@ -132,7 +165,7 @@
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable ">
         <div class="modal-content ">
             <div class="modal-header bg-dark text-light">
-                <h5 class="modal-title" id="exampleModalLabel">New Guest Registration</h5>
+                <h5 class="modal-title" id="registerModalLabel">New Guest Registration</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                     aria-label="Close"></button>
             </div>
@@ -205,7 +238,7 @@
                         <input type="tel" class="form-control" name="phoneNumber" id="phoneNumber"
                             placeholder="301-000-0000">
                     </div>
-                    <div class="col-12">
+                    <div class="col-md-6">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" value="False" name="termsCheck"
                                 id="termsCheck">
@@ -214,6 +247,25 @@
                             </label>
                         </div>
                     </div>
+                    {% if settings.membership_role %}
+
+                    <div class="col-md-6">
+                        <div class="btn-group" role="group">
+                            <input type="radio" class="btn-check" name="btnradio" id="btnradiomember" value="member"
+                                autocomplete="off">
+                            <label class="btn btn-outline-success" for="btnradiomember">Member</label>
+
+                            <input type="radio" class="btn-check" name="btnradio" id="btnradiononmember" value="nonmember"
+                                autocomplete="off" checked>
+                            <label class="btn btn-outline-danger" for="btnradiononmember">Non-Member</label>
+                        </div>
+
+                    </div>
+                    {% endif %}
+
+
+
+
                     <div class="col-12">
                         <button class="btn btn-primary" type="submit">Submit form</button>
                     </div>
@@ -231,8 +283,20 @@
 <script>
 
 
+    document.addEventListener('DOMContentLoaded', function () {
+        // var tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+        // var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
+        //     return new bootstrap.Tooltip(tooltipTriggerEl)
+        // })
+
+        $('#table').bootstrapTable('hideColumn', 'name')
+
+    })
+
+
     const generateUuidURL = '{{ url_for("generateUUID") }}'
     var registerModal = document.getElementById('registerModal')
+    var registerModalTitle = document.getElementById('registerModalLabel')
     var qrCodeModal = document.getElementById('qrModal')
     var refreshQrCode = document.getElementById('refreshQrCode')
 
@@ -281,6 +345,8 @@
         var button = event.relatedTarget
         // Extract info from data-bs-* attributes
         var uuidData = button.getAttribute('data-bs-uuid')
+        var rolesData = button.getAttribute('data-bs-roles')
+        console.log('Roles:', rolesData);
         var mode = button.getAttribute('data-bs-mode')
         console.log('Mode:', mode);
 
@@ -288,12 +354,14 @@
 
         if (uuidData == null) {
             fetchUUID()
+            document.getElementById('id').value = ""
             document.getElementById('fetUsername').value = ""
             document.getElementById('name').value = ""
             document.getElementById('emailAddress').value = ""
             document.getElementById('phoneNumber').value = ""
             document.getElementById('termsCheck').checked = false
         } else {
+            registerModalTitle.innerText = 'Edit Guest'
             console.log('Data:', uuidData);
             const url = '{{ url_for("getGuest")}}' + uuidData
             console.log('URL:', url);
@@ -307,17 +375,17 @@
                 .then(data => {
                     console.log('Data received:', data);
 
-                    if (data != null) {
+                    if (data.data != null) {
 
 
 
-                        document.getElementById('id').value = data.id
-                        document.getElementById('uuid').value = data.uuid
-                        document.getElementById('fetUsername').value = data.fetUsername
-                        document.getElementById('name').value = data.name
-                        document.getElementById('emailAddress').value = data.email
-                        document.getElementById('phoneNumber').value = data.phone
-                        document.getElementById('termsCheck').checked = data.termsCheck
+                        document.getElementById('id').value = data.data.id
+                        document.getElementById('uuid').value = data.data.uuid
+                        document.getElementById('fetUsername').value = data.data.fetUsername
+                        document.getElementById('name').value = data.data.name
+                        document.getElementById('emailAddress').value = data.data.email
+                        document.getElementById('phoneNumber').value = data.data.phone
+                        document.getElementById('termsCheck').checked = data.data.termsCheck
 
                         if (data.allow_qrcode_refresh != null) {
                             document.getElementById('uuid').setAttribute('readonly', true)
@@ -336,6 +404,33 @@
                             document.getElementById('refreshQrCode').disabled = false
                         }
                     }
+
+
+                    if (data.membershipRole != null) {
+                        console.log('membershipRole:', data.membershipRole, typeof data.membershipRole);
+                        if (data.userRoles != null && data.userRoles.length > 0) {
+                            console.log('User Roles:', data.userRoles);
+                            for (var i = 0; i < Object.keys(data.userRoles).length; i++) {
+                                console.log('Role:', data.userRoles[i].name);
+
+                                if (data.userRoles[i].name === data.membershipRole.name) {
+                                    console.log('Role Matched:', data.userRoles[i].name, data.membershipRole.name);
+                                    document.getElementById('btnradiomember').checked = true
+                                    document.getElementById('btnradiononmember').checked = false
+                                    break;
+                                }
+                                document.getElementById('btnradiomember').checked = false
+                                document.getElementById('btnradiononmember').checked = true
+                            }
+                        } else {
+                            document.getElementById('btnradiomember').checked = false
+                            document.getElementById('btnradiononmember').checked = true
+                        }
+                    } else {
+                        document.getElementById('btnradiomember').checked = false
+                        document.getElementById('btnradiononmember').checked = true
+                    }
+
 
 
                 })

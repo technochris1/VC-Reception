@@ -1,9 +1,9 @@
 import traceback
 import os, sys
 from PIL import Image
-from flask import render_template, jsonify, abort, url_for, redirect, request, flash, render_template_string, send_from_directory, make_response
+from flask import render_template, jsonify, abort, url_for, redirect, request, flash, render_template_string, send_from_directory, make_response, Response
 from app import app, db, bcrypt, mail, login_manager, socketio
-from app.models import Role, Guest, Guestlog, Event, Setting, func, GuestCredit, CreditTransactionLog   
+from app.models import Role, Guest, Guestlog, Event, Setting, func, GuestCredit, CreditTransactionLog, TriggeredEmailEvent
 from app.forms import AdminRegistrationForm, AdminLoginForm, GuestRegistrationForm, AddPointsForm, AddCreditForm, ChangePasswordForm
 from flask_mail import  Message
 from flask_login import login_user, current_user, logout_user, login_required
@@ -396,6 +396,7 @@ def checkOut(id = None, method = None):
 
 @app.route('/checkInCleanup/')
 def checkin_cleanup():
+
     print("Check In Cleanup @ " + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     todays_events = Event.query.filter(and_(Event.end <= datetime.now().timestamp(), datetime.now().timestamp() <= (Event.end  + 600))).order_by(Event.start).all()
     for event in todays_events:
@@ -419,14 +420,22 @@ def checkin_cleanup():
                     socketio.emit('user checked out', response)
                 db.session.commit()
             
+    if(Setting.query.first().membership_role):
+        guests = Guest.query.filter( and_(Guest.roles.contains(Setting.query.first().membership_role), Guest.membershipEmailSent == False, Guest.membershipStart, Guest.membershipStart <= (datetime.now() - timedelta(minutes=2)))).all() #
+        for guest in guests:
+            print("Membership Guest",guest, guest.membershipStart.timestamp(), (datetime.now() - timedelta(minutes=1)).timestamp())
+            #guest.membershipEmailSent = True
+            
+            db.session.commit() 
+            roleInitializedEvents = TriggeredEmailEvent.query.filter(TriggeredEmailEvent.roleInitializeTriggered == True).all()
+            for event in roleInitializedEvents:
+                print("Role Event", event)
+                #if emailEvent.
 
-    #guests = Guest.query.filter_by(checkedIn = True).all()
-    #for guest in guests:
-        #if guest.checkedIn:
-            #guest.checkedIn = False
-            #db.session.commit() 
+    else:
+        print("Membership Role Not Set!")
 
-
+    
 
 @app.route('/generateUUID/')
 def generateUUID():
@@ -599,7 +608,14 @@ def registerAdmin():
 @app.route('/getGuest/<id>')
 def getGuest(id = None):
     data = Guest.query.filter_by(id = id).first()   
-    return jsonify(data)
+    #data['roleIDS'] = str({index: value for index, value in enumerate(data.roles)})
+    #print(",".join(str(element.id) for element in data.roles))
+    print({index: value for index, value in enumerate(data.roles)})
+    #jsonData = jsonify(data = data, roles = {index: value for index, value in enumerate(data.roles)})
+    jsonData = jsonify(data = data, userRoles = data.roles, membershipRole = Setting.query.first().membership_role)
+    print("data.role", jsonData)
+    return jsonData
+    #return Response(json.dumps(data),  mimetype='application/json')
 
 @app.route('/guests/', methods=['GET', 'POST'])
 #@login_required
@@ -623,6 +639,29 @@ def guests():
             if guest is None:
                 return abort(404)
             
+            print("GuestData",request.values.get('btnradio'))
+            if(request.values.get('btnradio') == "member"):
+                if(Setting.query.first().membership_role not in guest.roles):                    
+                    guest.roles.append(Setting.query.first().membership_role)
+                    guest.membershipStart = datetime.now()
+                    guest.membershipEnd = None
+                    guest.membershipEmailSent = False
+                    guest.membershipEmailSentDate = None
+
+
+            if(request.values.get('btnradio') == "nonmember"):
+                if(Setting.query.first().membership_role in guest.roles):
+                    guest.roles.remove(Setting.query.first().membership_role)
+                    guest.membershipStart = None
+                    guest.membershipEnd = datetime.now()
+                    guest.membershipEmailSent = False
+                    guest.membershipEmailSentDate = None
+            
+
+
+
+
+
             guest.fetUsername=request.values.get('fetUsername')
             guest.name=request.values.get('name')
             
@@ -660,7 +699,7 @@ def guests():
             flash('Settings Updated successfully', 'success')
             return redirect(url_for('guests', guests=Guest.query.all()))
         
-    return render_template('guests.html', guests=Guest.query.all())
+    return render_template('guests.html', guests=Guest.query.all(), settings = Setting.query.first(), roles = Role.query.all())
 
 @app.route('/guestCredit/<id>', methods=['GET', 'POST'])
 #@login_required

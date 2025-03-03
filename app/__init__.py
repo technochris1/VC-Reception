@@ -30,21 +30,23 @@ from flask_mail import Mail, Message
 from flask_apscheduler import APScheduler
 from apscheduler.schedulers.background import BackgroundScheduler
 
-
+from sqlalchemy import MetaData
 from sqlalchemy.sql import func
 from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass
 
 #from auto_update import Updater
 
+class Base(DeclarativeBase):
+    metadata = MetaData(naming_convention={
+  "ix": "ix_%(column_0_label)s",
+  "uq": "uq_%(table_name)s_%(column_0_name)s",
+  "ck": "ck_%(table_name)s_%(constraint_name)s",
+  "fk": "fk_%(table_name)s_%(column_0_name)s_%(referred_table_name)s",
+  "pk": "pk_%(table_name)s"
+})
 
 
 
-class Base(DeclarativeBase, MappedAsDataclass):
-  pass
-
-# load_dotenv()
-
-db = SQLAlchemy(model_class=Base)
 
 
 
@@ -78,7 +80,7 @@ print("http://127.0.0.1:5000/dashboard")
 app.config['SCHEDULER_API_ENABLED'] = True
 
 admin = Admin(app, name='VC-Admin')
-db = SQLAlchemy(app)
+db = SQLAlchemy(app, model_class=Base)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'home' 
@@ -158,6 +160,15 @@ class addonView(ModelView):
     column_hide_backrefs = False
     column_list = ('title', 'description', 'guests', 'cost')
 
+class triggeredEmailEventView(ModelView):    
+    
+    column_hide_backrefs = False
+    #column_sortable_list = ('fetUsername', 'email','name','phone','checkedIn','roles')
+    #column_list = ('title','timeDelta', 'emailTemplate', 'roleInitializeTriggered')
+    #form_columns = ('title','timeDelta', 'emailTemplate', 'roleInitializeTriggered')
+    can_view_details = True
+
+
 
 admin.add_view(guestView(models.Guest, db.session))
 admin.add_view(guestCreditsView(models.GuestCredit, db.session))
@@ -167,11 +178,13 @@ admin.add_view(roleView(models.Role, db.session))
 admin.add_view(ModelView(models.Event, db.session))
 admin.add_view(addonView(models.Addon, db.session))
 admin.add_view(ModelView(models.Setting, db.session))
+admin.add_view(triggeredEmailEventView(models.TriggeredEmailEvent, db.session))
+admin.add_view(ModelView(models.EmailLog, db.session))
+admin.add_view(ModelView(models.EmailTemplate, db.session))
 
 
-
-migrate = Migrate(app, db)
-
+#migrate = Migrate(app, db)
+migrate = Migrate(app, db, render_as_batch=True)
 
 
 
@@ -181,6 +194,11 @@ with app.app_context():
     pass
     
     #db.create_all()
+
+
+    
+
+
 
     # settings = models.Setting.query.first()
     # if(settings is None):

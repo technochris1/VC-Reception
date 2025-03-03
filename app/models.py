@@ -6,7 +6,10 @@ from sqlalchemy.sql import func
 from app import app, db, login_manager
 from flask_login import UserMixin
 
-
+# seting_role = db.Table('setting_roles',
+#                     db.Column('setting_id', db.Integer, db.ForeignKey('setting.id')),
+#                     db.Column('role_id', db.Integer, db.ForeignKey('role.id'))
+#                     )
 
 guest_role = db.Table('guest_roles',
                     db.Column('guest_id', db.Integer, db.ForeignKey('guest.id')),
@@ -21,6 +24,22 @@ guest_addon = db.Table('guest_addons',
 event_addon = db.Table('event_addons',
                     db.Column('event_id', db.Integer, db.ForeignKey('event.id')),
                     db.Column('addon_id', db.Integer, db.ForeignKey('addon.id'))
+                    )
+
+
+trigger_emailTemplate = db.Table('trigger_emailTemplates',
+                    db.Column('trigger_id', db.Integer, db.ForeignKey('triggered_email_event.id')),
+                    db.Column('emailTemplate_id', db.Integer, db.ForeignKey('email_template.id'))
+                    )
+
+trigger_role = db.Table('trigger_roles',
+                    db.Column('trigger_id', db.Integer, db.ForeignKey('triggered_email_event.id')),
+                    db.Column('role_id', db.Integer, db.ForeignKey('role.id'))
+                    )
+
+trigger_event = db.Table('trigger_events',
+                    db.Column('trigger_id', db.Integer, db.ForeignKey('triggered_email_event.id')),
+                    db.Column('event_id', db.Integer, db.ForeignKey('event.id'))
                     )
 
 
@@ -39,7 +58,8 @@ class Role(db.Model):
     allow_password_reset:bool = db.Column(db.Boolean(), default=False)
     notify_staff_on_checkin:bool = db.Column(db.Boolean(), default=False)
     auto_checkout_on_event_end:bool = db.Column(db.Boolean(), default=False)    
-        
+
+            
 
     def __str__(self):
         return f'{self.name}'
@@ -75,11 +95,16 @@ class Guest(db.Model, UserMixin):
 
     termsCheck:bool = db.Column(db.Boolean(), default=False)
     termsDate = db.Column(db.DateTime(timezone=True), server_default=func.now())
-    
-    credit = db.relationship('GuestCredit',backref='guest')
 
-    logbook = db.relationship('Guestlog', backref='guest')
-    
+    membershipEmailSent:bool = db.Column(db.Boolean(), default=False)
+    membershipEmailSentDate = db.Column(db.DateTime(timezone=True), server_default=None)
+
+    membershipStart = db.Column(db.DateTime(timezone=True), server_default=None)
+    membershipEnd = db.Column(db.DateTime(timezone=True), server_default=None)
+        
+
+    credit = db.relationship('GuestCredit',backref='guest')
+    logbook = db.relationship('Guestlog', backref='guest')    
     checkedIn:bool = db.Column(db.Boolean(), default=False)
     lastVisit = db.Column(db.DateTime(timezone=True), server_default=None)
     lastCheckOut = db.Column(db.DateTime(timezone=True), server_default=None)
@@ -170,9 +195,8 @@ class Addon(db.Model):
 @dataclass
 class Setting(db.Model):
     id:int = db.Column(db.Integer, primary_key=True)
-    tos:str  = db.Column(db.String())
-    tos_updated:str = db.Column(db.String(100))
-    
+    tos:str = db.Column(db.String())
+    tos_updated:str = db.Column(db.String(100))    
 
     checkInCooldownSeconds:int = db.Column(db.Integer, default=60)
     checkOutBasedOnTime:bool = db.Column(db.Boolean(), default=True)
@@ -183,7 +207,6 @@ class Setting(db.Model):
 
     points_per_credit:int = db.Column(db.Integer, default=20)
 
-
     show_bartip:bool = db.Column(db.Boolean(), default=False)
     show_cashapp:bool = db.Column(db.Boolean(), default=True)
     show_paypal:bool = db.Column(db.Boolean(), default=True)
@@ -191,9 +214,53 @@ class Setting(db.Model):
     show_cash:bool = db.Column(db.Boolean(), default=True)
     show_credit:bool = db.Column(db.Boolean(), default=False)
 
+    membership_role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
+    membership_role = db.relationship("Role", backref=db.backref("setting", uselist=False))
+
 @dataclass
 class Tag(db.Model):
     id:int = db.Column(db.Integer, primary_key=True)
     tagName:str  = db.Column(db.String(100))
     tagDescription:str  = db.Column(db.String(200))
 
+
+@dataclass
+class TriggeredEmailEvent(db.Model):
+    id:int = db.Column(db.Integer, primary_key=True)
+    title:str  = db.Column(db.String(100))
+      
+    timeDelta:int  = db.Column(db.Integer)
+    #emailTemplate:int  = db.Column(db.Integer, db.ForeignKey('email_template.id'))
+    emailTemplates = db.relationship('EmailTemplate', backref=db.backref('triggeredEmailEvent'), secondary=trigger_emailTemplate)
+    
+    roleInitializeTriggered:bool = db.Column(db.Boolean(), default=False)
+    roles = db.relationship('Role', backref=db.backref('triggeredEmailEvent'), secondary=trigger_role)
+    
+    eventVisitTriggered:bool = db.Column(db.Boolean(), default=False)    
+    eventMissedTriggered:bool = db.Column(db.Boolean(), default=False)
+    events = db.relationship('Event', backref=db.backref('triggeredEmailEvent'), secondary=trigger_event)
+
+
+    paymentTriggered:bool = db.Column(db.Boolean(), default=False)
+
+
+
+
+@dataclass
+class EmailTemplate(db.Model):
+    id:int = db.Column(db.Integer, primary_key=True)
+    templateName:str  = db.Column(db.String(100))
+    templateSubject:str  = db.Column(db.String(100))
+    templateBody:str  = db.Column(db.String(200))
+    templateEnabled:bool = db.Column(db.Boolean(), default=True)
+    
+@dataclass
+class EmailLog(db.Model):
+    id:int = db.Column(db.Integer, primary_key=True)
+    emailSentAt = db.Column(db.DateTime(timezone=True), server_default=func.now())
+    emailTemplate = db.Column(db.Integer, db.ForeignKey('email_template.id'))
+    emailRecipient:str  = db.Column(db.String(100))
+    emailSubject:str  = db.Column(db.String(100))
+    emailBody:str  = db.Column(db.String(200))
+    emailSentBy = db.Column(db.Integer, db.ForeignKey('guest.id'))
+    emailSentTo = db.Column(db.Integer, db.ForeignKey('guest.id'))
