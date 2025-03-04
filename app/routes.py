@@ -3,7 +3,7 @@ import os, sys
 from PIL import Image
 from flask import render_template, jsonify, abort, url_for, redirect, request, flash, render_template_string, send_from_directory, make_response, Response
 from app import app, db, bcrypt, mail, login_manager, socketio
-from app.models import Role, Guest, Guestlog, Event, Setting, func, GuestCredit, CreditTransactionLog, TriggeredEmailEvent
+from app.models import Role, Guest, Guestlog, Event, Setting, func, GuestCredit, CreditTransactionLog, TriggeredEmailEvent, EmailTemplate, EmailLog
 from app.forms import AdminRegistrationForm, AdminLoginForm, GuestRegistrationForm, AddPointsForm, AddCreditForm, ChangePasswordForm
 from flask_mail import  Message
 from flask_login import login_user, current_user, logout_user, login_required
@@ -221,20 +221,22 @@ def preCheckIn(uuid = None):
     if(guest):
         print("Guest",guest)
         visitTime = datetime.now(timezone.utc)
-        response['guest'] = guest.name       
+        response['guest'] = guest.fetUsername
+        response['name'] = guest.name       
         response['uuid'] = guest.uuid       
         response['checkin_blocked'] = guest.checkin_blocked
+        response['termsCheck'] = guest.termsCheck
 
         if(guest.termsCheck):
             pass
             
         if(guest.checkin_blocked):
-            response['error'] = "See Staff for Check In"
+            response['error'] = "See Staff for Check In"            
             socketio.emit('user precheckin', response)
             return json.dumps(response)        
 
         if(guest.checkedIn):
-            response['error'] = guest.fetUsername+" Already Checked In"
+            response['error'] = "Already Checked In"
             socketio.emit('user precheckin', response)
             return json.dumps(response)      
 
@@ -265,7 +267,7 @@ def preCheckIn(uuid = None):
             response['specialEventCredits'] = guestCredit.specialEventAmount
             response['privateSessionCredits'] = guestCredit.privateSessionAmount
                 
-        socketio.emit('user precheckin', response)
+        #socketio.emit('user precheckin', response)
         return json.dumps(response)
     else:
         response['error'] = "Invalid QR Code"
@@ -292,6 +294,7 @@ def checkIn( uuid = None,method = None):
         visitTime = datetime.now(timezone.utc)
         response = {
                 'guest': guest.fetUsername,
+                'name': guest.name,
                 'checked_in': True,
                 'checked_in_at_timestamp': visitTime.timestamp(),
                 'payment_method': method
@@ -309,7 +312,7 @@ def checkIn( uuid = None,method = None):
             #     return redirect(request.args.get('next') )
         
         if(guest.checkedIn):
-            response['error'] = guest.fetUsername+" Already Checked In"   
+            response['error'] = "Already Checked In"   
             socketio.emit('user already checked in', response)         
         else:
             guest.lastVisit = visitTime
@@ -380,7 +383,7 @@ def checkOut(id = None, method = None):
                 'guest': guest.fetUsername,
                 'checked_in': guest.checkedIn,
                 'checked_in_at_timestamp': datetime.now(timezone.utc).timestamp(),
-                'checked_out_at': guest.logbook[-1].checked_out_at,
+                'checked_out_at': guest.logbook[-1].checked_out_at.timestamp(),
                 'check_out_method': guest.logbook[-1].check_out_method
             }
             socketio.emit('user checked out', response)
@@ -896,11 +899,28 @@ def credits():
     return render_template('credits.html', guests=Guest.query.all(), guestCreds=GuestCredit.query.all(), guestCreditLog=CreditTransactionLog.query.all())
     #return render_template('logbook.html')
 
-
+@app.route('/saveEmailTemplate/', methods=['POST'])
+def saveEmailTemplate():
+    if request.method == 'POST':
+        jsonData = request.get_json()
+        print(jsonData['emailTemplateName'])
+        print(jsonData['emailSubject'])
+        print(jsonData['emailMessage'])
+              
+        
+        newEmailTemplate = EmailTemplate(
+            templateName=jsonData['emailTemplateName'],
+            templateSubject=jsonData['emailSubject'],
+            templateBody=jsonData['emailMessage'],
+        )
+        db.session.add(newEmailTemplate)
+        db.session.commit()
+        
+    return jsonify(success=True)
 
 @app.route('/notificationEmailer/', methods=['GET', 'POST'])
 #@login_required
-def emailer():
+def emailer(): 
 
 
     if request.method == 'POST':

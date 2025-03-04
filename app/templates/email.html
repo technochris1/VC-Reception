@@ -1,36 +1,6 @@
 {% extends 'layout.html' %}
 
-{% block navbar %}
-<div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
-    <!-- <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-        <span class="fs-5 d-none d-sm-inline">Menu</span>
-    </a> -->
-    <a href="/logout">
-        <button type="button" class="btn btn-danger" href="/logout">Logout</button>
-    </a>
-    <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
-        <li class="nav-item">
-            <a href="/dashboard" class="nav-link align-middle px-0">
-                <i class="fs-4 bi-speedometer2"></i> <span class="ms-1 d-none d-sm-inline">Dashboard</span>
-            </a>
-        </li>
-        <li>
-            <a href="/guests" class="nav-link px-0 align-middle">
-                <i class="fs-4 bi-people"></i> <span class="ms-1 d-none d-sm-inline">Guests</span>
-            </a>
-        </li>
-        <li>
-            <a href="/logbook" class="nav-link px-0 align-middle ">
-                <i class="fs-4 bi-table "></i> <span class="ms-1 d-none d-sm-inline">Logbook</span></a>
-        </li>
-        <li>
-            <a href="/settings" class="nav-link px-0 align-middle text-danger">
-                <i class="fs-4 bi-table "></i> <span class="ms-1 d-none d-sm-inline">Settings</span></a>
-        </li>
-    </ul>
-    <hr>
-</div>
-{% endblock navbar %}
+
 
 {% block content %}
 
@@ -65,7 +35,8 @@
     <h3>Guest Groups (Click to Select Groups of Guests)</h3>
     <div class="d-grid gap-2 d-md-block">
         {% for group in roles %}
-        <button class="btn btn-primary m-1" type="button" onclick="btnClick(this)" value="{{group}}">{{ group.name }}</button>
+        <button class="btn btn-primary m-1" type="button" onclick="btnClick(this)" value="{{group}}">{{ group.name
+            }}</button>
         {% endfor %}
     </div>
     <h3>Guest Emails</h3>
@@ -73,7 +44,7 @@
         {% for guest in guests %}
         <option value="{{ guest.email }}" data-roles="{{guest.roles}}">{{ guest.email }}</option>
         {% endfor %}
-    </select>    
+    </select>
 
     <h3>Email Subject</h3>
     <div class="mb-3">
@@ -87,23 +58,72 @@
     </div>
     <div class="d-flex">
         <div class=" p-2">
-            <button type="submit" type="submit" class="btn btn-primary">Send Email</button>
+            <button type="submit" class="btn btn-primary">Send Email</button>
+            <button type="button" class="btn btn-primary" onclick="btnSaveTemplate(this)">Save As Template</button>
         </div>
     </div>
 </form>
+
 
 <script>
     function btnClick(btn) {
         var emails = document.getElementsByName("emails")[0];
         var group = btn.value;
         var options = emails.options;
-        for (var i = 0; i < options.length; i++) {            
+        for (var i = 0; i < options.length; i++) {
             var option = options[i];
             if (option.dataset.roles.includes(group)) {
                 option.selected = true;
             }
         }
     }
-   
+    function btnClickAll(btn) {
+        var emails = document.getElementsByName("emails")[0];
+        var options = emails.options;
+        for (var i = 0; i < options.length; i++) {
+            var option = options[i];
+            option.selected = true;
+        }
+    }
+
+    function btnClickNone(btn) {
+        var emails = document.getElementsByName("emails")[0];
+        var options = emails.options;
+        for (var i = 0; i < options.length; i++) {
+            var option = options[i];
+            option.selected = false;
+        }
+    }
+    function btnSaveTemplate(btn) {
+        console.log("Save Template");
+        let name = prompt("Please Name the Email Template", "");
+
+        if (name != null) {
+            var subject = document.getElementById("subject").value;
+            var message = tinymce.get("message").getContent();
+            console.log("Subject: " + subject);
+            console.log("Message: " + message);
+
+            body = JSON.stringify({
+                'emailSubject': subject,
+                'emailMessage': message,
+                'emailTemplateName': name
+            })
+
+            url = '{{ url_for("saveEmailTemplate" ) }}'
+
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: body
+            })
+                .then(response => response.json())
+                .then(data => console.log(data));
+
+        }
+    }
+
 </script>
 {% endblock content %}

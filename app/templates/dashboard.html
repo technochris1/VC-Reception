@@ -11,7 +11,7 @@
     <div class="col">
         <div class="card text-bg-primary ">
             <div class="card-body">
-                <h1 class="card-title text-center">{{guests_checked_in|length}}</h1>
+                <h1 id="guest-list-count" class="card-title text-center">{{guests_checked_in|length}}</h1>
                 <p class="card-text text-center">Guests Currently Checked In</p>
                 <div class="accordion accordion" id="accordionFlushExample">
                     <div class="accordion-item">
@@ -25,7 +25,7 @@
                         <div id="flush-collapseOne" class="accordion-collapse collapse"
                             data-bs-parent="#accordionFlushExample">
                             <div class="accordion-body">
-                                <ul>
+                                <ul id="guest-list">
                                     {% for guest in guests_checked_in %}
                                     <li>
                                         {% if guest.fetUsername %}
@@ -109,45 +109,16 @@
 
 
     <!-- TOAST ALERTS -->
-
+    <!-- 
     <div class="toast-container position-static" id="toast-container">
-        <!--   <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header">
-                <img src="..." class="rounded me-2" alt="...">
-                <strong class="me-auto">Bootstrap</strong>
-                <small class="text-body-secondary">just now</small>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-            <div class="toast-body">
-                See? Just like this.
-            </div>
-        </div>
-
-        <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="toast-header">
-                <img src="..." class="rounded me-2" alt="...">
-                <strong class="me-auto">Bootstrap</strong>
-                <small class="text-body-secondary">2 seconds ago</small>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-            <div class="toast-body">
-                Heads up, toasts will stack automatically
-            </div>
-        </div>
-
-        <div class="toast align-items-center" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    Hello, world! This is a toast message.
-                </div>
-                <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        </div> -->
-
-
-    </div>
+    </div> -->
 
 </div>
+
+
+<div class="toast-container position-absolute top-0 end-0 p-3" id="toast-container">
+</div>
+
 {% endblock content %}
 
 
@@ -199,21 +170,115 @@
         toastContainer.appendChild(toastHeader);
         toastContainer.appendChild(toastBody);
 
+        guestList = document.getElementById('guest-list')
+
+        console.log(guestList);
+        
+        liElement = document.createElement('li')
+        if(arg.guest) {
+            liElement.innerText = '@' + arg.guest;
+        } else {
+            liElement.innerText = arg.name;
+        }
+        guestList.appendChild(liElement);
+
+        document.getElementById('guest-list-count').innerText = guestList.children.length;
+
+        document.getElementById('flush-collapseOne').classList.add('show');
+
+
+
+
         document.getElementById('toast-container').appendChild(toastContainer);
 
 
-        new bootstrap.Toast(toastContainer, {autohide:true ,delay: 20000 }).show();
-        
-        
+        new bootstrap.Toast(toastContainer, { autohide: true, delay: 5000 }).show();
+
+
+
+
+
 
     });
 
-    socket.on("user precheckin", (arg, callback) => {
+    socket.on("user checked out", (arg, callback) => {
         console.log(arg);
         //callback("got it");
         const toastContainer = document.createElement('div');
         toastContainer.classList.add('toast');
         toastContainer.setAttribute('data-bs-autohide', 'true');
+
+        const toastHeader = document.createElement('div');
+        toastHeader.classList.add('toast-header');
+
+        const toastHeaderText = document.createElement('strong');
+        toastHeaderText.classList.add('me-auto');
+        toastHeaderText.innerText = "Guest Checked Out";
+
+        toastHeader.appendChild(toastHeaderText);
+
+        const toastCloseButton = document.createElement('button');
+        toastCloseButton.type = 'button';
+        toastCloseButton.classList.add('btn-close');
+        toastCloseButton.setAttribute('data-bs-dismiss', 'toast');
+        toastCloseButton.setAttribute('aria-label', 'Close');
+
+        toastHeader.appendChild(toastCloseButton);
+
+        const toastBody = document.createElement('div');
+        toastBody.classList.add('toast-body');
+        toastBody.innerText = arg.guest;
+
+        toastContainer.appendChild(toastHeader);
+        toastContainer.appendChild(toastBody);
+
+        // guestList = document.getElementById('guest-list')
+
+        // console.log(guestList);
+        
+        // liElement = document.createElement('li')
+        // if(arg.guest) {
+        //     liElement.innerText = '@' + arg.guest;
+        // } else {
+        //     liElement.innerText = arg.name;
+        // }
+        // guestList.appendChild(liElement);
+
+        // document.getElementById('guest-list-count').innerText = guestList.children.length;
+
+
+
+
+
+        document.getElementById('toast-container').appendChild(toastContainer);
+
+
+        new bootstrap.Toast(toastContainer, { autohide: true, delay: 5000 }).show();
+
+
+
+
+
+
+    });
+
+
+
+    socket.on("user precheckin", (arg, callback) => {
+        console.log(arg);
+        var autohideToast = arg.checkin_blocked;
+
+
+        //callback("got it");
+        const toastContainer = document.createElement('div');
+        toastContainer.classList.add('toast');
+
+        toastContainer.setAttribute('data-bs-autohide', 'true');
+
+        if (autohideToast) {
+            toastContainer.classList.add('bg-danger');
+            toastContainer.setAttribute('data-bs-autohide', 'false');
+        }
 
         const toastHeader = document.createElement('div');
         toastHeader.classList.add('toast-header');
@@ -234,24 +299,31 @@
 
         const toastBody = document.createElement('div');
         toastBody.classList.add('toast-body');
-        toastBody.innerText = arg.guest;
+        toastBody.innerText = arg.error;
+        if (arg.checkin_blocked) {
+            toastBody.classList.add('text-black');
+            toastBody.innerText = arg.name + " / " + arg.guest + " Checkin Blocked";
+        } else {
+            toastBody.classList.add('text-white');
+            toastBody.innerText = arg.error;
+        }
 
         toastContainer.appendChild(toastHeader);
         toastContainer.appendChild(toastBody);
 
-        document.getElementById('toast-container').appendChild(toastContainer);
+        if (arg.error) {
+            document.getElementById('toast-container').appendChild(toastContainer);
+            new bootstrap.Toast(toastContainer, { autohide: !autohideToast, delay: 5000 }).show();
+        }
 
 
-        new bootstrap.Toast(toastContainer, {autohide:false ,delay: 20000 }).show();
-        
-        
 
     });
 
 
     //const toastElList = document.querySelectorAll('.toast')
     //const toastList = [...toastElList].map(toastEl =>
-        //new bootstrap.Toast(toastEl, { delay: 5000 }).show()
+    //new bootstrap.Toast(toastEl, { delay: 5000 }).show()
     //)
 
 </script>
