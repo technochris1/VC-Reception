@@ -1,1 +1,8 @@
+RUN THESE COMMANDS TO INSTALL AND SETUP THE PC FOR RUNNING THIS APPLICATION
+
+
+
+
+python.exe -m pip install --upgrade pip
+
 pip install -r requirements.txt
