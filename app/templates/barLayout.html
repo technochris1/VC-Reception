@@ -19,82 +19,29 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-table@1.23.2/dist/bootstrap-table.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.js"></script>
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta2/dist/css/bootstrap-select.min.css">
+
+
 </head>
 
 <body>
     <div class="container-fluid">
         <div class="row flex-nowrap">
-            <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
-                <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
+            <div class="col-1 bg-dark">
+                <div class="d-flex flex-column align-items-center align-items-sm-start text-white min-vh-100">
                     <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start"
                         id="menu">
-                        <li class="nav-item">
+                        <!-- <li class="nav-item">
                             <a href="/logout" class="nav-link align-middle px-0">
                                 <i class="fs-4 bi-box-arrow-left"></i> <span
                                     class="ms-1 d-none d-sm-inline">Logout</span>
                             </a>
-                        </li>
+                        </li> -->
                         <li class="nav-item">
-                            <a href="/dashboard"
+                            <a href="/barView"
                                 class="nav-link align-middle px-0 {% if request.endpoint == 'dashboard' %}text-danger{% endif %}">
-                                <i class="fs-4 bi-speedometer2"></i> <span
-                                    class="ms-1 d-none d-sm-inline">Dashboard</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/guests"
-                                class="nav-link px-0 align-middle {% if request.endpoint == 'guests' %}text-danger{% endif %}">
-                                <i class="fs-4 bi-people"></i> <span class="ms-1 d-none d-sm-inline">Guests</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/notificationEmailer"
-                                class="nav-link px-0 align-middle {% if request.endpoint == 'emailer' %}text-danger{% endif %}">
-                                <i class="fs-4  bi-envelope-at"></i> <span class="ms-1 d-none d-sm-inline">Email
-                                    Notification</span>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/logbook"
-                                class="nav-link px-0 align-middle {% if request.endpoint == 'logbook' %}text-danger{% endif %}">
-                                <i class="fs-4 bi-table "></i> <span class="ms-1 d-none d-sm-inline">Logbook</span></a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/credits"
-                                class="nav-link px-0 align-middle {% if request.endpoint == 'credits' %}text-danger{% endif %}">
-                                <i class="fs-4 bi-cash-coin "></i> <span class="ms-1 d-none d-sm-inline">Point & Credit
-                                    System</span></a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/events"
-                                class="nav-link px-0 align-middle {% if request.endpoint == 'events' %}text-danger{% endif %}">
-                                <i class="fs-4 bi-table "></i> <span class="ms-1 d-none d-sm-inline">Events</span></a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/settings"
-                                class="nav-link px-0 align-middle {% if request.endpoint == 'settings' %}text-danger{% endif %}">
-                                <i class="fs-4 bi-sliders "></i> <span
-                                    class="ms-1 d-none d-sm-inline">Settings</span></a>
-                        </li>
-                        <li class="nav-item">
-                            <a target="_blank" rel="noopener noreferrer" href="/admin"
-                                class="nav-link px-0 align-middle">
-                                <i class="fs-4 bi-gear-fill "></i> <span class="ms-1 d-none d-sm-inline">Admin
-                                    Control</span></a>
-                        </li>
-                        <li class="nav-item">
-                            <a target="_blank" rel="noopener noreferrer" href="/guestView"
-                                class="nav-link px-0 align-middle">
-                                <i class="fs-4 bi-tablet-landscape "></i> <span class="ms-1 d-none d-sm-inline">Guest
-                                    Facing
-                                    View</span></a>
-                        </li>
-                        <li class="nav-item">
-                            <a target="_blank" rel="noopener noreferrer" href="/guestView2"
-                                class="nav-link px-0 align-middle">
-                                <i class="fs-4 bi-tablet-landscape "></i> <span class="ms-1 d-none d-sm-inline">Guest
-                                    Facing
-                                    View 2</span>
+                                <i class="fs-4 bi-speedometer2"></i><span class="ms-1 d-none d-sm-inline"></span>
                             </a>
                         </li>
                     </ul>
@@ -124,6 +71,9 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-table@1.23.2/dist/bootstrap-table.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta2/dist/js/bootstrap-select.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap-select@1.14.0-beta2/dist/js/i18n/defaults-*.min.js"></script>
 
     <script>
         const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')

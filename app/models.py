@@ -83,13 +83,14 @@ class Guest(db.Model, UserMixin):
     email:str  = db.Column(db.String(200), nullable=False)
     phone:str  = db.Column(db.String(20))
 
+    barStatus:int = db.Column(db.Integer, default=0)
+
     checkin_blocked:bool = db.Column(db.Boolean(), default=False)
 
     password:str  = db.Column(db.String(255))
     allow_qrcode_refresh:bool = db.Column(db.Boolean(), default=True)
 
     roles = db.relationship('Role', backref=db.backref('guests'), secondary=guest_role)
-
     performs = db.relationship('Addon', backref='guests', secondary='guest_addons')
 
 

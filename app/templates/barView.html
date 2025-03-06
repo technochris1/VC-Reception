@@ -1,26 +1,59 @@
-{% extends 'layout.html' %}
+{% extends 'barLayout.html' %}
 
 
 
 {% block content %}
 
-<div class="row  row-cols-md-2 g-4">
+
+
+<div class="row row-cols-1 ">
     <div class="col">
-        <div class="card text-bg-primary ">
+        <div class="card">
             <div class="card-body">
-                <div class="accordion-body">
-                    <ul id="guest-list">
-                        {% for guest in guests_checked_in %}
-                        <li>
-                            {% if guest.fetUsername %}
-                            @{{guest.fetUsername |e}}
-                            {% else %}
-                            {{guest.name |e}}
-                            {% endif %}
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
+                <ul id="guest-list">
+
+                    {% for guest in guests_checked_in %}
+                    <li class="list-group-item m-2">
+                        {% if guest.barStatus %}
+                        {% if guest.barStatus == 0 %}
+                        <select class=" selectpicker" data-width="fit" data-style="btn-success"
+                            id="userStateSelect-{{guest.id}}">
+                            <option selected class="text-bg-success text-dark" data-icon="bi-person-fill-check"></option>
+                            <option class="text-bg-warning" data-icon="bi-person-fill-exclamation"></option>
+                            <option class="text-bg-danger text-dark" data-icon="bi-person-fill-x"></option>
+                        </select>
+                        {% elif guest.barStatus == 1 %}
+                        <select class=" selectpicker" data-width="fit" data-style="btn-warning"
+                            id="userStateSelect-{{guest.id}}">
+                            <option class="text-bg-success text-dark" data-icon="bi-person-fill-check"></option>
+                            <option selected class="text-bg-warning" data-icon="bi-person-fill-exclamation"></option>
+                            <option class="text-bg-danger text-dark" data-icon="bi-person-fill-x"></option>
+                        </select>
+                        {% elif guest.barStatus == 2 %}
+                        <select class=" selectpicker" data-width="fit" data-style="btn-danger"
+                            id="userStateSelect-{{guest.id}}">
+                            <option class="text-bg-success text-dark" data-icon="bi-person-fill-check"></option>
+                            <option class="text-bg-warning" data-icon="bi-person-fill-exclamation"></option>
+                            <option selected class="text-bg-danger text-dark" data-icon="bi-person-fill-x"></option>
+                        </select>
+                        {% endif %}
+                        {% else %}
+                        <select class=" selectpicker" data-width="fit" data-style="btn-success"
+                            id="userStateSelect-{{guest.id}}">
+                            <option selected class="text-bg-success text-dark" data-icon="bi-person-fill-check"></option>
+                            <option class="text-bg-warning" data-icon="bi-person-fill-exclamation"></option>
+                            <option class="text-bg-danger text-dark" data-icon="bi-person-fill-x"></option>
+                        </select>
+                        {% endif %}
+                        {% if guest.fetUsername %}
+                        {{guest.fetUsername |e}}
+                        {% else %}
+                        {{guest.name |e}}
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+
             </div>
         </div>
     </div>
@@ -40,6 +73,61 @@
 <script>
 
 
+
+
+
+    $('.selectpicker').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
+        // do something...
+        //console.log(clickedIndex, isSelected, previousValue);
+        //$(e.target).selectpicker('setStyle', 'btn-danger');
+        switch (clickedIndex) {
+            case 0:
+                $(e.target).selectpicker('setStyle', 'btn-warning', 'remove');
+                $(e.target).selectpicker('setStyle', 'btn-danger', 'remove');
+                $(e.target).selectpicker('setStyle', 'btn-success', 'add');
+                break;
+            case 1:
+                $(e.target).selectpicker('setStyle', 'btn-success', 'remove');
+                $(e.target).selectpicker('setStyle', 'btn-danger', 'remove');
+                $(e.target).selectpicker('setStyle', 'btn-warning', 'add');
+                break;
+            case 2:
+                $(e.target).selectpicker('setStyle', 'btn-success', 'remove');
+                $(e.target).selectpicker('setStyle', 'btn-warning', 'remove');
+                $(e.target).selectpicker('setStyle', 'btn-danger', 'add');
+                break;
+        }
+
+
+        fetch('{{ url_for("setGuestBarState" ) }}' + encodeURI(e.target.id.split('-')[1] + '/' + clickedIndex), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                state: clickedIndex
+            }),
+        })
+            .then(response => response.json())
+            .then(data => {
+                //console.log('Success:', data);
+            })
+            .catch((error) => {
+                //console.error('Error:', error);
+            });
+    });
+
+
+
+
+
+
+
+
+
+
+
+
     var socket = io();
     socket.on('connect', function () {
         console.log('Connected!');
@@ -49,7 +137,12 @@
         console.log('Disconnected!');
     });
 
+   
+    socket.on("user barstatus changed", (arg, callback) => {
+        console.log(" user barstatus changed", arg);
+    });
 
+    
 
     socket.on("user checked in", (arg, callback) => {
         console.log(arg);
@@ -96,7 +189,7 @@
 
         document.getElementById('guest-list-count').innerText = guestList.children.length;
 
-        
+
 
 
 

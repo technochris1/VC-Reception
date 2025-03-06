@@ -35,6 +35,31 @@ def home():
            flash('Login unsuccessful. Please check email and password', 'danger')
     return render_template('home.html', form=form)
 
+
+
+@app.route("/barView/")
+#@login_required
+def barView():
+    date = datetime.now()
+
+    current_time = datetime.now(tz=tz.tzutc())
+
+    last_24_hours = current_time - timedelta(hours=24)
+
+    return render_template('barView.html', guests_checked_in=Guest.query.filter(Guest.checkedIn ==True).all(),
+                           guests_recently_visited=Guest.query.filter(Guest.lastVisit > last_24_hours).all(),
+                           guests_total_count=Guest.query.count(),
+                           quests_top_5=db.session.query(Guest, func.count(Guestlog.id)).join(Guestlog).group_by(Guest.id).order_by(func.count(Guestlog.id).desc()).limit(5).all(),
+                           todaysEvents=Event.query.filter(and_(Event.start <= date.timestamp(), date.timestamp() <= Event.end )).order_by(Event.start).all(),                        
+                           
+                           #guests_top_5=db.session.query(Guest, func.count(Guestlog)).outerjoin(Guestlog, Guest.id == Guestlog.userID).group_by(Guest.id).order_by(func.count(Guestlog.id).desc()).limit(5).all(),                           
+                           )
+
+
+
+
+
+
 @app.route('/guestView/', methods=['GET', 'POST'])
 def guestView():
     form = GuestRegistrationForm()
@@ -584,6 +609,9 @@ def dashboard():
                            #guests_top_5=db.session.query(Guest, func.count(Guestlog)).outerjoin(Guestlog, Guest.id == Guestlog.userID).group_by(Guest.id).order_by(func.count(Guestlog.id).desc()).limit(5).all(),                           
                            )
 
+
+
+
 @app.route('/registerAdmin/', methods=['GET', 'POST'])
 #@login_required
 def registerAdmin():
@@ -604,8 +632,23 @@ def registerAdmin():
         return redirect(url_for('guests'))
     return render_template('admin_registration.html', title='Register Admin', form=form)
 
+@app.route('/setGuestBarState/', methods=['POST'])
+@app.route('/setGuestBarState/<id>/<state>', methods=['POST'])
+def setGuestBarState(id=None, state=None):
+    if(id is not None or state is not None):
+        guest = Guest.query.filter_by(id=id).first()
+        if guest:
+            guest.barStatus = state
+            db.session.commit()
 
-
+            barStatus = {
+                'guestId': guest.id,
+                'barStatus': guest.barStatus
+            }
+            socketio.emit('user barstatus changed', barStatus)
+            return json.dumps(True)
+        else:
+            return abort(404)
 
 @app.route('/getGuest/')
 @app.route('/getGuest/<id>')
