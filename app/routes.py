@@ -399,6 +399,7 @@ def checkOut(id = None, method = None):
         
         if(guest.checkedIn):
             guest.checkedIn = False
+            guest.barStatus = None
             guest.logbook[-1].checked_out_at = datetime.now(timezone.utc)
             guest.logbook[-1].check_out_method = "Manual"
 
@@ -438,6 +439,7 @@ def checkin_cleanup():
                 print("Guest:",guest,"CheckedIn?", guest.checkedIn)             
                 if guest.checkedIn:
                     guest.checkedIn = False
+                    guest.barStatus = None
                     response = {
                         'guest': guest.fetUsername,
                         'checked_in': guest.checkedIn,
@@ -454,10 +456,24 @@ def checkin_cleanup():
             print("Membership Guest",guest, guest.membershipStart.timestamp(), (datetime.now() - timedelta(minutes=1)).timestamp())
             #guest.membershipEmailSent = True
             
-            db.session.commit() 
+            #db.session.commit() 
             roleInitializedEvents = TriggeredEmailEvent.query.filter(TriggeredEmailEvent.roleInitializeTriggered == True).all()
             for event in roleInitializedEvents:
                 print("Role Event", event)
+                for emailTemplate in event.emailTemplates:
+                    print("Email Template", emailTemplate)
+                    #sendEmail(recipients, subject, message, attachment=None):
+                    emailSent = sendEmail([guest.email], emailTemplate.templateSubject, emailTemplate.templateBody)
+                    guest.membershipEmailSent = emailSent
+                    newEmailLog = EmailLog(
+                        
+                        emailTemplate=emailTemplate.id,
+                        emailRecipient = guest.email,
+                        emailSubject=emailTemplate.templateSubject,
+                        emailBody=emailTemplate.templateBody
+                    )
+                    db.session.add(newEmailLog)
+                    db.session.commit()
                 #if emailEvent.
 
     else:
@@ -1167,7 +1183,7 @@ def sendQRCodeEmail(recipients, uuid):
 def sendEmail(recipients, subject, message, attachment=None):
     
 
-    print("Attachment",attachment)
+    #print("Attachment",attachment)
 
     try:
         msg = Message(subject,
@@ -1175,15 +1191,15 @@ def sendEmail(recipients, subject, message, attachment=None):
                     recipients=recipients)
         msg.body = message
         if attachment:
-            try:
-                
-                    msg.attach("registration-qr-code.png", "image/png", attachment)
-                    #msg.body = render_template('email.html', message=message, image="cid:qr_image")
-                    msg.body = message
+            try:            
+                msg.attach("registration-qr-code.png", "image/png", attachment)
+                msg.body = message
             except Exception as e:
                 print("send_mail.attachment exception: {}".format(e))
         mail.send(msg)
+        return True
     except:
         print("send_mail exception:\n{}".format(traceback.format_exc()))
-    return
+        return False
+    
  

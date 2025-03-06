@@ -264,4 +264,3 @@ class EmailLog(db.Model):
     emailSubject:str  = db.Column(db.String(100))
     emailBody:str  = db.Column(db.String(200))
     emailSentBy = db.Column(db.Integer, db.ForeignKey('guest.id'))
-    emailSentTo = db.Column(db.Integer, db.ForeignKey('guest.id'))

@@ -18,7 +18,8 @@
                         {% if guest.barStatus == 0 %}
                         <select class=" selectpicker" data-width="fit" data-style="btn-success"
                             id="userStateSelect-{{guest.id}}">
-                            <option selected class="text-bg-success text-dark" data-icon="bi-person-fill-check"></option>
+                            <option selected class="text-bg-success text-dark" data-icon="bi-person-fill-check">
+                            </option>
                             <option class="text-bg-warning" data-icon="bi-person-fill-exclamation"></option>
                             <option class="text-bg-danger text-dark" data-icon="bi-person-fill-x"></option>
                         </select>
@@ -40,7 +41,8 @@
                         {% else %}
                         <select class=" selectpicker" data-width="fit" data-style="btn-success"
                             id="userStateSelect-{{guest.id}}">
-                            <option selected class="text-bg-success text-dark" data-icon="bi-person-fill-check"></option>
+                            <option selected class="text-bg-success text-dark" data-icon="bi-person-fill-check">
+                            </option>
                             <option class="text-bg-warning" data-icon="bi-person-fill-exclamation"></option>
                             <option class="text-bg-danger text-dark" data-icon="bi-person-fill-x"></option>
                         </select>
@@ -137,66 +139,18 @@
         console.log('Disconnected!');
     });
 
-   
+
     socket.on("user barstatus changed", (arg, callback) => {
         console.log(" user barstatus changed", arg);
     });
 
-    
+
 
     socket.on("user checked in", (arg, callback) => {
         console.log(arg);
         //callback("got it");
-        const toastContainer = document.createElement('div');
-        toastContainer.classList.add('toast');
-        toastContainer.setAttribute('data-bs-autohide', 'true');
-
-        const toastHeader = document.createElement('div');
-        toastHeader.classList.add('toast-header');
-
-        const toastHeaderText = document.createElement('strong');
-        toastHeaderText.classList.add('me-auto');
-        toastHeaderText.innerText = "Guest Checked In";
-
-        toastHeader.appendChild(toastHeaderText);
-
-        const toastCloseButton = document.createElement('button');
-        toastCloseButton.type = 'button';
-        toastCloseButton.classList.add('btn-close');
-        toastCloseButton.setAttribute('data-bs-dismiss', 'toast');
-        toastCloseButton.setAttribute('aria-label', 'Close');
-
-        toastHeader.appendChild(toastCloseButton);
-
-        const toastBody = document.createElement('div');
-        toastBody.classList.add('toast-body');
-        toastBody.innerText = arg.guest;
-
-        toastContainer.appendChild(toastHeader);
-        toastContainer.appendChild(toastBody);
-
-        guestList = document.getElementById('guest-list')
-
-        console.log(guestList);
-
-        liElement = document.createElement('li')
-        if (arg.guest) {
-            liElement.innerText = '@' + arg.guest;
-        } else {
-            liElement.innerText = arg.name;
-        }
-        guestList.appendChild(liElement);
-
-        document.getElementById('guest-list-count').innerText = guestList.children.length;
-
-
-
-
-
-        document.getElementById('toast-container').appendChild(toastContainer);
-
-
-        new bootstrap.Toast(toastContainer, { autohide: true, delay: 5000 }).show();
+        //REFRESH PAGE
+        location.reload();
 
 
 
@@ -208,58 +162,7 @@
     socket.on("user checked out", (arg, callback) => {
         console.log(arg);
         //callback("got it");
-        const toastContainer = document.createElement('div');
-        toastContainer.classList.add('toast');
-        toastContainer.setAttribute('data-bs-autohide', 'true');
-
-        const toastHeader = document.createElement('div');
-        toastHeader.classList.add('toast-header');
-
-        const toastHeaderText = document.createElement('strong');
-        toastHeaderText.classList.add('me-auto');
-        toastHeaderText.innerText = "Guest Checked Out";
-
-        toastHeader.appendChild(toastHeaderText);
-
-        const toastCloseButton = document.createElement('button');
-        toastCloseButton.type = 'button';
-        toastCloseButton.classList.add('btn-close');
-        toastCloseButton.setAttribute('data-bs-dismiss', 'toast');
-        toastCloseButton.setAttribute('aria-label', 'Close');
-
-        toastHeader.appendChild(toastCloseButton);
-
-        const toastBody = document.createElement('div');
-        toastBody.classList.add('toast-body');
-        toastBody.innerText = arg.guest;
-
-        toastContainer.appendChild(toastHeader);
-        toastContainer.appendChild(toastBody);
-
-        // guestList = document.getElementById('guest-list')
-
-        // console.log(guestList);
-
-        // liElement = document.createElement('li')
-        // if(arg.guest) {
-        //     liElement.innerText = '@' + arg.guest;
-        // } else {
-        //     liElement.innerText = arg.name;
-        // }
-        // guestList.appendChild(liElement);
-
-        // document.getElementById('guest-list-count').innerText = guestList.children.length;
-
-
-
-
-
-        document.getElementById('toast-container').appendChild(toastContainer);
-
-
-        new bootstrap.Toast(toastContainer, { autohide: true, delay: 5000 }).show();
-
-
+        location.reload();
 
 
 
@@ -313,7 +216,7 @@
         toastContainer.appendChild(toastHeader);
         toastContainer.appendChild(toastBody);
 
-        if (arg.error) {
+        if (arg.checkin_blocked) {
             document.getElementById('toast-container').appendChild(toastContainer);
             new bootstrap.Toast(toastContainer, { autohide: !autohideToast, delay: 5000 }).show();
         }
