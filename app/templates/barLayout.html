@@ -28,7 +28,7 @@
 <body>
     <div class="container-fluid">
         <div class="row flex-nowrap">
-            <div class="col-1 bg-dark">
+            <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
                 <div class="d-flex flex-column align-items-center align-items-sm-start text-white min-vh-100">
                     <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start"
                         id="menu">
@@ -38,12 +38,23 @@
                                     class="ms-1 d-none d-sm-inline">Logout</span>
                             </a>
                         </li> -->
+
                         <li class="nav-item">
+                            <a href="/barView"
+                                class="nav-link px-0 align-middle {% if request.endpoint == 'barView' %}text-danger{% endif %}">
+                                <i class="fs-4 bi-people"></i> <span class="ms-1 d-none d-sm-inline">Guests</span>
+                            </a>
+                        </li>
+
+
+
+
+                        <!-- <li class="nav-item">
                             <a href="/barView"
                                 class="nav-link align-middle px-0 {% if request.endpoint == 'dashboard' %}text-danger{% endif %}">
                                 <i class="fs-4 bi-speedometer2"></i><span class="ms-1 d-none d-sm-inline"></span>
                             </a>
-                        </li>
+                        </li> -->
                     </ul>
                     <hr>
                 </div>

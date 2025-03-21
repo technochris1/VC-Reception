@@ -33,10 +33,11 @@
             <th data-sortable="true" scope="col" data-switchable="false">Handle</th>
             <th data-sortable="true" scope="col" data-field="name" data-visible="false" class='d-none d-md-table-cell'>
                 Name</th>
-            <th data-sortable="true" scope="col" class='d-none d-lg-table-cell' data-switchable="false">Roles</th>
+            <th data-sortable="true" scope="col" class='d-none d-xl-table-cell' data-switchable="false">Roles</th>
             <th data-sortable="true" scope="col" class='d-none d-xl-table-cell' data-switchable="false">Credits</th>
-            <th data-sortable="true" scope="col" data-switchable="false">Checked In</th>
-            <th data-sortable="true" scope="col" data-switchable="false">Last Visit</th>
+            <th data-sortable="true" scope="col" class='d-none d-lg-table-cell' data-switchable="false">Checked In</th>
+            <th data-sortable="true" scope="col" class='d-none d-lg-table-cell' data-switchable="false">Visits</th>
+            <th data-sortable="true" scope="col" class='d-none d-md-table-cell' data-switchable="false">Last Visit</th>
             <th data-align="right" scope="col" data-switchable="false"></th>
 
         </tr>
@@ -74,10 +75,11 @@
 
 
             <td class='d-none d-md-table-cell'>{{guest.name}}</td>
+
             {% if guest.roles %}
-            <td class='d-none d-lg-table-cell'>{{guest.roles}}</td>
+            <td class='d-none d-xl-table-cell'>{{guest.roles}}</td>
             {% else %}
-            <td class='d-none d-lg-table-cell'>None Assigned</th>
+            <td class='d-none d-xl-table-cell'>None Assigned</th>
                 {% endif %}
 
 
@@ -103,12 +105,19 @@
                     href="/checkIn/{{guest.id}}/Manually?next=%2Fguests">(CheckIn)</a></td>
             {% endif %}
 
+
+            {% if guestVisitCounts[guest.id] %}
+            <td>{{guestVisitCounts[guest.id][1]}}</td>
+            {% else %}
+            <td>0</td>
+            {% endif %}
+
             {% if guest.lastVisit %}
             <td>{{ moment(guest.lastVisit).fromNow() }}</td>
             {% else %}
             <td>Never</td>
             {% endif %}
-            <td>
+            <td >
 
                 {% if current_user.roles and current_user | check_role_allow_password_reset %}
                 <a href="/resetPassword/{{guest.id}}"><button type="button" class="btn btn-sm btn-outline-danger"><i
@@ -116,6 +125,9 @@
                             class="bi bi-arrow-clockwise"></i> Reset Pass</button></a>
                 {% endif %}
 
+                <a href="/guestCredit/{{guest.id}}" class="d-xl-none d-lg-block d-sm-block"><button type="button" class="btn btn-sm btn-outline-danger  "><i
+                            class="bi bi-cash-coin"></i>
+                        Credits</button></a>
 
                 <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal"
                     data-bs-target="#registerModal" data-bs-mode="edit" data-bs-uuid="{{guest.id}}"
@@ -255,8 +267,8 @@
                                 autocomplete="off">
                             <label class="btn btn-outline-success" for="btnradiomember">Member</label>
 
-                            <input type="radio" class="btn-check" name="btnradio" id="btnradiononmember" value="nonmember"
-                                autocomplete="off" checked>
+                            <input type="radio" class="btn-check" name="btnradio" id="btnradiononmember"
+                                value="nonmember" autocomplete="off" checked>
                             <label class="btn btn-outline-danger" for="btnradiononmember">Non-Member</label>
                         </div>
 

@@ -745,7 +745,13 @@
     var idInput = document.getElementById('idInput');
     //idInput.style.backgroundColor = 'rgba(255,255,255,1)';
 
-    focusOnCodeTimer = setTimeout(focusOnCode, 1000);
+    var focusOnCodeTimer = setTimeout(focusOnCode, 1000);
+
+    let qrCodeTimeoutID;
+
+    //var qrCodeInputTimer = setTimeout(qrFunction, 3000);
+    //console.log("Clear Timer", qrCodeInputTimer);
+    //clearTimeout(qrCodeInputTimer);
     submitIDTimer = null
     idDATA = null
 
@@ -855,7 +861,7 @@
     tosModalEL.addEventListener('hidden.bs.modal', function (event) {
       console.log('TosModal Hidden');
       allowQrCodeInput = true; // Allow QrCodeInput
-      qrCodeInput = "";
+      qrCodeValue = "";
       //setTimeout(focusOnCode, 1000);
       //focusOnCode();
     })
@@ -882,7 +888,7 @@
     })
 
     registerModalEl.addEventListener('show.bs.modal', event => {
-      console.log('RegisterModal Show');    
+      console.log('RegisterModal Show');
       allowQrCodeInput = false
 
       if (idDATA) {
@@ -901,8 +907,8 @@
     })
 
     registerModalEl.addEventListener('shown.bs.modal', event => {
-      console.log('RegisterModal Shown'); 
-      allowQrCodeInput = false   
+      console.log('RegisterModal Shown');
+      allowQrCodeInput = false
       document.getElementById('fetUsername').focus();
     })
 
@@ -986,17 +992,40 @@
     //code.focus();
     //document.getElementById("code").
 
+    function qrFunction() {
+      SubmitQrCode();
+    }
+
+
+
     code.onkeyup = function (e) {
-
       if (allowQrCodeInput) {
-
         if (e.key === 'Enter' || e.key === 'Tab' || e.keyCode === 13) {
-
+          //console.log('Submit QR Code');
+          //console.log("Clear Timer", qrCodeTimeoutID);
           SubmitQrCode();
-        }
+        } else {
 
+
+
+
+          if (qrCodeTimeoutID) clearTimeout(qrCodeTimeoutID);
+          //console.log("Clear Timer", qrCodeTimeoutID);
+          qrCodeTimeoutID = setTimeout(SubmitQrCode, 2000);
+
+          //clearTimeout(qrCodeInputTimer);
+          //qrCodeInputTimer = setTimeout(() => { qrFunction() }, 1500)
+          //console.log("timer set", qrCodeInputTimer);
+          //if (e.key === 'Enter') {
+          //   qrCodeInput += `${e.key}`; //String.fromCharCode(e.keyCode || e.which);          
+          // } else {
+          //
+          //SubmitQrCode();
+          //}
+        }
       }
     };
+
 
     idInput.onkeyup = function (e) {
 
@@ -1017,7 +1046,7 @@
       }
     };
 
-    var qrCodeInput = "";
+    var qrCodeValue = "";
     var idInputData = "";
     var allowQrCodeInput = true;
 
@@ -1055,120 +1084,130 @@
     }
 
     function SubmitQrCode() {
-      qrCodeInput = document.getElementById('code').value
-      console.log('Submitting QR Code:', qrCodeInput);
+      qrCodeInput = document.getElementById('code')
+      qrCodeValue = qrCodeInput.value
+      qrCodeValue = qrCodeValue.trim()
+      console.log('Submitting QR Code:', qrCodeValue, qrCodeValue.length);
+      if (qrCodeValue.length > 0) {
+        
 
 
-      if (qrCodeInput) {
-        //qrCodeInput = qrCodeInput.replace(/[^a-zA-Z0-9]/g, '');
-        //qrCodeInput = qrCodeInput.replace(/[^\w\s]/gi, '');
-        //qrCodeInput = qrCodeInput.replace(/[^ -~]+/g, "");
+        if (qrCodeValue) {
+          //qrCodeInput = qrCodeInput.replace(/[^a-zA-Z0-9]/g, '');
+          //qrCodeInput = qrCodeInput.replace(/[^\w\s]/gi, '');
+          //qrCodeInput = qrCodeInput.replace(/[^ -~]+/g, "");
 
 
 
-        url = '{{ url_for("preCheckIn" ) }}' + encodeURI(qrCodeInput)
-        //alert(url)
+          url = '{{ url_for("preCheckIn" ) }}' + encodeURI(qrCodeValue)
+          //alert(url)
 
 
-        fetch(url)
-          .then(response => {
-            if (!response.ok) {
-              throw new Error('Network response was not ok');
-            }
-            return response.json();
-          })
-          .then(data => {
-            document.getElementById('code').value = ""
-            if (!data.error) {
-              console.log('Data received:', data);
-              skipPaymentView = false
-              skipPaymentView = data.skip_payment
-              if (skipPaymentView === true) {
-                CheckInQrCode(data.uuid, 'Skipped Payment Screen Via Role Set:' + data.roles);
-                return
+          fetch(url)
+            .then(response => {
+              if (!response.ok) {
+                throw new Error('Network response was not ok');
               }
-              generalCreditAmountPill = document.getElementById('generalCreditAmount')
-              if (generalCreditAmountPill) { // Check if Credit method is shown
-                //console.log('Credit Account:', data);
-                if (data.generalCredits) {
-                  document.getElementById('btnradio4').disabled = false
-                  generalCreditAmountPill.classList.remove('d-none')
-                  generalCreditAmountPill.innerText = data.generalCredits
-                  if (data.generalCredits > 0) {
-                    payWithCreditBtn.disabled = false
-                    payWithCreditBtn.innerText = 'Pay Using 1 of ' + data.generalCredits + ' available Credits, Checkin Now'
+              return response.json();
+            })
+            .then(data => {
+              qrCodeInput.value = ""
+              if (!data.error) {
+                console.log('Data received:', data);
+                skipPaymentView = false
+                skipPaymentView = data.skip_payment
+                if (skipPaymentView === true) {
+                  CheckInQrCode(data.uuid, 'Skipped Payment Screen Via Role Set:' + data.roles);
+                  return
+                }
+                generalCreditAmountPill = document.getElementById('generalCreditAmount')
+                if (generalCreditAmountPill) { // Check if Credit method is shown
+                  //console.log('Credit Account:', data);
+                  if (data.generalCredits) {
+                    document.getElementById('btnradio4').disabled = false
+                    generalCreditAmountPill.classList.remove('d-none')
+                    generalCreditAmountPill.innerText = data.generalCredits
+                    if (data.generalCredits > 0) {
+                      payWithCreditBtn.disabled = false
+                      payWithCreditBtn.innerText = 'Pay Using 1 of ' + data.generalCredits + ' available Credits, Checkin Now'
+                    } else {
+                      payWithCreditBtn.innerText = '0 available Credits'
+                      payWithCreditBtn.disabled = true
+                    }
                   } else {
-                    payWithCreditBtn.innerText = '0 available Credits'
-                    payWithCreditBtn.disabled = true
+                    document.getElementById('btnradio4').disabled = true
+                    generalCreditAmountPill.classList.add('d-none')
                   }
+
                 } else {
-                  document.getElementById('btnradio4').disabled = true
-                  generalCreditAmountPill.classList.add('d-none')
+                  console.log('Skipping, No Credit Account', data);
+                  //CheckInQrCode(qrCodeInput, data);
                 }
 
+
+                if (payWithCashappBtn) {
+                  payWithCashappBtn.dataset.qrCode = data.uuid
+
+
+                }
+                if (payWithPaypalBtn) {
+                  payWithPaypalBtn.dataset.qrCode = data.uuid
+
+                }
+                if (payWithVenmoBtn) {
+                  payWithVenmoBtn.dataset.qrCode = data.uuid
+
+                }
+                if (payWithCashBtn) {
+                  payWithCashBtn.dataset.qrCode = data.uuid
+
+                }
+                if (payWithCreditBtn) {
+                  payWithCreditBtn.dataset.qrCode = data.uuid
+
+                }
+
+                checkInPaymentModal.show(checkInPaymentModalEl)
+
+
               } else {
-                console.log('Skipping, No Credit Account', data);
-                //CheckInQrCode(qrCodeInput, data);
+                myToastEl.classList.remove('text-bg-primary', 'text-bg-success', 'text-bg-danger')
+                myToastEl.classList.add('text-bg-warning')
+                myToastElHeader.innerText = 'Notice'
+                myToastElBody.innerText = data.error
+                myToast.show()
               }
 
 
-              if (payWithCashappBtn) { 
-                payWithCashappBtn.dataset.qrCode = data.uuid
-                
-                
-              }
-              if (payWithPaypalBtn) { 
-                payWithPaypalBtn.dataset.qrCode = data.uuid
 
-               }
-              if (payWithVenmoBtn) { 
-                payWithVenmoBtn.dataset.qrCode = data.uuid
-
-               }
-              if (payWithCashBtn) { 
-                payWithCashBtn.dataset.qrCode = data.uuid
-
-               }
-              if (payWithCreditBtn) { 
-                payWithCreditBtn.dataset.qrCode = data.uuid
-
-               }
-
-              checkInPaymentModal.show(checkInPaymentModalEl)
-
-
-            } else {
-              myToastEl.classList.remove('text-bg-primary', 'text-bg-success', 'text-bg-danger')
-              myToastEl.classList.add('text-bg-warning')
-              myToastElHeader.innerText = 'Notice'
-              myToastElBody.innerText = data.error
+              //myToastElHeader.innerText = 'Error'
+              //myToastElBody.innerText = 'Welcome ' + data
+              //myToast.show()
+            })
+            .catch(error => {
+              document.getElementById('code').value = ""
+              console.error('There was a problem with the fetch operation:', error);
+              myToastEl.classList.remove('text-bg-primary', 'text-bg-success', 'text-bg-warning')
+              myToastEl.classList.add('text-bg-danger')
+              myToastElHeader.innerText = 'Error'
+              myToastElBody.innerText = 'Network Error'
               myToast.show()
-            }
+            });
 
 
 
-            //myToastElHeader.innerText = 'Error'
-            //myToastElBody.innerText = 'Welcome ' + data
-            //myToast.show()
-          })
-          .catch(error => {
-            document.getElementById('code').value = ""
-            console.error('There was a problem with the fetch operation:', error);            
-            myToastEl.classList.remove('text-bg-primary', 'text-bg-success', 'text-bg-warning')
-            myToastEl.classList.add('text-bg-danger')
-            myToastElHeader.innerText = 'Error'
-            myToastElBody.innerText = 'Network Error'
-            myToast.show()
-          });
-
-
-
-        //alert('QR Code Submitted');
-      } else {
-        //alert('Error');
+          //alert('QR Code Submitted');
+        } else {
+          //alert('Error');
+        }
+        qrCodeValue = "";
+        qrCodeInput.value = ""
+      }else{
+        qrCodeValue = "";
+        qrCodeInput.value = ""
       }
-      qrCodeInput = "";
     }
+
 
 
 
@@ -1177,18 +1216,18 @@
       const eventCards = document.querySelectorAll('div[name="eventCard"]');
 
       eventCards.forEach(eventCard => {
-          console.log("EventCards",eventCard);
-          cardbody = eventCard.getElementsByClassName('card-body')
-          checkBoxHolder = cardbody[0].getElementsByClassName('position-absolute top-0 start-0') 
-          checkBox = checkBoxHolder[0].getElementsByClassName('form-check-input')[0]
-          console.log("CheckBox", checkBox.value, checkBox.checked); 
-            //if (radioButton.value == event.relatedTarget.extendedProps.bannerImage) {
-                //radioButton.checked = true;
-            
-                //console.log(radioButton.value); // Prints the value of the selected radio button
-            //}
-            
-        });
+        console.log("EventCards", eventCard);
+        cardbody = eventCard.getElementsByClassName('card-body')
+        checkBoxHolder = cardbody[0].getElementsByClassName('position-absolute top-0 start-0')
+        checkBox = checkBoxHolder[0].getElementsByClassName('form-check-input')[0]
+        console.log("CheckBox", checkBox.value, checkBox.checked);
+        //if (radioButton.value == event.relatedTarget.extendedProps.bannerImage) {
+        //radioButton.checked = true;
+
+        //console.log(radioButton.value); // Prints the value of the selected radio button
+        //}
+
+      });
 
 
 
@@ -1237,7 +1276,7 @@
       } else {
         //alert('Error');
       }
-      qrCodeInput = "";
+      qrCodeValue = "";
     }
 
     var qrCodeInputTimer = null;
@@ -1261,13 +1300,7 @@
       if (allowQrCodeInput) {
 
         clearTimeout(qrCodeInputTimer);
-        qrCodeInputTimer = setTimeout(SubmitQrCode, 1000);
-        if (e.key === 'Enter') {
-          //   qrCodeInput += `${e.key}`; //String.fromCharCode(e.keyCode || e.which);          
-          // } else {
-          clearTimeout(qrCodeInputTimer);
-          //SubmitQrCode();
-        }
+
       }
     };
 

@@ -108,6 +108,7 @@ class Guest(db.Model, UserMixin):
     logbook = db.relationship('Guestlog', backref='guest')    
     checkedIn:bool = db.Column(db.Boolean(), default=False)
     lastVisit = db.Column(db.DateTime(timezone=True), server_default=None)
+    
     lastCheckOut = db.Column(db.DateTime(timezone=True), server_default=None)
     created_at = db.Column(db.DateTime(timezone=True), server_default=func.now())
 
