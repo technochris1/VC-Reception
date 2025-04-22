@@ -58,6 +58,15 @@ def barView():
 
 
 
+@app.route("/barView/menuEditor")
+#@login_required
+def barMenuEditor():
+    return render_template('barMenuEditor.html')
+
+
+
+
+
 
 
 @app.route('/guestView/', methods=['GET', 'POST'])
