@@ -8,59 +8,58 @@
 
 <div class="row row-cols-1 ">
     <div class="col">
-        <div class="card">
-            <div class="card-body">
-                <ul id="guest-list">
+        <h2 class="text-center">Guests</h2>
+        <ul class="list-group" id="guest-list">
 
-                    {% for guest in guests_checked_in %}
-                    <li class="list-group-item m-2">
-                        {% if guest.barStatus %}
-                        {% if guest.barStatus == 0 %}
-                        <select class=" selectpicker" data-width="fit" data-style="btn-success"
-                            id="userStateSelect-{{guest.id}}">
-                            <option selected class="text-bg-success text-dark" data-icon="bi-person-fill-check">
-                            </option>
-                            <option class="text-bg-warning" data-icon="bi-person-fill-exclamation"></option>
-                            <option class="text-bg-danger text-dark" data-icon="bi-person-fill-x"></option>
-                        </select>
-                        {% elif guest.barStatus == 1 %}
-                        <select class=" selectpicker" data-width="fit" data-style="btn-warning"
-                            id="userStateSelect-{{guest.id}}">
-                            <option class="text-bg-success text-dark" data-icon="bi-person-fill-check"></option>
-                            <option selected class="text-bg-warning" data-icon="bi-person-fill-exclamation"></option>
-                            <option class="text-bg-danger text-dark" data-icon="bi-person-fill-x"></option>
-                        </select>
-                        {% elif guest.barStatus == 2 %}
-                        <select class=" selectpicker" data-width="fit" data-style="btn-danger"
-                            id="userStateSelect-{{guest.id}}">
-                            <option class="text-bg-success text-dark" data-icon="bi-person-fill-check"></option>
-                            <option class="text-bg-warning" data-icon="bi-person-fill-exclamation"></option>
-                            <option selected class="text-bg-danger text-dark" data-icon="bi-person-fill-x"></option>
-                        </select>
-                        {% endif %}
-                        {% else %}
-                        <select class=" selectpicker" data-width="fit" data-style="btn-success"
-                            id="userStateSelect-{{guest.id}}">
-                            <option selected class="text-bg-success text-dark" data-icon="bi-person-fill-check">
-                            </option>
-                            <option class="text-bg-warning" data-icon="bi-person-fill-exclamation"></option>
-                            <option class="text-bg-danger text-dark" data-icon="bi-person-fill-x"></option>
-                        </select>
-                        {% endif %}
-                        {% if guest.fetUsername %}
-                        {{guest.fetUsername |e}}
-                        {% else %}
-                        {{guest.name |e}}
-                        {% endif %}
-                    </li>
-                    {% endfor %}
-                </ul>
+            {% for guest in guests_checked_in %}
+            <li id="userStateList-{{guest.id}}" {% if guest.barStatus %} {% if guest.barStatus==0 %}
+                class="list-group-item text-bg-success" {% elif guest.barStatus==1 %}
+                class="list-group-item text-bg-warning" {% elif guest.barStatus==2 %}
+                class="list-group-item text-bg-danger" {% endif %} {% else %} class="list-group-item text-bg-success" {%
+                endif %}>
+                <div class=" shadow d-inline">
+                    <div class="border btn-group" role="group">
+                        <input type="radio" class="btn-check" name="userStateRadio-{{guest.id}}"
+                            id="userStateRadio-{{guest.id}}-0" autocomplete="off" {% if guest.barStatus==0 or not
+                            guest.barStatus%} checked {% endif %}>
+                        <label class="btn btn-success" for="userStateRadio-{{guest.id}}-0"><i
+                                class="bi bi-person-fill-check"></i></label>
 
-            </div>
-        </div>
+                        <input type="radio" class="btn-check" name="userStateRadio-{{guest.id}}"
+                            id="userStateRadio-{{guest.id}}-1" autocomplete="off" {% if guest.barStatus==1 %} checked {%
+                            endif %}>
+                        <label class="btn btn-warning" for="userStateRadio-{{guest.id}}-1"><i
+                                class="bi-person-fill-exclamation"></i></label>
+
+                        <input type="radio" class="btn-check" name="userStateRadio-{{guest.id}}"
+                            id="userStateRadio-{{guest.id}}-2" autocomplete="off" {% if guest.barStatus==2 %} checked {%
+                            endif %}>
+                        <label class="btn btn-danger" for="userStateRadio-{{guest.id}}-2"><i
+                                class="bi bi-person-fill-x"></i></label>
+                    </div>
+                </div>
+
+                <h3 class=" d-inline align-middle">
+                    {% if guest.fetUsername %}
+                    {{guest.fetUsername |e}}
+                    {% else %}
+                    {{guest.name |e}}
+                    {% endif %}
+                </h3>
+            </li>
+            {% endfor %}
+        </ul>
+
     </div>
 </div>
 
+<div class="position-absolute bottom-0 end-0">
+    <div class="btn-group" role="group" aria-label="Basic example">
+        <button type="button" class="btn btn-outline-dark btn-lg" id="muteStatus">
+            <i id="muteStatusIcon" class="bi bi-volume-mute-fill text-danger"></i>
+        </button>
+    </div>
+</div>
 
 <div class="toast-container position-absolute top-0 end-0 p-3" id="toast-container">
 </div>
@@ -72,42 +71,67 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
     integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
     crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ion-sound/3.0.7/js/ion.sound.min.js"
+    integrity="sha512-k0RyhyJoNdQfdrx7Yb5+zbrtFp8CVsGMJPlQkcNsNZi82GS0R09TG1F/Ar1LuUSXrkVMuk7SftnrXK35nAfdYg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
 
 
+    document.onclick = function () {
+        document.getElementById('muteStatusIcon').classList.replace('bi-volume-mute-fill', 'bi-volume-up-fill');
+        document.getElementById('muteStatusIcon').classList.replace('text-danger', 'text-success');
+    }
+
+    // init bunch of sounds
+    ion.sound({
+        sounds: [
+            { name: "beer_can_opening" },
+            { name: "bell_ring" },
+            { name: "branch_break" },
+            { name: "button_click" }
+        ],
+
+        // main config
+        path: "../static/sounds/",
+        preload: true,
+        multiplay: true,
+        volume: 0.9
+    });
+
+    // play sound
+    //ion.sound.play("beer_can_opening");
+
+
+    
+    function playAudio(file, opts) {
+        if (typeof AudioContext != "undefined" || typeof webkitAudioContext != "undefined") {
+            const audioCtx = new AudioContext();
+            audioCtx.addEventListener('error', (event) => {
+                console.error('AudioContext error:', event);
+            });
 
 
 
-    $('.selectpicker').on('changed.bs.select', function (e, clickedIndex, isSelected, previousValue) {
-        // do something...
-        //console.log(clickedIndex, isSelected, previousValue);
-        //$(e.target).selectpicker('setStyle', 'btn-danger');
-        switch (clickedIndex) {
-            case 0:
-                $(e.target).selectpicker('setStyle', 'btn-warning', 'remove');
-                $(e.target).selectpicker('setStyle', 'btn-danger', 'remove');
-                $(e.target).selectpicker('setStyle', 'btn-success', 'add');
-                break;
-            case 1:
-                $(e.target).selectpicker('setStyle', 'btn-success', 'remove');
-                $(e.target).selectpicker('setStyle', 'btn-danger', 'remove');
-                $(e.target).selectpicker('setStyle', 'btn-warning', 'add');
-                break;
-            case 2:
-                $(e.target).selectpicker('setStyle', 'btn-success', 'remove');
-                $(e.target).selectpicker('setStyle', 'btn-warning', 'remove');
-                $(e.target).selectpicker('setStyle', 'btn-danger', 'add');
-                break;
+            console.log("WebAudioContext is supported");
+            ion.sound.play(file, opts);
+        } else {
+            console.log("WebAudioContext is not supported");
         }
 
+    }
 
-        fetch('{{ url_for("setGuestBarState" ) }}' + encodeURI(e.target.id.split('-')[1] + '/' + clickedIndex), {
+
+
+    $(".btn-check").change(function (e) {
+        //alert('Radio Box has been changed!');
+        console.log(e.target);
+        fetch('{{ url_for("setGuestBarState" ) }}' + encodeURI(e.target.id.split('-')[1] + '/' + e.target.id.split('-')[2]), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                state: clickedIndex
+                state: e.target.id.split('-')[2]
             }),
         })
             .then(response => response.json())
@@ -120,16 +144,6 @@
     });
 
 
-
-
-
-
-
-
-
-
-
-
     var socket = io();
     socket.on('connect', function () {
         console.log('Connected!');
@@ -139,34 +153,63 @@
         console.log('Disconnected!');
     });
 
-
     socket.on("user barstatus changed", (arg, callback) => {
         console.log(" user barstatus changed", arg);
+        //callback("got it");
+        //REFRESH PAGE
+        //location.reload();
+        //var userStateSelect = document.getElementById("userStateSelect-" + arg.id);
+        //userStateSelect.selectedIndex = arg.barStatus;  
+
+        //$("#userStateSelect-" + arg.id).val(arg.barStatus);
+        //$("#userStateSelect-" + arg.id).selectpicker('render');
+
+        switch (arg.barStatus) {
+            case 0:
+                $("#userStateList-" + arg.guestId).removeClass("text-bg-warning");
+                $("#userStateList-" + arg.guestId).removeClass("text-bg-danger");
+                $("#userStateList-" + arg.guestId).addClass("text-bg-success");
+                $("#userStateSelect-" + arg.guestId + "-0").checked = true;
+                $("#userStateSelect-" + arg.guestId + "-1").checked = false;
+                $("#userStateSelect-" + arg.guestId + "-2").checked = false;
+                break;
+            case 1:
+                $("#userStateList-" + arg.guestId).removeClass("text-bg-success");
+                $("#userStateList-" + arg.guestId).removeClass("text-bg-danger");
+                $("#userStateList-" + arg.guestId).addClass("text-bg-warning");
+                $("#userStateSelect-" + arg.guestId + "-0").checked = false;
+                $("#userStateSelect-" + arg.guestId + "-1").checked = true;
+                $("#userStateSelect-" + arg.guestId + "-2").checked = false;
+                playAudio("beer_can_opening", {
+                    loop: 3
+                });
+                break;
+            case 2:
+                $("#userStateList-" + arg.guestId).removeClass("text-bg-warning");
+                $("#userStateList-" + arg.guestId).removeClass("text-bg-success");
+                $("#userStateList-" + arg.guestId).addClass("text-bg-danger");
+                $("#userStateSelect-" + arg.guestId + "-0").checked = false;
+                $("#userStateSelect-" + arg.guestId + "-1").checked = false;
+                $("#userStateSelect-" + arg.guestId + "-2").checked = true;
+                playAudio("bell_ring", {
+                    loop: 3
+                });
+                break;
+        }
+        //$("#userStateSelect-" + arg.id).selectpicker('refresh');
     });
-
-
 
     socket.on("user checked in", (arg, callback) => {
         console.log(arg);
         //callback("got it");
         //REFRESH PAGE
         location.reload();
-
-
-
-
-
-
     });
 
     socket.on("user checked out", (arg, callback) => {
         console.log(arg);
         //callback("got it");
         location.reload();
-
-
-
-
     });
 
     socket.on("user precheckin", (arg, callback) => {

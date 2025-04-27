@@ -58,6 +58,15 @@ def barView():
 
 
 
+@app.route("/barView/menuEditor")
+#@login_required
+def barMenuEditor():
+    return render_template('barMenuEditor.html')
+
+
+
+
+
 
 
 @app.route('/guestView/', methods=['GET', 'POST'])
@@ -761,7 +770,7 @@ def guests():
             flash('Settings Updated successfully', 'success')
             return redirect(url_for('guests', guests=Guest.query.all()))
         
-    return render_template('guests.html', guests=Guest.query.all(), settings = Setting.query.first(), roles = Role.query.all())
+    return render_template('guests.html', guests=Guest.query.all(), settings = Setting.query.first(), roles = Role.query.all(), guestVisitLog=Guestlog.query.all(), guestVisitCounts=Guestlog.query.with_entities(Guestlog.userID, func.count(Guestlog.id)).group_by(Guestlog.userID).all())
 
 @app.route('/guestCredit/<id>', methods=['GET', 'POST'])
 #@login_required

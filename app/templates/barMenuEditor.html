@@ -1,0 +1,38 @@
+{% extends 'barLayout.html' %}{% block content %}
+
+<div class="row row-cols-1 ">
+    <div class="col">
+        <h2 class="text-center">Menu
+        </h2>
+        <h4>
+            Drinks <button type="button" class="btn btn-outline-primary btn-sm">+</button>
+        </h4>
+        <ul class="list-group" id="drink-list">
+            {% for drink in drinks %}
+           
+            {% endfor %}
+        </ul>
+        <h4>
+            Food <button type="button" class="btn btn-outline-primary btn-sm">+</button>
+        </h4>
+        <ul class="list-group" id="food-list">
+            {% for food in foods %}
+           
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<div class="toast-container position-absolute top-0 end-0 p-3" id="toast-container">
+</div>
+{% endblock content %}{% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+    integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+    crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ion-sound/3.0.7/js/ion.sound.min.js"
+    integrity="sha512-k0RyhyJoNdQfdrx7Yb5+zbrtFp8CVsGMJPlQkcNsNZi82GS0R09TG1F/Ar1LuUSXrkVMuk7SftnrXK35nAfdYg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+
+</script>
+{% endblock script %}
