@@ -147,7 +147,6 @@ class GuestCredit(db.Model):
     guest_id = db.Column(db.Integer, db.ForeignKey('guest.id'), nullable=False)    
     
     points:int  = db.Column(db.Integer, nullable=False, default=0)
-
     generalAmount:int  = db.Column(db.Integer, nullable=False, default=0)
     specialEventAmount:int  = db.Column(db.Integer, nullable=False, default=0)
     privateSessionAmount:int  = db.Column(db.Integer, nullable=False, default=0)

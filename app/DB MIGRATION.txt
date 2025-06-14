@@ -23,3 +23,8 @@ $ flask db --help
 flask db migrate
 
 flask db upgrade
+
+
+
+Need to Add these to the DB in credit_transaction_log Table:
+[{"id":1,"timestamp":"2025-01-26 04:23:12","guest":47,"authorizedSource":"tyke","authorizedBy":0,"generalAmountChange":1,"specialEventAmountChange":0,"privateSessionAmountChange":0,"description":"prepay","pointChange":null},{"id":2,"timestamp":"2025-03-23 01:23:19","guest":47,"authorizedSource":"Check In via credit","authorizedBy":null,"generalAmountChange":-1,"specialEventAmountChange":0,"privateSessionAmountChange":0,"description":"Check In via credit - Removed 1 General Credit","pointChange":0}]A

@@ -466,9 +466,10 @@ def checkin_cleanup():
             #guest.membershipEmailSent = True
             
             #db.session.commit() 
+             
             roleInitializedEvents = TriggeredEmailEvent.query.filter(TriggeredEmailEvent.roleInitializeTriggered == True).all()
             for event in roleInitializedEvents:
-                print("Role Event", event)
+                print("Role Event - User Checked Out", event)
                 for emailTemplate in event.emailTemplates:
                     print("Email Template", emailTemplate)
                     #sendEmail(recipients, subject, message, attachment=None):
