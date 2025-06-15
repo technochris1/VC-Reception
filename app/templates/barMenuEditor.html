@@ -5,23 +5,140 @@
         <h2 class="text-center">Menu
         </h2>
         <h4>
-            Drinks <button type="button" class="btn btn-outline-primary btn-sm">+</button>
+            Drinks <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal"
+                data-bs-target="#addModal" data-bs-mode="drink">+</button>
         </h4>
-        <ul class="list-group" id="drink-list">
-            {% for drink in drinks %}
-           
+
+
+        <div class="row g-4">
+            {% for item in drink %}
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xxl-2">
+                <div class="card h-100">
+                    <img src="{{item.image_path}}" class="card-img-top" style="height: 400px; object-fit: cover;"
+                        alt="Product Image">
+
+                    <div class="position-absolute top-0 end-0 bg-dark text-white px-2 py-1 fw-bold rounded-start"
+                        style="font-size: 1.5rem;">
+                        {{item.price}}
+                    </div>
+
+
+                    <div class="position-absolute bottom-0 start-50 translate-middle-x text-white fw-bold text-center px-2"
+                        style="font-size: 2rem; text-shadow: 
+                        0 0 8px rgba(0, 0, 0, 0.9),
+                        0 0 12px rgba(0, 0, 0, 0.8),
+                        0 0 20px rgba(0, 0, 0, 0.7),
+                        0 0 28px rgba(0, 0, 0, 0.6);">
+                        {{item.name}}
+                    </div>
+
+
+                    <!-- <div class="card-body p-2">
+                        <h4 class="card-title mb-1">{{item.name}}</h4>
+                    </div>             -->
+                </div>
+            </div>
             {% endfor %}
-        </ul>
+        </div>              
+       
+        <br>
         <h4>
-            Food <button type="button" class="btn btn-outline-primary btn-sm">+</button>
+            Food <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal"
+                data-bs-target="#addModal" data-bs-mode="food">+</button>
         </h4>
-        <ul class="list-group" id="food-list">
-            {% for food in foods %}
-           
+
+         <div class="row g-4">
+            {% for item in food %}
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3 col-xxl-2">
+                <div class="card h-100">
+                    <img src="{{item.image_path}}" class="card-img-top" style="height: 400px; object-fit: cover;"
+                        alt="Product Image">
+
+                    <div class="position-absolute top-0 end-0 bg-dark text-white px-2 py-1 fw-bold rounded-start"
+                        style="font-size: 1.5rem;">
+                        {{item.price}}
+                    </div>
+
+
+                    <div class="position-absolute bottom-0 start-50 translate-middle-x text-white fw-bold text-center px-2"
+                        style="font-size: 2rem; text-shadow: 
+                        0 0 8px rgba(0, 0, 0, 0.9),
+                        0 0 12px rgba(0, 0, 0, 0.8),
+                        0 0 20px rgba(0, 0, 0, 0.7),
+                        0 0 28px rgba(0, 0, 0, 0.6);">
+                        {{item.name}}
+                    </div>
+
+
+                    <!-- <div class="card-body p-2">
+                        <h4 class="card-title mb-1">{{item.name}}</h4>
+                    </div>             -->
+                </div>
+            </div>
             {% endfor %}
-        </ul>
+        </div>   
     </div>
 </div>
+
+
+
+<div class="modal fade " id="addModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="addModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable ">
+        <div class="modal-content ">
+            <div class="modal-header bg-dark text-light">
+                <h5 class="modal-title" id="addModalLabel">Add New Menu Item</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" 
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-dark text-light">
+
+                <form class="row" method="post">
+                    <div class="row row-cols-5">
+                        {% for file in menuFiles %}
+                        <div class="col">
+                            <!--  -->
+                            <input type="radio" class="btn-check" name="options-base" id="option{{file.id}}"
+                                value="{{file.id}}" autocomplete="off" checked>
+                            <label class="btn" for="option{{file.id}}"><img src="{{file.path}}" class="img-thumbnail"
+                                    alt="..."></label>
+                        </div>
+                        {% endfor %}
+
+                    </div>
+
+
+                    <input type="hidden" name="mode_type" value="{{ mode }}">
+                    <div class="col-md-6 p-2">
+                        <label for="itemName" class="form-label">Item Name</label>
+                        <input type="text" class="form-control" name="itemName" id="itemName" required>
+
+                    </div>
+
+                    <div class="col-md-6 p-2">
+                        <label for="price" class="form-label">Price</label>
+                        <input type="text" class="form-control" name="price" id="price">
+                    </div>
+                    
+
+
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button class="btn btn-primary" type="submit">Save</button>
+
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
 
 <div class="toast-container position-absolute top-0 end-0 p-3" id="toast-container">
 </div>
@@ -34,5 +151,14 @@
     crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <script>
 
+var addModal = document.getElementById('addModal')
+addModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget
+        var mode = button.getAttribute('data-bs-mode')
+        type_mode = document.querySelector('input[name="mode_type"]')
+        type_mode.value = mode
+        console.log('Mode:', mode);
+        document.getElementById('addModalLabel').innerText = 'Add New ' + mode.charAt(0).toUpperCase() + mode.slice(1) + ' Item'
+    })
 </script>
 {% endblock script %}

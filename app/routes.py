@@ -1,9 +1,9 @@
 import traceback
 import os, sys
-from PIL import Image
+from PIL import Image, ImageOps
 from flask import render_template, jsonify, abort, url_for, redirect, request, flash, render_template_string, send_from_directory, make_response, Response
 from app import app, db, bcrypt, mail, login_manager, socketio
-from app.models import Role, Guest, Guestlog, Event, Setting, func, GuestCredit, CreditTransactionLog, TriggeredEmailEvent, EmailTemplate, EmailLog
+from app.models import Role, Guest, Guestlog, Event, Setting, func, GuestCredit, CreditTransactionLog, TriggeredEmailEvent, EmailTemplate, EmailLog, MenuFile, MenuItem
 from app.forms import AdminRegistrationForm, AdminLoginForm, GuestRegistrationForm, AddPointsForm, AddCreditForm, ChangePasswordForm
 from flask_mail import  Message
 from flask_login import login_user, current_user, logout_user, login_required
@@ -12,7 +12,7 @@ from io import BytesIO
 import qrcode
 from datetime import datetime, timedelta, timezone, time
 from dateutil import tz
-
+from werkzeug.utils import secure_filename
 import uuid
 import json
 
@@ -34,6 +34,33 @@ def home():
        else:
            flash('Login unsuccessful. Please check email and password', 'danger')
     return render_template('home.html', form=form)
+
+@app.route('/drinkMenu')
+def drinkMenu():
+
+    items = MenuItem.query.filter(MenuItem.type == 'drink').all()
+    images = MenuFile.query.all()
+    for item in items:
+        if item.image_id:
+            item.image_path = MenuFile.query.filter(MenuFile.id == item.image_id).first().path
+
+
+    return render_template('foodMenu.html', items = items)
+
+
+
+@app.route('/foodMenu')
+def foodMenu():
+
+    items = MenuItem.query.filter(MenuItem.type == 'food').all()
+    images = MenuFile.query.all()
+    for item in items:
+        if item.image_id:
+            item.image_path = MenuFile.query.filter(MenuFile.id == item.image_id).first().path
+
+
+    return render_template('foodMenu.html', items = items)
+
 
 
 
@@ -58,16 +85,82 @@ def barView():
 
 
 
-@app.route("/barView/menuEditor")
+@app.route("/barView/menuEditor", methods=['GET', 'POST'])
 #@login_required
 def barMenuEditor():
-    return render_template('barMenuEditor.html')
+    images = MenuFile.query.all()
+    drinkItems = MenuItem.query.filter(MenuItem.type == 'drink').all()
+    foodItems = MenuItem.query.filter(MenuItem.type == 'food').all()
+
+    
+    for item in drinkItems:
+        if item.image_id:
+            item.image_path = MenuFile.query.filter(MenuFile.id == item.image_id).first().path
+    for item in foodItems:
+        if item.image_id:
+            item.image_path = MenuFile.query.filter(MenuFile.id == item.image_id).first().path
 
 
 
 
 
 
+    if request.method == 'POST':
+        print("form:", request.form)
+        newMenuItemFile = MenuItem(
+            type = request.form['mode_type'],
+            name= request.form['itemName'],
+            price= request.form['price'],
+            image_id= request.form['options-base']
+            )
+        print("New Item",newMenuItemFile)
+        db.session.add(newMenuItemFile)
+        db.session.commit()       
+
+        return redirect(url_for('barMenuEditor', menuFiles= images, food = foodItems, drink = drinkItems))
+    elif request.method == 'GET':
+        return render_template('barMenuEditor.html', menuFiles= images, food = foodItems, drink = drinkItems)
+
+@app.route("/menuImages", methods=['GET', 'POST'])
+#@login_required
+def menuImages():
+    if request.method == 'POST':
+
+        print("form:", request.form)
+        f = request.files['file']
+        if f:
+            #print("File received:", f.filename)
+            file_path = os.path.join(app.root_path, 'static', 'menu_files', secure_filename(f.filename))
+            
+            print("File received:", f.filename, "File path:", file_path)
+
+
+
+            newFile = MenuFile(
+                fileName = secure_filename(f.filename),    
+                path = os.path.join( '../static', 'menu_files', secure_filename(f.filename))
+            )
+            print("New Check In",newFile)
+            db.session.add(newFile)
+            db.session.commit()
+
+
+
+
+            
+            f.save(file_path)
+            # Resize the image
+            img = Image.open(file_path)
+            #img = img.resize((800, 800), Image.Resampling.LANCZOS)
+            img = ImageOps.fit(img, (800,800), Image.Resampling.LANCZOS)
+            img.save(file_path)
+            #return jsonify({'success': True, 'filename': filename})
+            return redirect(url_for('menuImages', menuFiles=MenuFile.query.all()))
+            #return render_template('barMenuImages.html', menuFiles=MenuFile.query.all())
+    
+        return jsonify({'success': False, 'error': 'Invalid file or request method'})
+    elif request.method == 'GET':
+        return render_template('barMenuImages.html', menuFiles=MenuFile.query.all())
 
 @app.route('/guestView/', methods=['GET', 'POST'])
 def guestView():

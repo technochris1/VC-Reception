@@ -168,7 +168,15 @@ class triggeredEmailEventView(ModelView):
     #form_columns = ('title','timeDelta', 'emailTemplate', 'roleInitializeTriggered')
     can_view_details = True
 
+class menuFileView(ModelView):
+    column_hide_backrefs = False
+    column_list = ('id', 'filename', 'path')
 
+
+class menuItemView(ModelView):
+    column_hide_backrefs = False
+    column_list = ('name', 'type', 'price', 'image_id')
+    form_columns = ('name', 'type', 'price', 'image_id')
 
 admin.add_view(guestView(models.Guest, db.session))
 admin.add_view(guestCreditsView(models.GuestCredit, db.session))
@@ -181,6 +189,8 @@ admin.add_view(ModelView(models.Setting, db.session))
 admin.add_view(triggeredEmailEventView(models.TriggeredEmailEvent, db.session))
 admin.add_view(ModelView(models.EmailLog, db.session))
 admin.add_view(ModelView(models.EmailTemplate, db.session))
+admin.add_view(menuFileView(models.MenuFile, db.session))
+admin.add_view(menuItemView(models.MenuItem, db.session))
 
 
 #migrate = Migrate(app, db)

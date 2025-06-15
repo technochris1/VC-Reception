@@ -1,0 +1,99 @@
+{% extends 'layout.html' %}{% block content %}
+
+<div class="row row-cols-1 ">
+    <div class="col">
+        <h2 class="text-center">Images <button type="button" class="btn btn-outline-primary btn-sm"
+            data-bs-toggle="modal" data-bs-target="#addModal" data-bs-mode="drink">+</button></h2>
+        
+        <!-- <img class="bg-image" src="../static/menu_files/water.jpg" height="100%" width="100%" style="object-fit: contain;" alt="..."> -->
+
+        <!-- <div class="card" style="width: 15rem;">
+            <img src="../static/menu_files/water.jpg" class="card-img-top" alt="...">
+            <div class="card-body">
+                <h5 class="card-title">water.jpg</h5>
+            </div>
+        </div> -->
+        
+
+
+        <div class="row row-cols-1 row-cols-md-3 g-1">
+            {% for file in menuFiles %}
+            <div class="col">
+                <div class="card h-100">
+                <img src="{{file.path}}" class="card-img-top" alt="...">
+                <div class="card-body">
+                    <p class="card-title">{{file.fileName}}</p>
+                </div>
+                </div>
+            </div>           
+            {% endfor %}
+        </div>
+
+
+
+        
+
+            
+        
+    </div>
+</div>
+
+
+<div class="modal fade " id="addModal" tabindex="-1" data-bs-backdrop="static" aria-labelledby="addModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable ">
+        <div class="modal-content ">
+            <div class="modal-header bg-dark text-light">
+                <h5 class="modal-title" id="addModalLabel">Add Image</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body bg-dark text-light">
+
+                <form action="/menuImages" method="post" enctype="multipart/form-data">
+                    <div class="col">                       
+                        <input type="file" name="file" id="file">          
+                    </div>
+                    <br>
+                    <!-- <div class="row  row-cols-1 row-cols-sm-2 g-4">
+                        <div class="col">
+                            <label for="name" class="form-label">Product Name</label>
+                            <input type="text" class="form-control" name="name" id="name" required>
+                        </div>
+                        <div class="col">
+                            <label for="price" class="form-label">Price</label>
+                            <input type="text" class="form-control" name="price" id="price" required>
+                        </div>
+                    </div> -->
+
+                    <button type="submit" class="btn btn-outline-secondary btn-sm">Add Menu Image</button>
+
+                   
+                </form>
+
+                
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+<div class="toast-container position-absolute top-0 end-0 p-3" id="toast-container">
+</div>
+{% endblock content %}{% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+    integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+    crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ion-sound/3.0.7/js/ion.sound.min.js"
+    integrity="sha512-k0RyhyJoNdQfdrx7Yb5+zbrtFp8CVsGMJPlQkcNsNZi82GS0R09TG1F/Ar1LuUSXrkVMuk7SftnrXK35nAfdYg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+
+</script>
+{% endblock script %}

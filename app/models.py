@@ -264,3 +264,22 @@ class EmailLog(db.Model):
     emailSubject:str  = db.Column(db.String(100))
     emailBody:str  = db.Column(db.String(200))
     emailSentBy = db.Column(db.Integer, db.ForeignKey('guest.id'))
+
+
+
+
+
+@dataclass
+class MenuFile(db.Model):
+    id:int = db.Column(db.Integer, primary_key=True)
+    fileName:str = db.Column(db.String(100))    
+    path:str = db.Column(db.String(200))
+
+@dataclass
+class MenuItem(db.Model):
+    id:int = db.Column(db.Integer, primary_key=True)
+    type:str = db.Column(db.String(100))
+    image_id:int = db.Column(db.Integer, db.ForeignKey('menu_file.id'))
+    name:str = db.Column(db.String(100))    
+    price:str = db.Column(db.String(100))
+

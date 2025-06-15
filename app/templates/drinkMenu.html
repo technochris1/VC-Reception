@@ -1,0 +1,43 @@
+{% extends 'tv_layout.html' %}{% block content %}
+<div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 row-cols-xxl-5">
+    {% for item in items %}
+    <div class="col">
+        <div class="card h-100">
+            <img src="{{item.image_path}}" class="card-img-top" style="height: 400px; object-fit: cover;"
+                alt="Product Image">
+            <div class="position-absolute top-0 end-0 bg-dark text-white px-2 py-1 fw-bold rounded-start"
+                style="font-size: 1.5rem;">
+                {{item.price}}
+            </div>
+            <div class="position-absolute bottom-0 start-50 translate-middle-x text-white fw-bold text-center px-2"
+                style="font-size: 2rem; text-shadow: 
+                0 0 8px rgba(0, 0, 0, 0.9),
+                0 0 12px rgba(0, 0, 0, 0.8),
+                0 0 20px rgba(0, 0, 0, 0.7),
+                0 0 28px rgba(0, 0, 0, 0.6);">
+                {{item.name}}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+
+
+
+
+
+
+
+
+{% endblock content %}{% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"
+    integrity="sha512-q/dWJ3kcmjBLU4Qc47E4A9kTB4m3wuTY7vkFJDTZKjTs8jhyGQnaUrxa0Ytd0ssMZhbNua9hE+E7Qv1j+DyZwA=="
+    crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ion-sound/3.0.7/js/ion.sound.min.js"
+    integrity="sha512-k0RyhyJoNdQfdrx7Yb5+zbrtFp8CVsGMJPlQkcNsNZi82GS0R09TG1F/Ar1LuUSXrkVMuk7SftnrXK35nAfdYg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+
+</script>
+{% endblock script %}
